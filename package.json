@@ -1,0 +1,33 @@
+{
+  "name": "node-crackers",
+  "description": "Comic Rack ... ers",
+  "keywords": [
+    "comics",
+    "commandline",
+    "generator"
+  ],
+  "author": "Joe Drago",
+  "version": "0.0.1",
+  "license": "Boost",
+  "engines": {
+    "node": ">=0.8.0"
+  },
+  "main": "js/crackers.js",
+  "bin": {
+    "skittles": "./bin/crackers"
+  },
+  "homepage": "https://github.com/joedrago/node-crackers",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/joedrago/node-crackers.git"
+  },
+  "scripts": {
+    "build": "cake build"
+  },
+  "devDependencies": {
+    "coffee-script": "*"
+  },
+  "dependencies": {
+    "minimist": "*"
+  }
+}
