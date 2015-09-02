@@ -27,7 +27,7 @@
     }
 
     ComicGenerator.prototype.generate = function() {
-      var i, image, inject, j, len, len1, line, matches, outputText, parsed, rawTemplate, ref, templateLines;
+      var href, i, image, inject, j, len, len1, line, matches, outputText, parsed, rawTemplate, ref, templateLines;
       if (this.images.length === 0) {
         log.error("No images in '" + this.dir + "', removing index");
         fs.unlinkSync(this.indexFilename);
@@ -50,7 +50,9 @@
               for (j = 0, len1 = ref.length; j < len1; j++) {
                 image = ref[j];
                 parsed = path.parse(image);
-                outputText += "    <a href=\"" + constants.IMAGES_DIR + "/" + parsed.base + "\"></a>\n";
+                href = constants.IMAGES_DIR + "/" + parsed.base;
+                href = href.replace("#", "%23");
+                outputText += "    <a href=\"" + href + "\"></a>\n";
               }
               break;
             default:

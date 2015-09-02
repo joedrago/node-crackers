@@ -35,7 +35,9 @@ class ComicGenerator
           when 'list'
             for image in @images
               parsed = path.parse(image)
-              outputText += "    <a href=\"#{constants.IMAGES_DIR}/#{parsed.base}\"></a>\n"
+              href = "#{constants.IMAGES_DIR}/#{parsed.base}"
+              href = href.replace("#", "%23")
+              outputText += "    <a href=\"#{href}\"></a>\n"
           else
             outputText += "<!-- #inject skipped '#{inject}' -->\n"
       else
