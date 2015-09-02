@@ -25,7 +25,7 @@
     };
 
     Crackers.prototype.update = function(args) {
-      var file, filesToUnpack, i, len, parsed, unpackDir, unpackFile, updateFiles;
+      var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirs, j, len, len1, parsed, unpackDir, unpackFile;
       this.updateDir = path.resolve('.', args.dir);
       if (!cfs.dirExists(this.updateDir)) {
         return this.error("'" + this.updateDir + "' is not an existing directory.");
@@ -37,14 +37,14 @@
         log.verbose("crackers root not found (" + constants.ROOT_FILENAME + " not detected in parents).");
       }
       log.verbose("rootDir  : " + this.rootDir);
-      this.rootFilename = path.join(this.rootDir, constants.ROOT_FILENAME);
+      this.rootFilename = cfs.join(this.rootDir, constants.ROOT_FILENAME);
       touch.sync(this.rootFilename);
-      updateFiles = cfs.listDir(this.updateDir);
       filesToUnpack = (function() {
-        var i, len, results;
+        var i, len, ref1, results;
+        ref1 = cfs.listDir(this.updateDir);
         results = [];
-        for (i = 0, len = updateFiles.length; i < len; i++) {
-          file = updateFiles[i];
+        for (i = 0, len = ref1.length; i < len; i++) {
+          file = ref1[i];
           if (file.match(/\.cb[rz]$/)) {
             results.push(path.resolve(this.updateDir, file));
           }
@@ -54,28 +54,50 @@
       for (i = 0, len = filesToUnpack.length; i < len; i++) {
         unpackFile = filesToUnpack[i];
         parsed = path.parse(unpackFile);
-        unpackDir = path.join(parsed.dir, parsed.name);
-        log.progress("Processing " + unpackFile + " ...");
+        unpackDir = cfs.join(parsed.dir, parsed.name);
+        log.verbose("Processing " + unpackFile + " ...");
         this.unpack(unpackFile, unpackDir);
+      }
+      imageDirs = (function() {
+        var j, len1, ref1, results;
+        ref1 = cfs.listDir(this.updateDir);
+        results = [];
+        for (j = 0, len1 = ref1.length; j < len1; j++) {
+          file = ref1[j];
+          if (file.match(/images$/)) {
+            results.push(path.resolve(this.updateDir, file));
+          }
+        }
+        return results;
+      }).call(this);
+      for (j = 0, len1 = imageDirs.length; j < len1; j++) {
+        imageDir = imageDirs[j];
+        parsed = path.parse(imageDir);
+        if (parsed.dir) {
+          comicDir = parsed.dir;
+          parsed = path.parse(comicDir);
+          comicGenerator = new ComicGenerator(this.rootDir, comicDir, parsed.name);
+          comicGenerator.generate();
+        }
       }
       return true;
     };
 
     Crackers.prototype.unpack = function(file, dir, force) {
-      var comicGenerator, indexFilename, parsed, unpackRequired, unpacker, valid;
+      var indexFilename, unpackRequired, unpacker, valid;
       if (force == null) {
         force = false;
       }
-      log.verbose("Unpacking " + file + " into " + dir);
       if (!cfs.prepareComicDir(dir)) {
         return false;
       }
-      indexFilename = path.join(dir, constants.INDEX_FILENAME);
+      indexFilename = cfs.join(dir, constants.INDEX_FILENAME);
       unpackRequired = force;
       if (cfs.newer(file, indexFilename)) {
         unpackRequired = true;
       }
       if (unpackRequired) {
+        log.progress("Unpacking " + file + " into " + dir);
         unpacker = new Unpacker(file, dir);
         valid = unpacker.unpack();
         unpacker.cleanup();
@@ -83,11 +105,8 @@
           return false;
         }
       } else {
-        log.progress("Unpack not required (" + file + " older than " + indexFilename + ")");
+        log.verbose("Unpack not required: (" + file + " older than " + indexFilename + ")");
       }
-      parsed = path.parse(dir);
-      comicGenerator = new ComicGenerator(dir, parsed.name);
-      comicGenerator.generate();
       return true;
     };
 

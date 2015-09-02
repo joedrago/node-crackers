@@ -51,8 +51,8 @@
       log.verbose("unzip: " + this.unzipCmd);
       log.verbose("unrar: " + this.unrarCmd);
       now = String(Math.floor(new Date() / 1000));
-      this.tempDir = path.join(this.dir, constants.TEMP_UNPACK_DIR + "." + now);
-      this.imagesDir = path.join(this.dir, constants.IMAGES_DIR);
+      this.tempDir = cfs.join(this.dir, constants.TEMP_UNPACK_DIR + "." + now);
+      this.imagesDir = cfs.join(this.dir, constants.IMAGES_DIR);
       this.deadImagesDir = this.imagesDir + "." + now;
       this.valid = false;
     }
@@ -103,7 +103,7 @@
       for (i = 0, len = images.length; i < len; i++) {
         image = images[i];
         parsed = path.parse(image);
-        finalImagePath = path.join(this.imagesDir, parsed.base);
+        finalImagePath = cfs.join(this.imagesDir, parsed.base);
         fs.renameSync(image, finalImagePath);
       }
       this.valid = true;

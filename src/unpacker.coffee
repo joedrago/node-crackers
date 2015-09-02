@@ -34,8 +34,8 @@ class Unpacker
     log.verbose "unrar: #{@unrarCmd}"
 
     now = String(Math.floor(new Date() / 1000))
-    @tempDir = path.join(@dir, "#{constants.TEMP_UNPACK_DIR}.#{now}")
-    @imagesDir = path.join(@dir, constants.IMAGES_DIR)
+    @tempDir = cfs.join(@dir, "#{constants.TEMP_UNPACK_DIR}.#{now}")
+    @imagesDir = cfs.join(@dir, constants.IMAGES_DIR)
     @deadImagesDir = "#{@imagesDir}.#{now}"
 
     @valid = false
@@ -86,7 +86,7 @@ class Unpacker
 
     for image in images
       parsed = path.parse(image)
-      finalImagePath = path.join(@imagesDir, parsed.base)
+      finalImagePath = cfs.join(@imagesDir, parsed.base)
       fs.renameSync(image, finalImagePath)
 
     @valid = true

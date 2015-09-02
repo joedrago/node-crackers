@@ -13,12 +13,17 @@
   path = require('path');
 
   ComicGenerator = (function() {
-    function ComicGenerator(dir, title) {
+    function ComicGenerator(rootDir, dir) {
+      var pieces, tmp;
+      this.rootDir = rootDir;
       this.dir = dir;
-      this.title = title;
       this.templateFilename = __dirname + "/../templates/comic.html";
-      this.indexFilename = path.join(this.dir, constants.INDEX_FILENAME);
-      this.images = cfs.listImages(path.join(this.dir, constants.IMAGES_DIR));
+      this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
+      this.images = cfs.listImages(cfs.join(this.dir, constants.IMAGES_DIR));
+      this.rootDir = this.rootDir.replace(path.sep + "$", "");
+      tmp = this.dir.substr(this.rootDir.length + 1);
+      pieces = tmp.split(path.sep);
+      this.title = pieces.join(" | ");
     }
 
     ComicGenerator.prototype.generate = function() {
@@ -58,6 +63,7 @@
       }
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
+      log.progress("Generated index for " + this.title);
       return true;
     };
 

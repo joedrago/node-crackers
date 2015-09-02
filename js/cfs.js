@@ -12,6 +12,15 @@
 
   cfs = {};
 
+  cfs.join = function() {
+    var result;
+    result = path.join.apply(null, arguments);
+    if (arguments.length > 0 && arguments[0] === '') {
+      result = "/" + result;
+    }
+    return result;
+  };
+
   cfs.dirExists = function(dir) {
     var stats;
     if (!fs.existsSync(dir)) {
@@ -24,12 +33,12 @@
     return false;
   };
 
-  cfs.fileExists = function(dir) {
+  cfs.fileExists = function(file) {
     var stats;
-    if (!fs.existsSync(dir)) {
+    if (!fs.existsSync(file)) {
       return false;
     }
-    stats = fs.statSync(dir);
+    stats = fs.statSync(file);
     if (stats.isFile()) {
       return true;
     }
@@ -46,10 +55,10 @@
       }
       testPieces = dirPieces.slice();
       testPieces.push(filename);
-      testPath = path.join.apply(null, testPieces);
+      testPath = cfs.join.apply(null, testPieces);
       found = cfs.fileExists(testPath);
       if (found) {
-        return path.join.apply(null, dirPieces);
+        return cfs.join.apply(null, dirPieces);
       }
       dirPieces.pop();
     }

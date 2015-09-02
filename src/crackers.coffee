@@ -25,45 +25,48 @@ class Crackers
       log.verbose "crackers root not found (#{constants.ROOT_FILENAME} not detected in parents)."
     log.verbose "rootDir  : #{@rootDir}"
 
-    @rootFilename = path.join(@rootDir, constants.ROOT_FILENAME)
+    @rootFilename = cfs.join(@rootDir, constants.ROOT_FILENAME)
     touch.sync(@rootFilename)
 
-    # Get a full list of all files/dirs inside of @updateDir
-    updateFiles = cfs.listDir(@updateDir)
-
     # Unpack any cbr or cbz files that need unpacking in the update dir
-    filesToUnpack = (path.resolve(@updateDir, file) for file in updateFiles when file.match(/\.cb[rz]$/))
+    filesToUnpack = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/\.cb[rz]$/))
     for unpackFile in filesToUnpack
       parsed = path.parse(unpackFile)
-      unpackDir = path.join(parsed.dir, parsed.name)
-      log.progress "Processing #{unpackFile} ..."
+      unpackDir = cfs.join(parsed.dir, parsed.name)
+      log.verbose "Processing #{unpackFile} ..."
       @unpack(unpackFile, unpackDir)
+
+    # Regenerate index.html for all comics
+    imageDirs = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/images$/))
+    for imageDir in imageDirs
+      parsed = path.parse(imageDir)
+      if parsed.dir
+        comicDir = parsed.dir
+        parsed = path.parse(comicDir)
+        comicGenerator = new ComicGenerator(@rootDir, comicDir, parsed.name)
+        comicGenerator.generate()
 
     # All done!
     return true
 
   unpack: (file, dir, force = false) ->
-    log.verbose "Unpacking #{file} into #{dir}"
     if not cfs.prepareComicDir(dir)
       return false
 
-    indexFilename = path.join(dir, constants.INDEX_FILENAME)
+    indexFilename = cfs.join(dir, constants.INDEX_FILENAME)
     unpackRequired = force
     if cfs.newer(file, indexFilename)
       unpackRequired = true
 
     if unpackRequired
+      log.progress "Unpacking #{file} into #{dir}"
       unpacker = new Unpacker(file, dir)
       valid = unpacker.unpack()
       unpacker.cleanup()
       if not valid
         return false
     else
-      log.progress "Unpack not required (#{file} older than #{indexFilename})"
-
-    parsed = path.parse(dir)
-    comicGenerator = new ComicGenerator(dir, parsed.name)
-    comicGenerator.generate()
+      log.verbose "Unpack not required: (#{file} older than #{indexFilename})"
 
     return true
 

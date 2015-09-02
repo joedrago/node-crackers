@@ -5,10 +5,15 @@ log = require './log'
 path = require 'path'
 
 class ComicGenerator
-  constructor: (@dir, @title) ->
+  constructor: (@rootDir, @dir) ->
     @templateFilename = __dirname + "/../templates/comic.html"
-    @indexFilename = path.join(@dir, constants.INDEX_FILENAME)
-    @images = cfs.listImages(path.join(@dir, constants.IMAGES_DIR))
+    @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
+    @images = cfs.listImages(cfs.join(@dir, constants.IMAGES_DIR))
+
+    @rootDir = @rootDir.replace("#{path.sep}$", "")
+    tmp = @dir.substr(@rootDir.length + 1)
+    pieces = tmp.split(path.sep)
+    @title = pieces.join(" | ")
 
   generate: ->
     if @images.length == 0
@@ -39,6 +44,7 @@ class ComicGenerator
 
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
+    log.progress "Generated index for #{@title}"
     return true
 
 class IndexGenerator

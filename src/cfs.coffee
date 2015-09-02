@@ -7,6 +7,13 @@ wrench = require 'wrench'
 
 cfs = {}
 
+cfs.join = ->
+  result = path.join.apply(null, arguments)
+  # work around stupid lack of symmetry between path.join and split(sep)
+  if arguments.length > 0 and arguments[0] == ''
+    result = "/#{result}"
+  return result
+
 cfs.dirExists = (dir) ->
   if not fs.existsSync(dir)
     return false
@@ -15,10 +22,10 @@ cfs.dirExists = (dir) ->
     return true
   return false
 
-cfs.fileExists = (dir) ->
-  if not fs.existsSync(dir)
+cfs.fileExists = (file) ->
+  if not fs.existsSync(file)
     return false
-  stats = fs.statSync(dir)
+  stats = fs.statSync(file)
   if stats.isFile()
     return true
   return false
@@ -31,11 +38,11 @@ cfs.findParentContainingFilename = (startDir, filename) ->
       return false
     testPieces = dirPieces.slice()
     testPieces.push(filename)
-    testPath = path.join.apply(null, testPieces)
+    testPath = cfs.join.apply(null, testPieces)
     found = cfs.fileExists(testPath)
     # log.verbose "checking path #{testPath} (#{found})"
     if found
-      return path.join.apply(null, dirPieces)
+      return cfs.join.apply(null, dirPieces)
     dirPieces.pop()
 
   return false
