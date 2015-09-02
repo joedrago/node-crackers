@@ -41,6 +41,6 @@ module.exports = (cmdName, args, workingDir) ->
   log.verbose "executing external command #{cmdName} (#{commandPath}), args [ #{args} ], workingDir #{workingDir}"
   spawnSync(commandPath, args, {
     cwd: workingDir
-    stdio: 'ignore'
+    stdio: 'inherit'
   })
   return

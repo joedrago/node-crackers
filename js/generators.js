@@ -17,15 +17,24 @@
   template = require('./template');
 
   CoverGenerator = (function() {
-    function CoverGenerator(rootDir, dir, images1) {
+    function CoverGenerator(rootDir, dir, images1, force) {
       this.rootDir = rootDir;
       this.dir = dir;
       this.images = images1;
+      this.force = force;
       this.filename = cfs.join(this.dir, constants.COVER_FILENAME);
       log.verbose("CoverGenerator: creating " + this.filename);
     }
 
     CoverGenerator.prototype.generate = function() {
+      if (!this.force.cover) {
+        if (cfs.fileExists(this.filename)) {
+          log.verbose("Skipping thumbnail generation, file exists: " + this.filename);
+          return;
+        }
+      } else {
+        log.verbose("Forcing thumbnail generation: " + this.filename);
+      }
       return exec('convert', ['-resize', constants.COVER_WIDTH + "x", path.resolve(this.dir, this.images[0]), this.filename], this.dir);
     };
 
@@ -34,10 +43,11 @@
   })();
 
   ComicGenerator = (function() {
-    function ComicGenerator(rootDir, dir) {
+    function ComicGenerator(rootDir, dir, force) {
       var pieces, tmp;
       this.rootDir = rootDir;
       this.dir = dir;
+      this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
       this.images = cfs.listImages(cfs.join(this.dir, constants.IMAGES_DIR));
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
@@ -69,7 +79,7 @@
         title: this.title,
         list: listText
       });
-      coverGenerator = new CoverGenerator(this.rootDir, this.dir, this.images);
+      coverGenerator = new CoverGenerator(this.rootDir, this.dir, this.images, this.force);
       coverGenerator.generate();
       cfs.writeMetadata(this.dir, {
         type: 'comic',
@@ -89,9 +99,10 @@
   })();
 
   IndexGenerator = (function() {
-    function IndexGenerator(rootDir, dir) {
+    function IndexGenerator(rootDir, dir, force) {
       this.rootDir = rootDir;
       this.dir = dir;
+      this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
       this.title = this.dir.substr(this.rootDir.length + 1);
@@ -109,6 +120,17 @@
         cfs.removeMetadata(this.dir);
         return false;
       }
+      images = (function() {
+        var i, len, results;
+        results = [];
+        for (i = 0, len = mdList.length; i < len; i++) {
+          md = mdList[i];
+          results.push(md.cover);
+        }
+        return results;
+      })();
+      coverGenerator = new CoverGenerator(this.rootDir, this.dir, images, this.force);
+      coverGenerator.generate();
       listText = "";
       totalCount = 0;
       for (i = 0, len = mdList.length; i < len; i++) {
@@ -132,21 +154,11 @@
         list: listText,
         coverwidth: constants.COVER_WIDTH
       });
-      images = (function() {
-        var j, len1, results;
-        results = [];
-        for (j = 0, len1 = mdList.length; j < len1; j++) {
-          md = mdList[j];
-          results.push(md.cover);
-        }
-        return results;
-      })();
-      coverGenerator = new CoverGenerator(this.rootDir, this.dir, images);
-      coverGenerator.generate();
       cfs.writeMetadata(this.dir, {
         type: 'index',
+        title: this.title,
         count: totalCount,
-        cover: mdList[0].path + "/" + mdList[0].cover
+        cover: constants.COVER_FILENAME
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);

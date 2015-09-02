@@ -26,6 +26,7 @@
 
     Crackers.prototype.update = function(args) {
       var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, parsed, unpackDir, unpackFile;
+      this.force = args.force;
       this.updateDir = path.resolve('.', args.dir);
       if (!cfs.dirExists(this.updateDir)) {
         return this.error("'" + this.updateDir + "' is not an existing directory.");
@@ -56,7 +57,7 @@
         parsed = path.parse(unpackFile);
         unpackDir = cfs.join(parsed.dir, parsed.name);
         log.verbose("Processing " + unpackFile + " ...");
-        this.unpack(unpackFile, unpackDir);
+        this.unpack(unpackFile, unpackDir, this.force);
       }
       imageDirs = (function() {
         var j, len1, ref1, results;
@@ -76,7 +77,7 @@
         if (parsed.dir) {
           comicDir = parsed.dir;
           parsed = path.parse(comicDir);
-          comicGenerator = new ComicGenerator(this.rootDir, comicDir, parsed.name);
+          comicGenerator = new ComicGenerator(this.rootDir, comicDir, this.force);
           comicGenerator.generate();
         }
       }
@@ -98,7 +99,7 @@
       indexDirs = Object.keys(indexDirSeen).sort().reverse();
       for (l = 0, len3 = indexDirs.length; l < len3; l++) {
         indexDir = indexDirs[l];
-        indexGenerator = new IndexGenerator(this.rootDir, indexDir);
+        indexGenerator = new IndexGenerator(this.rootDir, indexDir, this.force);
         indexGenerator.generate();
       }
       return true;
@@ -106,14 +107,11 @@
 
     Crackers.prototype.unpack = function(file, dir, force) {
       var indexFilename, unpackRequired, unpacker, valid;
-      if (force == null) {
-        force = false;
-      }
       if (!cfs.prepareComicDir(dir)) {
         return false;
       }
       indexFilename = cfs.join(dir, constants.INDEX_FILENAME);
-      unpackRequired = force;
+      unpackRequired = force.unpack;
       if (cfs.newer(file, indexFilename)) {
         unpackRequired = true;
       }

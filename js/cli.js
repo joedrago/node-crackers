@@ -9,19 +9,23 @@
   log = require('./log');
 
   syntax = function() {
-    log.syntax("Syntax: crackers [-h] [-v] directoryName");
+    log.syntax("Syntax: crackers [-h] [-v] [-f] directoryName");
     log.syntax("        -h,--help         This help output");
     log.syntax("        -v,--verbose      Verbose output");
+    log.syntax("        -c,--cover        Force regeneration of covers");
+    log.syntax("        -u,--unpack       Force reunpack of cbr/cbz files");
     return process.exit(1);
   };
 
   main = function() {
     var args, crackers, directoryName;
     args = require('minimist')(process.argv.slice(2), {
-      boolean: ['h', 'v'],
+      boolean: ['h', 'v', 'c', 'u'],
       alias: {
         help: 'h',
-        verbose: 'v'
+        verbose: 'v',
+        cover: 'c',
+        unpack: 'u'
       }
     });
     if (args.help || args._.length !== 1) {
@@ -31,7 +35,11 @@
     directoryName = args._[0];
     crackers = new Crackers;
     return crackers.update({
-      dir: directoryName
+      dir: directoryName,
+      force: {
+        cover: args.cover,
+        unpack: args.unpack
+      }
     });
   };
 

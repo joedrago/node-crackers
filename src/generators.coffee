@@ -7,15 +7,21 @@ path = require 'path'
 template = require './template'
 
 class CoverGenerator
-  constructor: (@rootDir, @dir, @images) ->
+  constructor: (@rootDir, @dir, @images, @force) ->
     @filename = cfs.join(@dir, constants.COVER_FILENAME)
     log.verbose "CoverGenerator: creating #{@filename}"
 
   generate: ->
+    if not @force.cover
+      if cfs.fileExists(@filename)
+        log.verbose "Skipping thumbnail generation, file exists: #{@filename}"
+        return
+    else
+      log.verbose "Forcing thumbnail generation: #{@filename}"
     exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", path.resolve(@dir, @images[0]), @filename], @dir)
 
 class ComicGenerator
-  constructor: (@rootDir, @dir) ->
+  constructor: (@rootDir, @dir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @images = cfs.listImages(cfs.join(@dir, constants.IMAGES_DIR))
 
@@ -39,7 +45,7 @@ class ComicGenerator
       listText += template('image', { href: href })
     outputText = template('comic', { title: @title, list: listText })
 
-    coverGenerator = new CoverGenerator(@rootDir, @dir, @images)
+    coverGenerator = new CoverGenerator(@rootDir, @dir, @images, @force)
     coverGenerator.generate()
 
     cfs.writeMetadata @dir, {
@@ -55,7 +61,7 @@ class ComicGenerator
     return true
 
 class IndexGenerator
-  constructor: (@rootDir, @dir) ->
+  constructor: (@rootDir, @dir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @rootDir = @rootDir.replace("#{path.sep}$", "")
     @title = @dir.substr(@rootDir.length + 1)
@@ -70,6 +76,10 @@ class IndexGenerator
       cfs.removeMetadata(@dir)
       return false
 
+    images = (md.cover for md in mdList)
+    coverGenerator = new CoverGenerator(@rootDir, @dir, images, @force)
+    coverGenerator.generate()
+
     listText = ""
     totalCount = 0
     for metadata in mdList
@@ -83,14 +93,11 @@ class IndexGenerator
       listText += template(ieTemplate, metadata)
     outputText = template('index', { title: @title, list: listText, coverwidth: constants.COVER_WIDTH })
 
-    images = (md.cover for md in mdList)
-    coverGenerator = new CoverGenerator(@rootDir, @dir, images)
-    coverGenerator.generate()
-
     cfs.writeMetadata @dir, {
       type:  'index'
+      title: @title
       count: totalCount
-      cover: "#{mdList[0].path}/#{mdList[0].cover}"
+      cover: constants.COVER_FILENAME
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"

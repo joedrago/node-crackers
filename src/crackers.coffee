@@ -15,6 +15,7 @@ class Crackers
 
   update: (args) ->
     # Pull member variables from args, calculate the rest
+    @force = args.force
     @updateDir = path.resolve('.', args.dir)
     if not cfs.dirExists(@updateDir)
       return @error("'#{@updateDir}' is not an existing directory.")
@@ -34,7 +35,7 @@ class Crackers
       parsed = path.parse(unpackFile)
       unpackDir = cfs.join(parsed.dir, parsed.name)
       log.verbose "Processing #{unpackFile} ..."
-      @unpack(unpackFile, unpackDir)
+      @unpack(unpackFile, unpackDir, @force)
 
     # Regenerate index.html for all comics
     imageDirs = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/images$/))
@@ -43,7 +44,7 @@ class Crackers
       if parsed.dir
         comicDir = parsed.dir
         parsed = path.parse(comicDir)
-        comicGenerator = new ComicGenerator(@rootDir, comicDir, parsed.name)
+        comicGenerator = new ComicGenerator(@rootDir, comicDir, @force)
         comicGenerator.generate()
 
     # Find directories that need indexing
@@ -61,18 +62,18 @@ class Crackers
     # regenerate all indices
     indexDirs = Object.keys(indexDirSeen).sort().reverse()
     for indexDir in indexDirs
-      indexGenerator = new IndexGenerator(@rootDir, indexDir)
+      indexGenerator = new IndexGenerator(@rootDir, indexDir, @force)
       indexGenerator.generate()
 
     # All done!
     return true
 
-  unpack: (file, dir, force = false) ->
+  unpack: (file, dir, force) ->
     if not cfs.prepareComicDir(dir)
       return false
 
     indexFilename = cfs.join(dir, constants.INDEX_FILENAME)
-    unpackRequired = force
+    unpackRequired = force.unpack
     if cfs.newer(file, indexFilename)
       unpackRequired = true
 
