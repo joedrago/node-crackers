@@ -56,20 +56,16 @@ cfs.listImages = (dir) ->
   images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg)$/i))
   return images.sort()
 
-cfs.gatherIndex = (dir) ->
-  indexList = []
+cfs.gatherMetadata = (dir) ->
+  mdList = []
   fileList = fs.readdirSync(dir).sort()
   for file in fileList
     resolvedPath = path.resolve(dir, file)
     metadata = cfs.readMetadata(resolvedPath)
     continue if not metadata
-    indexList.push {
-      path: file
-      type: metadata.type
-      count: metadata.count
-      cover: metadata.cover
-    }
-  indexList.sort (a, b) ->
+    metadata.path = file
+    mdList.push metadata
+  mdList.sort (a, b) ->
     if a.type == b.type
       if a.path == b.path
         return 0
@@ -79,7 +75,7 @@ cfs.gatherIndex = (dir) ->
     if a.type > b.type
       return 1
     return -1
-  return indexList
+  return mdList
 
 cfs.readMetadata = (dir) ->
   metaFilename = cfs.join(dir, constants.META_FILENAME)
@@ -95,10 +91,19 @@ cfs.readMetadata = (dir) ->
   return metadata
 
 cfs.writeMetadata = (dir, metadata) ->
-  @metaFilename = cfs.join(dir, constants.META_FILENAME)
+  metaFilename = cfs.join(dir, constants.META_FILENAME)
   json = JSON.stringify(metadata, null, 2)
-  log.verbose "writeMetadata (#{dir}): #{metadata}"
-  fs.writeFileSync @metaFilename, json
+  # log.verbose "writeMetadata (#{dir}): #{JSON.stringify(metadata, null, 2)}"
+  fs.writeFileSync metaFilename, json
+
+cfs.removeMetadata = (dir, metadata) ->
+  metaFilename = cfs.join(dir, constants.META_FILENAME)
+  # log.verbose "removeMetadata (#{dir})"
+  fs.unlinkSync metaFilename
+
+cfs.copyFile = (src, dst) ->
+  log.verbose "copyFile #{src} -> #{dst}"
+  fs.writeFileSync(dst, fs.readFileSync(src));
 
 cfs.prepareDir = (dir) ->
   # Ensure the directory exists, and is a directory

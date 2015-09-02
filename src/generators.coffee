@@ -1,9 +1,18 @@
 cfs = require './cfs'
 constants = require './constants'
+exec = require './exec'
 fs = require 'fs'
 log = require './log'
 path = require 'path'
 template = require './template'
+
+class CoverGenerator
+  constructor: (@rootDir, @dir, @images) ->
+    @filename = cfs.join(@dir, constants.COVER_FILENAME)
+    log.verbose "CoverGenerator: creating #{@filename}"
+
+  generate: ->
+    exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", path.resolve(@dir, @images[0]), @filename], @dir)
 
 class ComicGenerator
   constructor: (@rootDir, @dir) ->
@@ -19,6 +28,7 @@ class ComicGenerator
     if @images.length == 0
       log.error "No images in '#{@dir}', removing index"
       fs.unlinkSync(@indexFilename)
+      cfs.removeMetadata(@dir)
       return false
 
     listText = ""
@@ -29,15 +39,15 @@ class ComicGenerator
       listText += template('image', { href: href })
     outputText = template('comic', { title: @title, list: listText })
 
-    parsed = path.parse(@images[0])
-    cover = "images/#{parsed.base}"
+    coverGenerator = new CoverGenerator(@rootDir, @dir, @images)
+    coverGenerator.generate()
 
     cfs.writeMetadata @dir, {
       type:  'comic'
       title: @title
       pages: @images.length
       count: 1
-      cover: cover
+      cover: constants.COVER_FILENAME
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
@@ -50,46 +60,43 @@ class IndexGenerator
     @rootDir = @rootDir.replace("#{path.sep}$", "")
     @title = @dir.substr(@rootDir.length + 1)
     if @title.length == 0
-      @title = "Crackers"
+      @title = constants.DEFAULT_TITLE
 
   generate: ->
-    indexList = cfs.gatherIndex(@dir)
-    if indexList.length == 0
+    mdList = cfs.gatherMetadata(@dir)
+    if mdList.length == 0
       log.error "Nothing in '#{@dir}', removing index"
       fs.unlinkSync(@indexFilename)
+      cfs.removeMetadata(@dir)
       return false
 
     listText = ""
     totalCount = 0
-    for file in indexList
-      totalCount += file.count
-      cover = "#{file.path}/#{file.cover}"
+    for metadata in mdList
+      totalCount += metadata.count
+      cover = "#{metadata.path}/#{metadata.cover}"
       cover = cover.replace("#", "%23")
-      switch file.type
-        when 'comic'
-          listText += template('ie_comic', {
-            path: file.path
-            title: file.path
-            cover: cover
-          })
-        when 'index'
-          listText += template('ie_index', {
-            path: file.path
-            title: file.path
-            count: file.count
-            cover: cover
-          })
-    outputText = template('index', { title: @title, list: listText })
+      metadata.cover = cover
+      ieTemplate = switch metadata.type
+        when 'comic' then 'ie_comic'
+        when 'index' then 'ie_index'
+      listText += template(ieTemplate, metadata)
+    outputText = template('index', { title: @title, list: listText, coverwidth: constants.COVER_WIDTH })
+
+    images = (md.cover for md in mdList)
+    coverGenerator = new CoverGenerator(@rootDir, @dir, images)
+    coverGenerator.generate()
 
     cfs.writeMetadata @dir, {
       type:  'index'
       count: totalCount
-      cover: "#{indexList[0].path}/#{indexList[0].cover}"
+      cover: "#{mdList[0].path}/#{mdList[0].cover}"
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
     log.progress "Generated index: #{@title} (#{totalCount} comics)"
 
 module.exports =
-  IndexGenerator: IndexGenerator
+  CoverGenerator: CoverGenerator
   ComicGenerator: ComicGenerator
+  IndexGenerator: IndexGenerator

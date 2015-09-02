@@ -1,4 +1,5 @@
 Crackers = require './crackers'
+exec = require './exec'
 log = require './log'
 
 syntax = ->

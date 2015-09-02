@@ -88,9 +88,9 @@
     return images.sort();
   };
 
-  cfs.gatherIndex = function(dir) {
-    var file, fileList, i, indexList, len, metadata, resolvedPath;
-    indexList = [];
+  cfs.gatherMetadata = function(dir) {
+    var file, fileList, i, len, mdList, metadata, resolvedPath;
+    mdList = [];
     fileList = fs.readdirSync(dir).sort();
     for (i = 0, len = fileList.length; i < len; i++) {
       file = fileList[i];
@@ -99,14 +99,10 @@
       if (!metadata) {
         continue;
       }
-      indexList.push({
-        path: file,
-        type: metadata.type,
-        count: metadata.count,
-        cover: metadata.cover
-      });
+      metadata.path = file;
+      mdList.push(metadata);
     }
-    indexList.sort(function(a, b) {
+    mdList.sort(function(a, b) {
       if (a.type === b.type) {
         if (a.path === b.path) {
           return 0;
@@ -121,7 +117,7 @@
       }
       return -1;
     });
-    return indexList;
+    return mdList;
   };
 
   cfs.readMetadata = function(dir) {
@@ -143,11 +139,21 @@
   };
 
   cfs.writeMetadata = function(dir, metadata) {
-    var json;
-    this.metaFilename = cfs.join(dir, constants.META_FILENAME);
+    var json, metaFilename;
+    metaFilename = cfs.join(dir, constants.META_FILENAME);
     json = JSON.stringify(metadata, null, 2);
-    log.verbose("writeMetadata (" + dir + "): " + metadata);
-    return fs.writeFileSync(this.metaFilename, json);
+    return fs.writeFileSync(metaFilename, json);
+  };
+
+  cfs.removeMetadata = function(dir, metadata) {
+    var metaFilename;
+    metaFilename = cfs.join(dir, constants.META_FILENAME);
+    return fs.unlinkSync(metaFilename);
+  };
+
+  cfs.copyFile = function(src, dst) {
+    log.verbose("copyFile " + src + " -> " + dst);
+    return fs.writeFileSync(dst, fs.readFileSync(src));
   };
 
   cfs.prepareDir = function(dir) {

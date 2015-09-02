@@ -1,9 +1,9 @@
 fs = require 'fs'
 cfs = require './cfs'
 constants = require './constants'
+exec = require './exec'
 log = require './log'
 path = require 'path'
-{spawnSync} = require 'child_process'
 which = require 'which'
 
 class Unpacker
@@ -11,27 +11,6 @@ class Unpacker
     @type = 'cbr'
     if @archive.match(/cbz$/)
       @type = 'cbz'
-
-    @unzipCmd = null
-    @unrarCmd = null
-    if process.platform == 'win32'
-      @unzipCmd = path.resolve(__dirname, "../wbin/unzip.exe")
-      @unrarCmd = path.resolve(__dirname, "../wbin/unrar.exe")
-    else
-      try
-        @unzipCmd = which.sync('unzip')
-      catch
-      try
-        @unrarCmd = which.sync('unrar')
-      catch
-
-    if not @unzipCmd
-      log.error "crackers requires unzip to be installed."
-    if not @unrarCmd
-      log.error "crackers requires unrar to be installed."
-
-    log.verbose "unzip: #{@unzipCmd}"
-    log.verbose "unrar: #{@unrarCmd}"
 
     now = String(Math.floor(new Date() / 1000))
     @tempDir = cfs.join(@dir, "#{constants.TEMP_UNPACK_DIR}.#{now}")
@@ -47,9 +26,6 @@ class Unpacker
       cfs.cleanupDir(@imagesDir)
 
   unpack: ->
-    if not @unzipCmd or not @unrarCmd
-      return false
-
     log.verbose "Unpacker: Type #{@type} #{@archive} -> #{@dir}"
 
     # prepare temp dir
@@ -60,16 +36,12 @@ class Unpacker
 
     # unpack to temp dir
     if @type == 'cbr'
-      cmd = @unrarCmd
+      cmd = 'unrar'
       args = ['x', @archive]
     else
-      cmd = @unzipCmd
+      cmd = 'unzip'
       args = [@archive]
-    log.verbose "Unpacker: executing cmd '#{cmd}', args #{args}"
-    spawnSync(cmd, args, {
-      cwd: @tempDir
-      stdio: 'ignore'
-    })
+    exec(cmd, args, @tempDir)
 
     # Prepare images directory
     if fs.existsSync(@imagesDir)
