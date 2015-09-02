@@ -28,6 +28,8 @@
     "coffee-script": "*"
   },
   "dependencies": {
-    "minimist": "*"
+    "minimist": "*",
+    "wrench": "*",
+    "touch": "*"
   }
 }
