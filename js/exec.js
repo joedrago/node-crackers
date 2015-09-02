@@ -60,7 +60,7 @@
     log.verbose("executing external command " + cmdName + " (" + commandPath + "), args [ " + args + " ], workingDir " + workingDir);
     spawnSync(commandPath, args, {
       cwd: workingDir,
-      stdio: 'inherit'
+      stdio: 'ignore'
     });
   };
 
