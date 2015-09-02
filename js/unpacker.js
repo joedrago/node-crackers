@@ -21,10 +21,7 @@
       var now;
       this.archive = archive;
       this.dir = dir;
-      this.type = 'cbr';
-      if (this.archive.match(/cbz$/)) {
-        this.type = 'cbz';
-      }
+      this.detectFormat();
       now = String(Math.floor(new Date() / 1000));
       this.tempDir = cfs.join(this.dir, constants.TEMP_UNPACK_DIR + "." + now);
       this.imagesDir = cfs.join(this.dir, constants.IMAGES_DIR);
@@ -40,9 +37,39 @@
       }
     };
 
+    Unpacker.prototype.readHeader = function() {
+      var buffer, bytesRead, fd;
+      fd = fs.openSync(this.archive, 'r');
+      buffer = new Buffer(2);
+      bytesRead = fs.readSync(fd, buffer, 0, 2, 0);
+      if (bytesRead === 2) {
+        return buffer.toString();
+      }
+      return false;
+    };
+
+    Unpacker.prototype.detectFormat = function() {
+      var header;
+      this.type = 'cbr';
+      if (this.archive.match(/cbz$/)) {
+        this.type = 'cbz';
+      }
+      header = this.readHeader();
+      if (header) {
+        switch (header) {
+          case 'Ra':
+            this.type = 'cbr';
+            break;
+          case 'PK':
+            this.type = 'cbz';
+        }
+      }
+      return log.verbose("Detected format for " + this.archive + ": " + this.type);
+    };
+
     Unpacker.prototype.unpack = function() {
       var args, cmd, finalImagePath, i, image, images, len, parsed;
-      log.verbose("Unpacker: Type " + this.type + " " + this.archive + " -> " + this.dir);
+      log.verbose("Unpacker: type " + this.type + " " + this.archive + " -> " + this.dir);
       log.verbose("Unpacker: @tempDir " + this.tempDir);
       if (!cfs.prepareDir(this.tempDir)) {
         log.error("Could not create temp dir for unpacking");

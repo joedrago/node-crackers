@@ -91,7 +91,7 @@
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
-      log.progress("Generated comic: " + this.title);
+      log.progress("Generated comic: " + this.title + " (" + this.images.length + " pages)");
       return true;
     };
 

@@ -65,7 +65,7 @@ class ComicGenerator
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
-    log.progress "Generated comic: #{@title}"
+    log.progress "Generated comic: #{@title} (#{@images.length} pages)"
     return true
 
 class IndexGenerator
@@ -100,7 +100,7 @@ class IndexGenerator
         when 'comic'
           if metadata.archive
             'ie_comic_dl'
-          else 
+          else
             'ie_comic'
         when 'index' then 'ie_index'
       listText += template(ieTemplate, metadata)

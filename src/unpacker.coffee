@@ -8,9 +8,7 @@ which = require 'which'
 
 class Unpacker
   constructor: (@archive, @dir) ->
-    @type = 'cbr'
-    if @archive.match(/cbz$/)
-      @type = 'cbz'
+    @detectFormat()
 
     now = String(Math.floor(new Date() / 1000))
     @tempDir = cfs.join(@dir, "#{constants.TEMP_UNPACK_DIR}.#{now}")
@@ -25,8 +23,27 @@ class Unpacker
     if not @valid
       cfs.cleanupDir(@imagesDir)
 
+  readHeader: ->
+    fd = fs.openSync(@archive, 'r')
+    buffer = new Buffer(2)
+    bytesRead = fs.readSync(fd, buffer, 0, 2, 0)
+    if bytesRead == 2
+      return buffer.toString()
+    return false
+
+  detectFormat: ->
+    @type = 'cbr'
+    if @archive.match(/cbz$/)
+      @type = 'cbz'
+    header = @readHeader()
+    if header
+      switch header
+        when 'Ra' then @type = 'cbr'
+        when 'PK' then @type = 'cbz'
+    log.verbose "Detected format for #{@archive}: #{@type}"
+
   unpack: ->
-    log.verbose "Unpacker: Type #{@type} #{@archive} -> #{@dir}"
+    log.verbose "Unpacker: type #{@type} #{@archive} -> #{@dir}"
 
     # prepare temp dir
     log.verbose "Unpacker: @tempDir #{@tempDir}"
