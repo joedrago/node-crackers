@@ -125,8 +125,12 @@ class Unpacker
       toleranceW = mostCommonWidth - dims.width
       toleranceH = mostCommonHeight - dims.height
       if (toleranceW > maxToleranceW) or (toleranceH > maxToleranceH)
-        log.verbose "Spam detected: '#{image}' is #{dims.width}x#{dims.height}, not close enough to #{mostCommonWidth}x#{mostCommonHeight}"
-        continue
+        # See if it is a proper image that is simply rotated
+        rotToleranceW = mostCommonHeight - dims.width
+        rotToleranceH = mostCommonWidth - dims.height
+        if (rotToleranceW > maxToleranceW) or (rotToleranceH > maxToleranceH)
+          log.verbose "Spam detected: '#{image}' is #{dims.width}x#{dims.height}, not close enough to #{mostCommonWidth}x#{mostCommonHeight}"
+          continue
 
       # Add the image to the /images dir
       parsed = path.parse(image)

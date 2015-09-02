@@ -71,7 +71,7 @@
     };
 
     Unpacker.prototype.unpack = function() {
-      var args, cmd, dimensionMap, dimensions, dims, finalImagePath, heightMap, heights, i, image, images, j, len, len1, maxToleranceH, maxToleranceW, mostCommonHeight, mostCommonWidth, parsed, toleranceH, toleranceW, validDimsCount, widthMap, widths;
+      var args, cmd, dimensionMap, dimensions, dims, finalImagePath, heightMap, heights, i, image, images, j, len, len1, maxToleranceH, maxToleranceW, mostCommonHeight, mostCommonWidth, parsed, rotToleranceH, rotToleranceW, toleranceH, toleranceW, validDimsCount, widthMap, widths;
       log.verbose("Unpacker: type " + this.type + " " + this.archive + " -> " + this.dir);
       log.verbose("Unpacker: @tempDir " + this.tempDir);
       if (!cfs.prepareDir(this.tempDir)) {
@@ -155,8 +155,12 @@
         toleranceW = mostCommonWidth - dims.width;
         toleranceH = mostCommonHeight - dims.height;
         if ((toleranceW > maxToleranceW) || (toleranceH > maxToleranceH)) {
-          log.verbose("Spam detected: '" + image + "' is " + dims.width + "x" + dims.height + ", not close enough to " + mostCommonWidth + "x" + mostCommonHeight);
-          continue;
+          rotToleranceW = mostCommonHeight - dims.width;
+          rotToleranceH = mostCommonWidth - dims.height;
+          if ((rotToleranceW > maxToleranceW) || (rotToleranceH > maxToleranceH)) {
+            log.verbose("Spam detected: '" + image + "' is " + dims.width + "x" + dims.height + ", not close enough to " + mostCommonWidth + "x" + mostCommonHeight);
+            continue;
+          }
         }
         parsed = path.parse(image);
         finalImagePath = cfs.join(this.imagesDir, parsed.base);
