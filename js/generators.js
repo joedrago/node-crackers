@@ -28,7 +28,7 @@
     }
 
     ComicGenerator.prototype.generate = function() {
-      var href, i, image, len, listText, outputText, parsed, ref;
+      var cover, href, i, image, len, listText, outputText, parsed, ref;
       if (this.images.length === 0) {
         log.error("No images in '" + this.dir + "', removing index");
         fs.unlinkSync(this.indexFilename);
@@ -49,11 +49,14 @@
         title: this.title,
         list: listText
       });
+      parsed = path.parse(this.images[0]);
+      cover = "images/" + parsed.base;
       cfs.writeMetadata(this.dir, {
         type: 'comic',
         title: this.title,
         pages: this.images.length,
-        count: 1
+        count: 1,
+        cover: cover
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
@@ -78,25 +81,34 @@
     }
 
     IndexGenerator.prototype.generate = function() {
-      var file, i, indexList, len, listText, outputText, totalCount;
+      var cover, file, i, indexList, len, listText, outputText, totalCount;
       indexList = cfs.gatherIndex(this.dir);
+      if (indexList.length === 0) {
+        log.error("Nothing in '" + this.dir + "', removing index");
+        fs.unlinkSync(this.indexFilename);
+        return false;
+      }
       listText = "";
       totalCount = 0;
       for (i = 0, len = indexList.length; i < len; i++) {
         file = indexList[i];
         totalCount += file.count;
+        cover = file.path + "/" + file.cover;
+        cover = cover.replace("#", "%23");
         switch (file.type) {
           case 'comic':
             listText += template('ie_comic', {
               path: file.path,
-              title: file.path
+              title: file.path,
+              cover: cover
             });
             break;
           case 'index':
             listText += template('ie_index', {
               path: file.path,
               title: file.path,
-              count: file.count
+              count: file.count,
+              cover: cover
             });
         }
       }
@@ -106,7 +118,8 @@
       });
       cfs.writeMetadata(this.dir, {
         type: 'index',
-        count: totalCount
+        count: totalCount,
+        cover: indexList[0].path + "/" + indexList[0].cover
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);

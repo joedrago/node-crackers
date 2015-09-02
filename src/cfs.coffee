@@ -64,9 +64,10 @@ cfs.gatherIndex = (dir) ->
     metadata = cfs.readMetadata(resolvedPath)
     continue if not metadata
     indexList.push {
-      type: metadata.type
       path: file
+      type: metadata.type
       count: metadata.count
+      cover: metadata.cover
     }
   indexList.sort (a, b) ->
     if a.type == b.type

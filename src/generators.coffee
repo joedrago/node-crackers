@@ -29,11 +29,15 @@ class ComicGenerator
       listText += template('image', { href: href })
     outputText = template('comic', { title: @title, list: listText })
 
+    parsed = path.parse(@images[0])
+    cover = "images/#{parsed.base}"
+
     cfs.writeMetadata @dir, {
       type:  'comic'
       title: @title
       pages: @images.length
       count: 1
+      cover: cover
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
@@ -50,21 +54,37 @@ class IndexGenerator
 
   generate: ->
     indexList = cfs.gatherIndex(@dir)
+    if indexList.length == 0
+      log.error "Nothing in '#{@dir}', removing index"
+      fs.unlinkSync(@indexFilename)
+      return false
 
     listText = ""
     totalCount = 0
     for file in indexList
       totalCount += file.count
+      cover = "#{file.path}/#{file.cover}"
+      cover = cover.replace("#", "%23")
       switch file.type
         when 'comic'
-          listText += template('ie_comic', { path: file.path, title: file.path })
+          listText += template('ie_comic', {
+            path: file.path
+            title: file.path
+            cover: cover
+          })
         when 'index'
-          listText += template('ie_index', { path: file.path, title: file.path, count: file.count })
+          listText += template('ie_index', {
+            path: file.path
+            title: file.path
+            count: file.count
+            cover: cover
+          })
     outputText = template('index', { title: @title, list: listText })
 
     cfs.writeMetadata @dir, {
       type:  'index'
       count: totalCount
+      cover: "#{indexList[0].path}/#{indexList[0].cover}"
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"

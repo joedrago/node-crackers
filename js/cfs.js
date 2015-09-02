@@ -100,9 +100,10 @@
         continue;
       }
       indexList.push({
-        type: metadata.type,
         path: file,
-        count: metadata.count
+        type: metadata.type,
+        count: metadata.count,
+        cover: metadata.cover
       });
     }
     indexList.sort(function(a, b) {
