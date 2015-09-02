@@ -27,6 +27,7 @@ class Unpacker
     fd = fs.openSync(@archive, 'r')
     buffer = new Buffer(2)
     bytesRead = fs.readSync(fd, buffer, 0, 2, 0)
+    fs.closeSync(fd)
     if bytesRead == 2
       return buffer.toString()
     return false
