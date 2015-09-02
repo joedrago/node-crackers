@@ -7,3 +7,4 @@ module.exports =
   IMAGES_DIR: 'images'
   TEMP_UNPACK_DIR: 'unpackTmp'
   COVER_WIDTH: 150
+  SPAM_SIZE_TOLERANCE: 0.15

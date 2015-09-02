@@ -4,6 +4,7 @@ constants = require './constants'
 exec = require './exec'
 log = require './log'
 path = require 'path'
+sizeOf = require 'image-size'
 which = require 'which'
 
 class Unpacker
@@ -74,7 +75,60 @@ class Unpacker
     if not images.length
       return false
 
+    # -----------------------------------------------------------------------------------
+    # Spam detection -- looks for images that are oddly sized and small
+
+    dimensionMap = {}
+    widthMap = {}
+    heightMap = {}
+    validDimsCount = 0
     for image in images
+      dimensions = sizeOf(image)
+      dimensionMap[image] = dimensions
+      if (dimensions.width < 10) or (dimensions.width < 10)
+        continue
+      dimensions.width = Math.round(dimensions.width / 100) * 100
+      dimensions.height = Math.round(dimensions.height / 100) * 100
+      if not widthMap[dimensions.width]
+        widthMap[dimensions.width] = 1
+      else
+        widthMap[dimensions.width] += 1
+      if not heightMap[dimensions.height]
+        heightMap[dimensions.height] = 1
+      else
+        heightMap[dimensions.height] += 1
+      validDimsCount += 1
+      # log.verbose "dimensions for #{image}: #{JSON.stringify(dimensions, null, 2)}"
+
+    if validDimsCount > 0
+      widths = Object.keys(widthMap).sort (a, b) ->
+        return  0 if widthMap[a] == widthMap[b]
+        return -1 if widthMap[a] > widthMap[b]
+        return 1
+      heights = Object.keys(heightMap).sort (a, b) ->
+        return  0 if heightMap[a] == heightMap[b]
+        return -1 if heightMap[a] > heightMap[b]
+        return 1
+      log.verbose "widthMap", widthMap
+      log.verbose "heightMap", heightMap
+      mostCommonWidth = widths[0]
+      mostCommonHeight = heights[0]
+
+    maxToleranceW = mostCommonWidth  * constants.SPAM_SIZE_TOLERANCE
+    maxToleranceH = mostCommonHeight * constants.SPAM_SIZE_TOLERANCE
+
+    # -----------------------------------------------------------------------------------
+
+    for image in images
+      # if these are negative, the image is larger than the typical size. Let it through as it is probably cover art
+      dims = dimensionMap[image]
+      toleranceW = mostCommonWidth - dims.width
+      toleranceH = mostCommonHeight - dims.height
+      if (toleranceW > maxToleranceW) or (toleranceH > maxToleranceH)
+        log.verbose "Spam detected: '#{image}' is #{dims.width}x#{dims.height}, not close enough to #{mostCommonWidth}x#{mostCommonHeight}"
+        continue
+
+      # Add the image to the /images dir
       parsed = path.parse(image)
       finalImagePath = cfs.join(@imagesDir, parsed.base)
       fs.renameSync(image, finalImagePath)
