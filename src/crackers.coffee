@@ -46,6 +46,24 @@ class Crackers
         comicGenerator = new ComicGenerator(@rootDir, comicDir, parsed.name)
         comicGenerator.generate()
 
+    # Find directories that need indexing
+    indexDirSeen = {}
+    for imageDir in imageDirs
+      imageDirPieces = imageDir.split(path.sep)
+      imageDirPieces.pop() # pop "images"
+      imageDirPieces.pop() # pop comic dir
+      while imageDirPieces.length > 1
+        indexDir = cfs.join.apply(null, imageDirPieces)
+        indexDirSeen[indexDir] = true
+        break if indexDir == @rootDir
+        imageDirPieces.pop()
+
+    # regenerate all indices
+    indexDirs = Object.keys(indexDirSeen).sort().reverse()
+    for indexDir in indexDirs
+      indexGenerator = new IndexGenerator(@rootDir, indexDir)
+      indexGenerator.generate()
+
     # All done!
     return true
 

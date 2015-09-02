@@ -25,7 +25,7 @@
     };
 
     Crackers.prototype.update = function(args) {
-      var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirs, j, len, len1, parsed, unpackDir, unpackFile;
+      var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, parsed, unpackDir, unpackFile;
       this.updateDir = path.resolve('.', args.dir);
       if (!cfs.dirExists(this.updateDir)) {
         return this.error("'" + this.updateDir + "' is not an existing directory.");
@@ -79,6 +79,27 @@
           comicGenerator = new ComicGenerator(this.rootDir, comicDir, parsed.name);
           comicGenerator.generate();
         }
+      }
+      indexDirSeen = {};
+      for (k = 0, len2 = imageDirs.length; k < len2; k++) {
+        imageDir = imageDirs[k];
+        imageDirPieces = imageDir.split(path.sep);
+        imageDirPieces.pop();
+        imageDirPieces.pop();
+        while (imageDirPieces.length > 1) {
+          indexDir = cfs.join.apply(null, imageDirPieces);
+          indexDirSeen[indexDir] = true;
+          if (indexDir === this.rootDir) {
+            break;
+          }
+          imageDirPieces.pop();
+        }
+      }
+      indexDirs = Object.keys(indexDirSeen).sort().reverse();
+      for (l = 0, len3 = indexDirs.length; l < len3; l++) {
+        indexDir = indexDirs[l];
+        indexGenerator = new IndexGenerator(this.rootDir, indexDir);
+        indexGenerator.generate();
       }
       return true;
     };
