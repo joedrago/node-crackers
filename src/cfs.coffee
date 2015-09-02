@@ -31,6 +31,14 @@ cfs.fileExists = (file) ->
     return true
   return false
 
+cfs.findArchive = (dir, comic) ->
+  basename = path.join(dir, comic)
+  if cfs.fileExists("#{basename}.cbr")
+    return "#{comic}.cbr"
+  if cfs.fileExists("#{basename}.cbz")
+    return "#{comic}.cbz"
+  return false
+
 cfs.findParentContainingFilename = (startDir, filename) ->
   startDir = path.resolve('.', startDir)
   dirPieces = startDir.split(path.sep)

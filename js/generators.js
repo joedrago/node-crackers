@@ -24,6 +24,7 @@
       this.force = force;
       this.filename = cfs.join(this.dir, constants.COVER_FILENAME);
       log.verbose("CoverGenerator: creating " + this.filename);
+      log.verbose("CoverGenerator: list", this.images);
     }
 
     CoverGenerator.prototype.generate = function() {
@@ -79,7 +80,7 @@
         title: this.title,
         list: listText
       });
-      coverGenerator = new CoverGenerator(this.rootDir, this.dir, this.images, this.force);
+      coverGenerator = new CoverGenerator(this.rootDir, this.dir, [this.images[0]], this.force);
       coverGenerator.generate();
       cfs.writeMetadata(this.dir, {
         type: 'comic',
@@ -125,10 +126,10 @@
         results = [];
         for (i = 0, len = mdList.length; i < len; i++) {
           md = mdList[i];
-          results.push(md.cover);
+          results.push(path.join(this.dir, md.path, md.cover));
         }
         return results;
-      })();
+      }).call(this);
       coverGenerator = new CoverGenerator(this.rootDir, this.dir, images, this.force);
       coverGenerator.generate();
       listText = "";
@@ -139,10 +140,16 @@
         cover = metadata.path + "/" + metadata.cover;
         cover = cover.replace("#", "%23");
         metadata.cover = cover;
+        metadata.archive = cfs.findArchive(this.dir, metadata.path);
         ieTemplate = (function() {
           switch (metadata.type) {
             case 'comic':
-              return 'ie_comic';
+              if (metadata.archive) {
+                return 'ie_comic_dl';
+              } else {
+                return 'ie_comic';
+              }
+              break;
             case 'index':
               return 'ie_index';
           }

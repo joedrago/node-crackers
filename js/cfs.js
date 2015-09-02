@@ -47,6 +47,18 @@
     return false;
   };
 
+  cfs.findArchive = function(dir, comic) {
+    var basename;
+    basename = path.join(dir, comic);
+    if (cfs.fileExists(basename + ".cbr")) {
+      return comic + ".cbr";
+    }
+    if (cfs.fileExists(basename + ".cbz")) {
+      return comic + ".cbz";
+    }
+    return false;
+  };
+
   cfs.findParentContainingFilename = function(startDir, filename) {
     var dirPieces, found, testPath, testPieces;
     startDir = path.resolve('.', startDir);

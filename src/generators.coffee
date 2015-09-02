@@ -10,6 +10,7 @@ class CoverGenerator
   constructor: (@rootDir, @dir, @images, @force) ->
     @filename = cfs.join(@dir, constants.COVER_FILENAME)
     log.verbose "CoverGenerator: creating #{@filename}"
+    log.verbose "CoverGenerator: list", @images
 
   generate: ->
     if not @force.cover
@@ -18,7 +19,14 @@ class CoverGenerator
         return
     else
       log.verbose "Forcing thumbnail generation: #{@filename}"
+
     exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", path.resolve(@dir, @images[0]), @filename], @dir)
+
+#    count = Math.min(@images.length - 1, 15)
+#    if count > 0
+#      for i in [1...count]
+#        offset = i * Math.floor(constants.COVER_WIDTH / 15)
+#        exec('composite', ['-geometry', "+#{offset}+#{offset}", path.resolve(@dir, @images[i]), @filename, @filename], @dir)
 
 class ComicGenerator
   constructor: (@rootDir, @dir, @force) ->
@@ -45,7 +53,7 @@ class ComicGenerator
       listText += template('image', { href: href })
     outputText = template('comic', { title: @title, list: listText })
 
-    coverGenerator = new CoverGenerator(@rootDir, @dir, @images, @force)
+    coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
     coverGenerator.generate()
 
     cfs.writeMetadata @dir, {
@@ -76,7 +84,7 @@ class IndexGenerator
       cfs.removeMetadata(@dir)
       return false
 
-    images = (md.cover for md in mdList)
+    images = (path.join(@dir, md.path, md.cover) for md in mdList)
     coverGenerator = new CoverGenerator(@rootDir, @dir, images, @force)
     coverGenerator.generate()
 
@@ -87,8 +95,13 @@ class IndexGenerator
       cover = "#{metadata.path}/#{metadata.cover}"
       cover = cover.replace("#", "%23")
       metadata.cover = cover
+      metadata.archive = cfs.findArchive(@dir, metadata.path)
       ieTemplate = switch metadata.type
-        when 'comic' then 'ie_comic'
+        when 'comic'
+          if metadata.archive
+            'ie_comic_dl'
+          else 
+            'ie_comic'
         when 'index' then 'ie_index'
       listText += template(ieTemplate, metadata)
     outputText = template('index', { title: @title, list: listText, coverwidth: constants.COVER_WIDTH })
