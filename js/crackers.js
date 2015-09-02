@@ -28,7 +28,7 @@
       var file, filesToUnpack, i, len, parsed, unpackDir, unpackFile, updateFiles;
       this.updateDir = path.resolve('.', args.dir);
       if (!cfs.dirExists(this.updateDir)) {
-        return this.error("'" + this.upadteDir + "' is not an existing directory.");
+        return this.error("'" + this.updateDir + "' is not an existing directory.");
       }
       log.verbose("updateDir: " + this.updateDir);
       this.rootDir = cfs.findParentContainingFilename(this.updateDir, constants.ROOT_FILENAME);
@@ -83,7 +83,7 @@
           return false;
         }
       } else {
-        log.verbose("Unpack not required (" + file + " older than " + indexFilename + ")");
+        log.progress("Unpack not required (" + file + " older than " + indexFilename + ")");
       }
       parsed = path.parse(dir);
       comicGenerator = new ComicGenerator(dir, parsed.name);

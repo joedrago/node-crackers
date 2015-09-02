@@ -4,6 +4,7 @@ constants = require './constants'
 log = require './log'
 path = require 'path'
 {spawnSync} = require 'child_process'
+which = require 'which'
 
 class Unpacker
   constructor: (@archive, @dir) ->
@@ -11,11 +12,24 @@ class Unpacker
     if @archive.match(/cbz$/)
       @type = 'cbz'
 
-    @unzipCmd = "unzip"
-    @unrarCmd = "unrar"
+    @unzipCmd = null
+    @unrarCmd = null
     if process.platform == 'win32'
       @unzipCmd = path.resolve(__dirname, "../wbin/unzip.exe")
       @unrarCmd = path.resolve(__dirname, "../wbin/unrar.exe")
+    else
+      try
+        @unzipCmd = which.sync('unzip')
+      catch
+      try
+        @unrarCmd = which.sync('unrar')
+      catch
+
+    if not @unzipCmd
+      log.error "crackers requires unzip to be installed."
+    if not @unrarCmd
+      log.error "crackers requires unrar to be installed."
+
     log.verbose "unzip: #{@unzipCmd}"
     log.verbose "unrar: #{@unrarCmd}"
 
@@ -33,6 +47,9 @@ class Unpacker
       cfs.cleanupDir(@imagesDir)
 
   unpack: ->
+    if not @unzipCmd or not @unrarCmd
+      return false
+
     log.verbose "Unpacker: Type #{@type} #{@archive} -> #{@dir}"
 
     # prepare temp dir

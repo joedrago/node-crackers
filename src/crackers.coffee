@@ -17,7 +17,7 @@ class Crackers
     # Pull member variables from args, calculate the rest
     @updateDir = path.resolve('.', args.dir)
     if not cfs.dirExists(@updateDir)
-      return @error("'#{@upadteDir}' is not an existing directory.")
+      return @error("'#{@updateDir}' is not an existing directory.")
     log.verbose "updateDir: #{@updateDir}"
     @rootDir = cfs.findParentContainingFilename(@updateDir, constants.ROOT_FILENAME)
     if not @rootDir
