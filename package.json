@@ -1,20 +1,21 @@
 {
-  "name": "node-crackers",
-  "description": "Comic Rack ... ers",
+  "name": "crackers",
+  "description": "Comic rack HTML gallery generator",
   "keywords": [
     "comics",
     "commandline",
+    "gallery",
     "generator"
   ],
   "author": "Joe Drago",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "license": "Boost",
   "engines": {
     "node": ">=0.8.0"
   },
   "main": "js/crackers.js",
   "bin": {
-    "skittles": "./bin/crackers"
+    "crackers": "./bin/crackers"
   },
   "homepage": "https://github.com/joedrago/node-crackers",
   "repository": {
