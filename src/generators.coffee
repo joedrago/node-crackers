@@ -29,7 +29,7 @@ class CoverGenerator
 #        exec('composite', ['-geometry', "+#{offset}+#{offset}", path.resolve(@dir, @images[i]), @filename, @filename], @dir)
 
 class ComicGenerator
-  constructor: (@rootDir, @dir, @force) ->
+  constructor: (@rootDir, @dir, @nextDir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @images = cfs.listImages(cfs.join(@dir, constants.IMAGES_DIR))
 
@@ -51,7 +51,7 @@ class ComicGenerator
       href = "#{constants.IMAGES_DIR}/#{parsed.base}"
       href = href.replace("#", "%23")
       listText += template('image', { href: href })
-    outputText = template('comic', { title: @title, list: listText })
+    outputText = template('comic', { title: @title, list: listText, prev: "../", next: @nextDir })
 
     coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
     coverGenerator.generate()
@@ -65,7 +65,7 @@ class ComicGenerator
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
-    log.progress "Generated comic: #{@title} (#{@images.length} pages)"
+    log.progress "Generated comic: #{@title} (#{@images.length} pages, next: '#{@nextDir}')"
     return true
 
 class IndexGenerator
@@ -104,7 +104,10 @@ class IndexGenerator
             'ie_comic'
         when 'index' then 'ie_index'
       listText += template(ieTemplate, metadata)
-    outputText = template('index', { title: @title, list: listText, coverwidth: constants.COVER_WIDTH })
+    prevDir = ""
+    if @rootDir != @dir
+      prevDir = "../"
+    outputText = template('index', { title: @title, list: listText, coverwidth: constants.COVER_WIDTH, prev: prevDir })
 
     cfs.writeMetadata @dir, {
       type:  'index'

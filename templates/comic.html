@@ -39,13 +39,26 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
         min-height: 100%;
     }
 
-    .backbox {
+    .prevbox {
         display: block;
         position:absolute;
         width: 4vw;
         height: 4vw;
         top: 2vw;
         left: 2vw;
+        background:#ffffff;
+        opacity: 0.1;
+        border:1px solid #000000;
+        z-index:100;
+    }
+
+    .nextbox {
+        display: block;
+        position:absolute;
+        width: 4vw;
+        height: 4vw;
+        top: 2vw;
+        right: 2vw;
         background:#ffffff;
         opacity: 0.1;
         border:1px solid #000000;
@@ -157,12 +170,12 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 </head>
 
 <body bgcolor="black"  onload="setTimeout(function() {window.scrollTo(0, 1)}, 100)">
+<!-- data-allowfullscreen="native" -->
 <div id="fotorama"
     class="fotorama"
     data-fit="scaledown"
     data-maxheight="100%"
     data-maxwidth="100%"
-    data-allowfullscreen="native"
     data-hash="true"
     data-keyboard='{"space": true, "home": true, "end": true, "up": true, "down": true}'
     data-arrows="true"
@@ -178,7 +191,15 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 <script>
     if(isMobile.any) {
         $("body").append("<div class=\"zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\">&nbsp;</div>");
-        $("body").append("<a class=\"backbox\" href=\"../\">&nbsp;</a>");
+
+        var prevUrl = "#inject{prev}";
+        var nextUrl = "#inject{next}";
+        if(prevUrl) {
+            $("body").append("<a class=\"prevbox\" href=\""+prevUrl+"\">&nbsp;</a>");
+        }
+        if(nextUrl) {
+            $("body").append("<a class=\"nextbox\" href=\""+nextUrl+"\">&nbsp;</a>");
+        }
     }
 </script>
 

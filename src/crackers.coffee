@@ -39,12 +39,19 @@ class Crackers
 
     # Regenerate index.html for all comics
     imageDirs = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/images$/))
-    for imageDir in imageDirs
+    for imageDir, i in imageDirs
       parsed = path.parse(imageDir)
       if parsed.dir
         comicDir = parsed.dir
-        parsed = path.parse(comicDir)
-        comicGenerator = new ComicGenerator(@rootDir, comicDir, @force)
+        parent = path.parse(parsed.dir)
+        nextDir = ""
+        if i+1 < imageDirs.length
+          nextParsed = path.parse(imageDirs[i+1])
+          if nextParsed.dir
+            nextParent = path.parse(nextParsed.dir)
+            if nextParent.name and (parent.dir == nextParent.dir)
+              nextDir = "../#{nextParent.name}"
+        comicGenerator = new ComicGenerator(@rootDir, comicDir, nextDir, @force)
         comicGenerator.generate()
 
     # Find directories that need indexing

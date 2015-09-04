@@ -32,13 +32,26 @@ u[o]&&(delete u[o],c?delete n[l]:typeof n.removeAttribute!==i?n.removeAttribute(
         color: white;
     }
 
-    .backbox {
+    .prevbox {
         display: block;
         position:absolute;
         width: 4vw;
         height: 4vw;
         top: 2vw;
         left: 2vw;
+        background:#ffffff;
+        opacity: 0.1;
+        border:1px solid #000000;
+        z-index:100;
+    }
+
+    .nextbox {
+        display: block;
+        position:absolute;
+        width: 4vw;
+        height: 4vw;
+        top: 2vw;
+        right: 2vw;
         background:#ffffff;
         opacity: 0.1;
         border:1px solid #000000;
@@ -77,7 +90,14 @@ u[o]&&(delete u[o],c?delete n[l]:typeof n.removeAttribute!==i?n.removeAttribute(
 
 <script>
     if(isMobile.any) {
-        $("body").append("<a class=\"backbox\" href=\"../\">&nbsp;</a>");
+        var prevUrl = "#inject{prev}";
+        var nextUrl = "#inject{next}";
+        if(prevUrl) {
+            $("body").append("<a class=\"prevbox\" href=\""+prevUrl+"\">&nbsp;</a>");
+        }
+        if(nextUrl) {
+            $("body").append("<a class=\"nextbox\" href=\""+nextUrl+"\">&nbsp;</a>");
+        }
     }
 </script>
 

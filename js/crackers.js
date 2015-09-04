@@ -25,7 +25,7 @@
     };
 
     Crackers.prototype.update = function(args) {
-      var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, parsed, unpackDir, unpackFile;
+      var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, m, nextDir, nextParent, nextParsed, parent, parsed, unpackDir, unpackFile;
       this.force = args.force;
       this.updateDir = path.resolve('.', args.dir);
       if (!cfs.dirExists(this.updateDir)) {
@@ -41,49 +41,59 @@
       this.rootFilename = cfs.join(this.rootDir, constants.ROOT_FILENAME);
       touch.sync(this.rootFilename);
       filesToUnpack = (function() {
-        var i, len, ref1, results;
+        var j, len, ref1, results;
         ref1 = cfs.listDir(this.updateDir);
         results = [];
-        for (i = 0, len = ref1.length; i < len; i++) {
-          file = ref1[i];
+        for (j = 0, len = ref1.length; j < len; j++) {
+          file = ref1[j];
           if (file.match(/\.cb[rz]$/)) {
             results.push(path.resolve(this.updateDir, file));
           }
         }
         return results;
       }).call(this);
-      for (i = 0, len = filesToUnpack.length; i < len; i++) {
-        unpackFile = filesToUnpack[i];
+      for (j = 0, len = filesToUnpack.length; j < len; j++) {
+        unpackFile = filesToUnpack[j];
         parsed = path.parse(unpackFile);
         unpackDir = cfs.join(parsed.dir, parsed.name);
         log.verbose("Processing " + unpackFile + " ...");
         this.unpack(unpackFile, unpackDir, this.force);
       }
       imageDirs = (function() {
-        var j, len1, ref1, results;
+        var k, len1, ref1, results;
         ref1 = cfs.listDir(this.updateDir);
         results = [];
-        for (j = 0, len1 = ref1.length; j < len1; j++) {
-          file = ref1[j];
+        for (k = 0, len1 = ref1.length; k < len1; k++) {
+          file = ref1[k];
           if (file.match(/images$/)) {
             results.push(path.resolve(this.updateDir, file));
           }
         }
         return results;
       }).call(this);
-      for (j = 0, len1 = imageDirs.length; j < len1; j++) {
-        imageDir = imageDirs[j];
+      for (i = k = 0, len1 = imageDirs.length; k < len1; i = ++k) {
+        imageDir = imageDirs[i];
         parsed = path.parse(imageDir);
         if (parsed.dir) {
           comicDir = parsed.dir;
-          parsed = path.parse(comicDir);
-          comicGenerator = new ComicGenerator(this.rootDir, comicDir, this.force);
+          parent = path.parse(parsed.dir);
+          nextDir = "";
+          if (i + 1 < imageDirs.length) {
+            nextParsed = path.parse(imageDirs[i + 1]);
+            if (nextParsed.dir) {
+              nextParent = path.parse(nextParsed.dir);
+              if (nextParent.name && (parent.dir === nextParent.dir)) {
+                nextDir = "../" + nextParent.name;
+              }
+            }
+          }
+          comicGenerator = new ComicGenerator(this.rootDir, comicDir, nextDir, this.force);
           comicGenerator.generate();
         }
       }
       indexDirSeen = {};
-      for (k = 0, len2 = imageDirs.length; k < len2; k++) {
-        imageDir = imageDirs[k];
+      for (l = 0, len2 = imageDirs.length; l < len2; l++) {
+        imageDir = imageDirs[l];
         imageDirPieces = imageDir.split(path.sep);
         imageDirPieces.pop();
         imageDirPieces.pop();
@@ -97,8 +107,8 @@
         }
       }
       indexDirs = Object.keys(indexDirSeen).sort().reverse();
-      for (l = 0, len3 = indexDirs.length; l < len3; l++) {
-        indexDir = indexDirs[l];
+      for (m = 0, len3 = indexDirs.length; m < len3; m++) {
+        indexDir = indexDirs[m];
         indexGenerator = new IndexGenerator(this.rootDir, indexDir, this.force);
         indexGenerator.generate();
       }

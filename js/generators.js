@@ -44,10 +44,11 @@
   })();
 
   ComicGenerator = (function() {
-    function ComicGenerator(rootDir, dir, force) {
+    function ComicGenerator(rootDir, dir, nextDir, force) {
       var pieces, tmp;
       this.rootDir = rootDir;
       this.dir = dir;
+      this.nextDir = nextDir;
       this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
       this.images = cfs.listImages(cfs.join(this.dir, constants.IMAGES_DIR));
@@ -78,7 +79,9 @@
       }
       outputText = template('comic', {
         title: this.title,
-        list: listText
+        list: listText,
+        prev: "../",
+        next: this.nextDir
       });
       coverGenerator = new CoverGenerator(this.rootDir, this.dir, [this.images[0]], this.force);
       coverGenerator.generate();
@@ -91,7 +94,7 @@
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
-      log.progress("Generated comic: " + this.title + " (" + this.images.length + " pages)");
+      log.progress("Generated comic: " + this.title + " (" + this.images.length + " pages, next: '" + this.nextDir + "')");
       return true;
     };
 
@@ -113,7 +116,7 @@
     }
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, totalCount;
+      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -156,10 +159,15 @@
         })();
         listText += template(ieTemplate, metadata);
       }
+      prevDir = "";
+      if (this.rootDir !== this.dir) {
+        prevDir = "../";
+      }
       outputText = template('index', {
         title: this.title,
         list: listText,
-        coverwidth: constants.COVER_WIDTH
+        coverwidth: constants.COVER_WIDTH,
+        prev: prevDir
       });
       cfs.writeMetadata(this.dir, {
         type: 'index',
