@@ -16,7 +16,7 @@
 
   module.exports = {};
 
-  ref = ['verbose', 'progress', 'error', 'syntax'];
+  ref = ['verbose', 'progress', 'warning', 'error', 'syntax'];
   fn = function(type) {
     return module.exports[type] = function() {
       return internalLog.call(null, type, Array.prototype.slice.call(arguments));

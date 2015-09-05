@@ -35,7 +35,7 @@
       this.rootDir = cfs.findParentContainingFilename(this.updateDir, constants.ROOT_FILENAME);
       if (!this.rootDir) {
         this.rootDir = this.updateDir;
-        log.verbose("crackers root not found (" + constants.ROOT_FILENAME + " not detected in parents).");
+        log.warning("crackers root not found (" + constants.ROOT_FILENAME + " not detected in parents).");
       }
       log.verbose("rootDir  : " + this.rootDir);
       this.rootFilename = cfs.join(this.rootDir, constants.ROOT_FILENAME);

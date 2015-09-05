@@ -71,7 +71,7 @@
     };
 
     Unpacker.prototype.unpack = function() {
-      var args, cmd, dimensionMap, dimensions, dims, finalImagePath, heightMap, heights, i, image, images, j, len, len1, maxToleranceH, maxToleranceW, mostCommonHeight, mostCommonWidth, parsed, rotToleranceH, rotToleranceW, toleranceH, toleranceW, validDimsCount, widthMap, widths;
+      var args, cmd, dimensionMap, dimensions, dims, finalImagePath, heightMap, heights, i, image, images, j, len, len1, maxToleranceH, maxToleranceW, mostCommonHeight, mostCommonWidth, parsed, rotToleranceH, rotToleranceW, skipImage, toleranceH, toleranceW, validDimsCount, widthMap, widths;
       log.verbose("Unpacker: type " + this.type + " " + this.archive + " -> " + this.dir);
       log.verbose("Unpacker: @tempDir " + this.tempDir);
       if (!cfs.prepareDir(this.tempDir)) {
@@ -102,9 +102,15 @@
       widthMap = {};
       heightMap = {};
       validDimsCount = 0;
+      skipImage = {};
       for (i = 0, len = images.length; i < len; i++) {
         image = images[i];
-        dimensions = sizeOf(image);
+        try {
+          dimensions = sizeOf(image);
+        } catch (_error) {
+          skipImage[image] = true;
+          continue;
+        }
         dimensionMap[image] = dimensions;
         if ((dimensions.width < 10) || (dimensions.width < 10)) {
           continue;
@@ -151,6 +157,10 @@
       maxToleranceH = mostCommonHeight * constants.SPAM_SIZE_TOLERANCE;
       for (j = 0, len1 = images.length; j < len1; j++) {
         image = images[j];
+        if (skipImage[image]) {
+          log.warning("Skipping bad image: " + image);
+          continue;
+        }
         dims = dimensionMap[image];
         toleranceW = mostCommonWidth - dims.width;
         toleranceH = mostCommonHeight - dims.height;
@@ -158,7 +168,7 @@
           rotToleranceW = mostCommonHeight - dims.width;
           rotToleranceH = mostCommonWidth - dims.height;
           if ((rotToleranceW > maxToleranceW) || (rotToleranceH > maxToleranceH)) {
-            log.verbose("Spam detected: '" + image + "' is " + dims.width + "x" + dims.height + ", not close enough to " + mostCommonWidth + "x" + mostCommonHeight);
+            log.warning("Spam detected: '" + image + "' is " + dims.width + "x" + dims.height + ", not close enough to " + mostCommonWidth + "x" + mostCommonHeight);
             continue;
           }
         }

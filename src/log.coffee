@@ -9,7 +9,7 @@ internalLog = (type, args) ->
   util.log.apply(null, args)
 
 module.exports = {}
-for type in ['verbose', 'progress', 'error', 'syntax']
+for type in ['verbose', 'progress', 'warning', 'error', 'syntax']
   do (type) ->
     module.exports[type] = -> internalLog.call(null, type, Array.prototype.slice.call(arguments))
 

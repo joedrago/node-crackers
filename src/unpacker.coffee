@@ -82,8 +82,13 @@ class Unpacker
     widthMap = {}
     heightMap = {}
     validDimsCount = 0
+    skipImage = {}
     for image in images
-      dimensions = sizeOf(image)
+      try
+        dimensions = sizeOf(image)
+      catch
+        skipImage[image] = true
+        continue
       dimensionMap[image] = dimensions
       if (dimensions.width < 10) or (dimensions.width < 10)
         continue
@@ -120,6 +125,9 @@ class Unpacker
     # -----------------------------------------------------------------------------------
 
     for image in images
+      if skipImage[image]
+        log.warning "Skipping bad image: #{image}"
+        continue
       # if these are negative, the image is larger than the typical size. Let it through as it is probably cover art
       dims = dimensionMap[image]
       toleranceW = mostCommonWidth - dims.width
@@ -129,7 +137,7 @@ class Unpacker
         rotToleranceW = mostCommonHeight - dims.width
         rotToleranceH = mostCommonWidth - dims.height
         if (rotToleranceW > maxToleranceW) or (rotToleranceH > maxToleranceH)
-          log.verbose "Spam detected: '#{image}' is #{dims.width}x#{dims.height}, not close enough to #{mostCommonWidth}x#{mostCommonHeight}"
+          log.warning "Spam detected: '#{image}' is #{dims.width}x#{dims.height}, not close enough to #{mostCommonWidth}x#{mostCommonHeight}"
           continue
 
       # Add the image to the /images dir

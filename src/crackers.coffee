@@ -23,7 +23,7 @@ class Crackers
     @rootDir = cfs.findParentContainingFilename(@updateDir, constants.ROOT_FILENAME)
     if not @rootDir
       @rootDir = @updateDir
-      log.verbose "crackers root not found (#{constants.ROOT_FILENAME} not detected in parents)."
+      log.warning "crackers root not found (#{constants.ROOT_FILENAME} not detected in parents)."
     log.verbose "rootDir  : #{@rootDir}"
 
     @rootFilename = cfs.join(@rootDir, constants.ROOT_FILENAME)
