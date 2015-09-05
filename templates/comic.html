@@ -67,10 +67,10 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
     .zoombox {
         position:absolute;
-        width: 18vw;
-        height: 18vw;
-        bottom: 4vw;
-        right: 4vw;
+        width: 15vw;
+        height: 15vw;
+        bottom: 7vw;
+        right: 7vw;
         background:#ffffff;
         opacity: 0.1;
         border:1px solid #000000;
@@ -83,6 +83,9 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
           return Math.min(Math.max(this, min), max);
     };
 
+    var zooming = false;
+    var touchTimestamp = null;
+
     function toggleFullScreen() {
       var doc = window.document;
       var docEl = doc.documentElement;
@@ -92,18 +95,19 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
       if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
         requestFullScreen.call(docEl);
+        return true;
       }
-      else {
-        //cancelFullScreen.call(doc);
-      }
+      return false;
     }
-    var fullScreenEngaged = false;
 
     updateZoom = function(event) {
+        if(!zooming) {
+            return;
+        }
+
         var t = event.changedTouches[0];
         var x = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1);
         var y = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1);
-
         var w = 0;
         var h = 0;
         $(".fotorama__stage__frame.fotorama__active").each(function() {
@@ -153,23 +157,29 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
     touchStart = function(event) {
         event.preventDefault();
-        //if(!fullScreenEngaged) {
-        //    fullScreenEngaged = true;
-            toggleFullScreen();
-        //}
-        updateZoom(event);
+        touchTimestamp = new Date().getTime();
+        if(!toggleFullScreen()) {
+            zooming = true;
+            updateZoom(event);
+        }
     }
 
     touchEnd = function(event) {
         event.preventDefault();
-        endZoom();
+        var endTouchTimestamp = new Date().getTime();
+        var diff = endTouchTimestamp - touchTimestamp;
+        if(diff < 100) {
+            // Tap ends the zoom
+            endZoom();
+        }
+        zooming = false;
     }
 
   </script>
 
 </head>
 
-<body bgcolor="black"  onload="setTimeout(function() {window.scrollTo(0, 1)}, 100)">
+<body bgcolor="black">
 <!-- data-allowfullscreen="native" -->
 <div id="fotorama"
     class="fotorama"
@@ -182,6 +192,7 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
     data-click="true"
     data-swipe="true"
     data-trackpad="true"
+    data-auto="false"
 >
 
 #inject{list}
@@ -189,8 +200,28 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 </div>
 
 <script>
+    $('.fotorama')
+        // Listen to the events
+        .on('fotorama:show ' +            // Start of transition to the new frame
+            'fotorama:showend ',          // End of the show transition
+            function (e, fotorama, extra) {
+                endZoom();
+            }
+        )
+        // Initialize fotorama manually
+        .fotorama();
+
+
     if(isMobile.any) {
         $("body").append("<div class=\"zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\">&nbsp;</div>");
+
+        if(isMobile.tablet) {
+            // Calm down a little bit on the zoombox size/position.
+            $('.zoombox').css("right",   "3vw");
+            $('.zoombox').css("bottom",  "3vw");
+            $('.zoombox').css("width",   "8vw");
+            $('.zoombox').css("height",  "8vw");
+        }
 
         var prevUrl = "#inject{prev}";
         var nextUrl = "#inject{next}";
