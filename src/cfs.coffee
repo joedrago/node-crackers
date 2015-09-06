@@ -74,15 +74,15 @@ cfs.gatherMetadata = (dir) ->
     metadata.path = file
     mdList.push metadata
   mdList.sort (a, b) ->
-    if a.type == b.type
+    #if a.type == b.type
       if a.path == b.path
         return 0
       if a.path > b.path
         return 1
       return -1
-    if a.type > b.type
-      return 1
-    return -1
+    #if a.type > b.type
+    #  return 1
+    #return -1
   return mdList
 
 cfs.readMetadata = (dir) ->

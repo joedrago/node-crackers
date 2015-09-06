@@ -115,16 +115,10 @@
       mdList.push(metadata);
     }
     mdList.sort(function(a, b) {
-      if (a.type === b.type) {
-        if (a.path === b.path) {
-          return 0;
-        }
-        if (a.path > b.path) {
-          return 1;
-        }
-        return -1;
+      if (a.path === b.path) {
+        return 0;
       }
-      if (a.type > b.type) {
+      if (a.path > b.path) {
         return 1;
       }
       return -1;
