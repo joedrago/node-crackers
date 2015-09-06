@@ -67,10 +67,10 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
     .zoombox {
         position:absolute;
-        width: 15vw;
-        height: 15vw;
-        bottom: 7vw;
-        right: 7vw;
+        width: 12vw;
+        height: 12vh;
+        bottom: 3vw;
+        right: 3vw;
         background:#ffffff;
         opacity: 0.1;
         border:1px solid #000000;
@@ -183,9 +183,9 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 <!-- data-allowfullscreen="native" -->
 <div id="fotorama"
     class="fotorama"
-    data-fit="scaledown"
-    data-maxheight="100%"
-    data-maxwidth="100%"
+    data-fit="contain"
+    data-height="100%"
+    data-width="100%"
     data-hash="true"
     data-keyboard='{"space": true, "home": true, "end": true, "up": true, "down": true}'
     data-arrows="true"
@@ -218,10 +218,8 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
         if(isMobile.tablet) {
             // Calm down a little bit on the zoombox size/position.
-            $('.zoombox').css("right",   "3vw");
-            $('.zoombox').css("bottom",  "3vw");
-            $('.zoombox').css("width",   "8vw");
-            $('.zoombox').css("height",  "8vw");
+            $('.zoombox').css("width",   "10vw");
+            $('.zoombox').css("height",  "10vh");
         }
 
         var prevUrl = "#inject{prev}";
