@@ -39,43 +39,39 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
         min-height: 100%;
     }
 
-    .prevbox {
+    .box {
         display: block;
         position:absolute;
         width: 4vw;
         height: 4vw;
-        top: 2vw;
-        left: 2vw;
         background:#ffffff;
         opacity: 0.1;
         border:1px solid #000000;
         z-index:100;
+    }
+
+    .prevbox {
+        left: 2vw;
+        top: 2vw;
     }
 
     .nextbox {
-        display: block;
-        position:absolute;
-        width: 4vw;
-        height: 4vw;
-        top: 2vw;
         right: 2vw;
-        background:#ffffff;
-        opacity: 0.1;
-        border:1px solid #000000;
-        z-index:100;
+        top: 2vw;
+    }
+
+    .scalebox {
+        left: 2vw;
+        bottom: 2vw;
     }
 
     .zoombox {
-        position:absolute;
+        right: 3vw;
+        bottom: 3vw;
         width: 12vw;
         height: 12vh;
-        bottom: 3vw;
-        right: 3vw;
-        background:#ffffff;
-        opacity: 0.1;
-        border:1px solid #000000;
-        z-index:100;
     }
+
   </style>
   <script type="text/javascript">
 
@@ -83,31 +79,20 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
           return Math.min(Math.max(this, min), max);
     };
 
-    var zooming = false;
     var touchTimestamp = null;
+    var zoomScales = [1.5, 2, 2.5, 3];
+    var zoomScaleIndex = 1;
+    var zoomScale = zoomScales[zoomScaleIndex];
+    var zoomX = 0;
+    var zoomY = 0;
 
-    function toggleFullScreen() {
-      var doc = window.document;
-      var docEl = doc.documentElement;
-
-      var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-      var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-      if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
-        requestFullScreen.call(docEl);
-        return true;
-      }
-      return false;
+    updateZoomPos = function(event) {
+        var t = event.changedTouches[0];
+        zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1);
+        zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1);
     }
 
-    updateZoom = function(event) {
-        if(!zooming) {
-            return;
-        }
-
-        var t = event.changedTouches[0];
-        var x = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1);
-        var y = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1);
+    updateZoom = function() {
         var w = 0;
         var h = 0;
         $(".fotorama__stage__frame.fotorama__active").each(function() {
@@ -116,25 +101,10 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
         });
 
         if((w > 0) && (h > 0)) {
-            var scale = 2;
+            offX = (zoomScale - 1) * -w * zoomX;
+            offY = (zoomScale - 1) * -h * zoomY;
 
-            /*
-            if(x > 0.333) {
-                offX = -w;
-                if(x < 0.666) {
-                    offX >>= 1;
-                }
-            }
-            if(y > 0.333) {
-                offY = -h;
-                if(y < 0.666) {
-                    offY >>= 1;
-                }
-            }*/
-            offX = -w * x;
-            offY = -h * y;
-
-            var tf = "translate("+offX+"px, "+offY+"px) scale("+scale+")";
+            var tf = "translate("+offX+"px, "+offY+"px) scale("+zoomScale+")";
             $(".fotorama__stage__frame.fotorama__active").css({
                     "transform-origin": "0px 0px",
                     "transform": tf,
@@ -152,15 +122,15 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
     touchMove = function(event) {
         event.preventDefault();
-        updateZoom(event);
+        updateZoomPos(event);
+        updateZoom();
     }
 
     touchStart = function(event) {
         event.preventDefault();
         touchTimestamp = new Date().getTime();
-        //toggleFullScreen();
-        zooming = true;
-        updateZoom(event);
+        updateZoomPos(event);
+        updateZoom();
     }
 
     touchEnd = function(event) {
@@ -171,15 +141,19 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
             // Tap ends the zoom
             endZoom();
         }
-        zooming = false;
     }
 
+    nextScale = function(event) {
+        event.preventDefault();
+        zoomScaleIndex = (zoomScaleIndex + 1) % zoomScales.length;
+        zoomScale = zoomScales[zoomScaleIndex];
+        updateZoom();
+    }
   </script>
 
 </head>
 
 <body bgcolor="black">
-<!-- data-allowfullscreen="native" -->
 <div id="fotorama"
     class="fotorama"
     data-fit="contain"
@@ -213,21 +187,22 @@ qe[Xc]=d(N(yb)),qe[Zc]=d(N(Mb+" "+Ob+rc,N(ic))),qe[Yc]=d(N(Mb+" "+Nb+rc,N(hc))),
 
 
     if(isMobile.any) {
-        $("body").append("<div class=\"zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\">&nbsp;</div>");
+        $("body").append("<div id=\"zoombox\" class=\"box zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\">&nbsp;</div>");
+        $("body").append("<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\">&nbsp;</div>");
 
         if(isMobile.tablet) {
             // Calm down a little bit on the zoombox size/position.
-            $('.zoombox').css("width",   "10vw");
-            $('.zoombox').css("height",  "10vh");
+            $('#zoombox').css("width",   "10vw");
+            $('#zoombox').css("height",  "10vh");
         }
 
         var prevUrl = "#inject{prev}";
         var nextUrl = "#inject{next}";
         if(prevUrl) {
-            $("body").append("<a class=\"prevbox\" href=\""+prevUrl+"\">&nbsp;</a>");
+            $("body").append("<a class=\"box prevbox\" href=\""+prevUrl+"\">&nbsp;</a>");
         }
         if(nextUrl) {
-            $("body").append("<a class=\"nextbox\" href=\""+nextUrl+"\">&nbsp;</a>");
+            $("body").append("<a class=\"box nextbox\" href=\""+nextUrl+"\">&nbsp;</a>");
         }
     }
 </script>
