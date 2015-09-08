@@ -6,7 +6,7 @@
 
   zoomScales = [1.5, 2, 2.5, 3];
 
-  zoomScaleIndex = 1;
+  zoomScaleIndex = 0;
 
   zoomScale = zoomScales[zoomScaleIndex];
 

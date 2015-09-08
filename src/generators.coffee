@@ -32,6 +32,8 @@ class ComicGenerator
   constructor: (@rootDir, @dir, @nextDir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @images = cfs.listImages(cfs.join(@dir, constants.IMAGES_DIR))
+    @relativeRoot = path.relative(@dir, @rootDir)
+    @relativeRoot = '.' if @relativeRoot.length == 0
 
     @rootDir = @rootDir.replace("#{path.sep}$", "")
     tmp = @dir.substr(@rootDir.length + 1)
@@ -51,7 +53,14 @@ class ComicGenerator
       href = "#{constants.IMAGES_DIR}/#{parsed.base}"
       href = href.replace("#", "%23")
       listText += template('image_html', { href: href })
-    outputText = template('comic_html', { title: @title, list: listText, prev: "../", next: @nextDir })
+    outputText = template('comic_html', {
+      generator: 'comic'
+      root: @relativeRoot
+      title: @title
+      list: listText
+      prev: "../"
+      next: @nextDir
+    })
 
     coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
     coverGenerator.generate()
@@ -71,6 +80,8 @@ class ComicGenerator
 class IndexGenerator
   constructor: (@rootDir, @dir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
+    @relativeRoot = path.relative(@dir, @rootDir)
+    @relativeRoot = '.' if @relativeRoot.length == 0
     @rootDir = @rootDir.replace("#{path.sep}$", "")
     @title = @dir.substr(@rootDir.length + 1)
     if @title.length == 0
@@ -107,7 +118,13 @@ class IndexGenerator
     prevDir = ""
     if @rootDir != @dir
       prevDir = "../"
-    outputText = template('index_html', { title: @title, list: listText, prev: prevDir })
+    outputText = template('index_html', {
+      generator: 'index'
+      root: @relativeRoot
+      title: @title
+      list: listText
+      prev: prevDir
+    })
 
     cfs.writeMetadata @dir, {
       type:  'index'

@@ -52,6 +52,10 @@
       this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
       this.images = cfs.listImages(cfs.join(this.dir, constants.IMAGES_DIR));
+      this.relativeRoot = path.relative(this.dir, this.rootDir);
+      if (this.relativeRoot.length === 0) {
+        this.relativeRoot = '.';
+      }
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
       tmp = this.dir.substr(this.rootDir.length + 1);
       pieces = tmp.split(path.sep);
@@ -78,6 +82,8 @@
         });
       }
       outputText = template('comic_html', {
+        generator: 'comic',
+        root: this.relativeRoot,
         title: this.title,
         list: listText,
         prev: "../",
@@ -108,6 +114,10 @@
       this.dir = dir;
       this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
+      this.relativeRoot = path.relative(this.dir, this.rootDir);
+      if (this.relativeRoot.length === 0) {
+        this.relativeRoot = '.';
+      }
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
       this.title = this.dir.substr(this.rootDir.length + 1);
       if (this.title.length === 0) {
@@ -164,6 +174,8 @@
         prevDir = "../";
       }
       outputText = template('index_html', {
+        generator: 'index',
+        root: this.relativeRoot,
         title: this.title,
         list: listText,
         prev: prevDir
