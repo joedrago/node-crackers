@@ -50,8 +50,8 @@ class ComicGenerator
       parsed = path.parse(image)
       href = "#{constants.IMAGES_DIR}/#{parsed.base}"
       href = href.replace("#", "%23")
-      listText += template('image', { href: href })
-    outputText = template('comic', { title: @title, list: listText, prev: "../", next: @nextDir })
+      listText += template('image_html', { href: href })
+    outputText = template('comic_html', { title: @title, list: listText, prev: "../", next: @nextDir })
 
     coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
     coverGenerator.generate()
@@ -99,15 +99,15 @@ class IndexGenerator
       ieTemplate = switch metadata.type
         when 'comic'
           if metadata.archive
-            'ie_comic_dl'
+            'ie_comic_dl_html'
           else
-            'ie_comic'
-        when 'index' then 'ie_index'
+            'ie_comic_html'
+        when 'index' then 'ie_index_html'
       listText += template(ieTemplate, metadata)
     prevDir = ""
     if @rootDir != @dir
       prevDir = "../"
-    outputText = template('index', { title: @title, list: listText, coverwidth: constants.COVER_WIDTH, prev: prevDir })
+    outputText = template('index_html', { title: @title, list: listText, prev: prevDir })
 
     cfs.writeMetadata @dir, {
       type:  'index'

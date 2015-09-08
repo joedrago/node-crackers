@@ -73,11 +73,11 @@
         parsed = path.parse(image);
         href = constants.IMAGES_DIR + "/" + parsed.base;
         href = href.replace("#", "%23");
-        listText += template('image', {
+        listText += template('image_html', {
           href: href
         });
       }
-      outputText = template('comic', {
+      outputText = template('comic_html', {
         title: this.title,
         list: listText,
         prev: "../",
@@ -148,13 +148,13 @@
           switch (metadata.type) {
             case 'comic':
               if (metadata.archive) {
-                return 'ie_comic_dl';
+                return 'ie_comic_dl_html';
               } else {
-                return 'ie_comic';
+                return 'ie_comic_html';
               }
               break;
             case 'index':
-              return 'ie_index';
+              return 'ie_index_html';
           }
         })();
         listText += template(ieTemplate, metadata);
@@ -163,10 +163,9 @@
       if (this.rootDir !== this.dir) {
         prevDir = "../";
       }
-      outputText = template('index', {
+      outputText = template('index_html', {
         title: this.title,
         list: listText,
-        coverwidth: constants.COVER_WIDTH,
         prev: prevDir
       });
       cfs.writeMetadata(this.dir, {

@@ -1,0 +1,63 @@
+    html, body {
+      margin: 0;
+      height: 100%;
+      min-height: 100%;
+    }
+
+    a, a:link, a:hover, a:visited, a:active {
+      text-decoration: none;
+      color: white;
+    }
+
+    a.download {
+      color: #77aa77;
+    }
+
+    .cover {
+      width: #inject{coverwidth}px;
+    }
+
+    .counts {
+      font-size: 0.6em;
+    }
+
+    .box {
+      display: block;
+      position:absolute;
+      width: 4vw;
+      height: 4vw;
+      background:#ffffff;
+      opacity: 0.1;
+      border:1px solid #000000;
+      z-index:100;
+    }
+
+    .prevbox {
+      left: 2vw;
+      top: 2vw;
+    }
+
+    .nextbox {
+      right: 2vw;
+      top: 2vw;
+    }
+
+    .scalebox {
+      left: 2vw;
+      bottom: 2vw;
+    }
+
+    .zoombox {
+      right: 3vw;
+      bottom: 3vw;
+      width: 12vw;
+      height: 12vh;
+    }
+
+    .entry {
+      display:inline-block;
+      text-align: center;
+      width: #inject{coverwidth}px;
+      margin: 10px;
+      vertical-align: top;
+    }

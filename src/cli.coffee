@@ -3,7 +3,7 @@ exec = require './exec'
 log = require './log'
 
 syntax = ->
-  log.syntax "Syntax: crackers [-h] [-v] [-f] directoryName"
+  log.syntax "Syntax: crackers [-h] [-v] [-c] [-u] directoryName"
   log.syntax "        -h,--help         This help output"
   log.syntax "        -v,--verbose      Verbose output"
   log.syntax "        -c,--cover        Force regeneration of covers"
