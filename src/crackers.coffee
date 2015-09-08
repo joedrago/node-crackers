@@ -3,7 +3,7 @@ constants = require './constants'
 log = require './log'
 path = require 'path'
 touch = require 'touch'
-{ComicGenerator, IndexGenerator} = require './generators'
+{ComicGenerator, IndexGenerator, MobileGenerator} = require './generators'
 Unpacker = require './unpacker'
 
 class Crackers
@@ -71,6 +71,9 @@ class Crackers
     for indexDir in indexDirs
       indexGenerator = new IndexGenerator(@rootDir, indexDir, @force)
       indexGenerator.generate()
+
+    mobileGenerator = new MobileGenerator(@rootDir)
+    mobileGenerator.generate()
 
     # All done!
     return true

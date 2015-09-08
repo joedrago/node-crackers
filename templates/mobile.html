@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>#inject{title}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+#include{jquery_html}
+#include{ismobile_html}
+#include{cookie_html}
+
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      min-height: 100%;
+      background-color: #000000;
+    }
+
+    #fsbox {
+      display: none;
+      position:absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background:#000000;
+      color: #ffffff;
+      opacity: 0.8;
+      z-index:100;
+      font-family: monospace;
+    }
+
+    #comics {
+      border: 0px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script type="text/javascript">
+
+    function browserAllowsFullscreen() {
+      return !isMobile.apple.device;
+    }
+
+    function enterFullscreen() {
+      var doc = window.document;
+      var docEl = doc.documentElement;
+      var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+      var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+      if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+        requestFullScreen.call(docEl);
+        return true;
+      }
+      return false;
+    }
+
+    function goFullscreen(event) {
+      event.preventDefault();
+      if(enterFullscreen()) {
+        $("#fsbox").hide();
+      }
+    }
+
+    function tick() {
+      var doc = window.document;
+      var docEl = doc.documentElement;
+
+      if(browserAllowsFullscreen()) {
+        if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+          $("#fsbox").show();
+        }
+      }
+
+      var comicLoc = doc.getElementById("comics").contentWindow.location.href;
+      if(comicLoc.indexOf("http") != -1) {
+        $.cookie("comicLoc", comicLoc, { expires: 10000 });
+        console.log("save previous location: "+comicLoc);
+      }
+    }
+
+    $(function() {
+      var comicLoc = $.cookie("comicLoc");
+      if(comicLoc) {
+        var doc = window.document;
+        console.log("going to previous location: "+comicLoc);
+        doc.getElementById("comics").src = comicLoc;
+      }
+
+      tick();
+      setInterval(tick, 5000);
+    });
+  </script>
+</head>
+
+<body bgcolor="black">
+  <iframe id="comics" frameBorder="0" src="./"></iframe>
+  <div id="fsbox" align="center" class="fsbox" ontouchstart="goFullscreen(event)">
+    <br><br><br><br>
+    <h1>Click to go<br>Fullscreen</h1>
+  </div>
+</body>
+</html>

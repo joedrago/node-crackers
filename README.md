@@ -31,8 +31,10 @@ The basic usage is simply to run crackers with the root of your comic gallery as
 
 If you want to unpack or regenerate any specific subset of your gallery, you can use that subdirectory on the commandline instead, and it'll walk up your file tree to find the actual "root" of the gallery, fixing as minimum of things as possible. Also, you can simply delete whatever subdirs you want and rerun crackers on the root of your gallery, and it will figure it out.
 
-Thanks
-------
+Libraries Used
+--------------
 
-* Uses (the awesome) Fotorama for a comic's image gallery: fotorama.io
-
+* Fotorama: http://fotorama.io/
+* isMobile: https://github.com/kaimallea/isMobile/
+* jQuery: https://jquery.com/
+* jquery-cookie: https://github.com/carhartl/jquery-cookie

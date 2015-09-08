@@ -4,6 +4,7 @@ module.exports =
   META_FILENAME: 'meta.crackers'
   INDEX_FILENAME: 'index.html'
   COVER_FILENAME: 'cover.png'
+  MOBILE_FILENAME: 'mobile.html'
   IMAGES_DIR: 'images'
   TEMP_UNPACK_DIR: 'unpackTmp'
   COVER_WIDTH: 150
