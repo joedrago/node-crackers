@@ -45,7 +45,6 @@
       iw = this.width;
       return ih = this.height;
     });
-    console.log(w + " " + h + " " + iw + " " + ih);
     if ((w > 0) && (h > 0)) {
       offX = (zoomScale - 1) * -w * zoomX;
       offY = (zoomScale - 1) * -h * zoomY;
@@ -113,20 +112,20 @@
       $("body").append("<div id=\"zoombox\" class=\"altzoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>");
       $("#zoombox").append("<div class=\"altzoomcross\"</div>");
     } else {
-      $("body").append("<div id=\"zoombox\" class=\"box zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\">&nbsp</div>");
+      $("body").append("<div id=\"zoombox\" class=\"box zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>");
       if (isMobile.tablet) {
         $('#zoombox').css("width", "10vw");
         $('#zoombox').css("height", "10vh");
       }
     }
-    $("body").append("<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\">&nbsp</div>");
+    $("body").append("<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\"></div>");
     prevUrl = "#inject{prev}";
     nextUrl = "#inject{next}";
     if (prevUrl) {
-      $("body").append("<a class=\"box prevbox\" href=\"" + prevUrl + "\">&nbsp</a>");
+      $("body").append("<a class=\"box prevbox\" href=\"" + prevUrl + "\"></a>");
     }
     if (nextUrl) {
-      $("body").append("<a class=\"box nextbox\" href=\"" + nextUrl + "\">&nbsp</a>");
+      $("body").append("<a class=\"box nextbox\" href=\"" + nextUrl + "\"></a>");
     }
   }
 
