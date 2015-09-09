@@ -54,6 +54,39 @@
       height: 12vh;
     }
 
+    .altzoombox {
+      display: block;
+      position:absolute;
+      z-index:100;
+      left: 20vw;
+      right: 20vw;
+      bottom: 10vh;
+      height: 60vw;
+      opacity: 0.1;
+    }
+
+    .altzoomcross {
+      background: black;
+      width: 1px;
+
+      height: 100%;
+      position: relative;
+      margin-left: 50%;
+      pointer-events: none;
+    }
+
+    .altzoomcross:after {
+      background: black;
+      height: 1px;
+
+      content: "";
+      left: -30vw;
+      top: 30vw;
+      width: 60vw;
+      position: absolute;
+      pointer-events: none;
+    }
+
     .entry {
       display:inline-block;
       text-align: center;

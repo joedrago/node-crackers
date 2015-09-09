@@ -80,17 +80,21 @@
 
       var comicLoc = doc.getElementById("comics").contentWindow.location.href;
       if(comicLoc.indexOf("http") != -1) {
+        comicLoc = comicLoc.split("?")[0];
         $.cookie("comicLoc", comicLoc, { expires: 10000 });
-        console.log("save previous location: "+comicLoc);
+        //console.log("save previous location: "+comicLoc);
       }
     }
 
     $(function() {
       var comicLoc = $.cookie("comicLoc");
+      var qs = String(window.location.search);
+      var doc = window.document;
       if(comicLoc) {
-        var doc = window.document;
-        console.log("going to previous location: "+comicLoc);
-        doc.getElementById("comics").src = comicLoc;
+        //console.log("going to previous location: "+comicLoc);
+        doc.getElementById("comics").src = comicLoc + qs;
+      } else {
+        doc.getElementById("comics").src = "./" + qs;
       }
 
       tick();
