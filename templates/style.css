@@ -60,9 +60,10 @@
       z-index:100;
       left: 20vw;
       right: 20vw;
-      bottom: 10vh;
+      bottom: 0;
       height: 60vw;
-      opacity: 0.1;
+      opacity: 0;
+      border: 1px solid black;
     }
 
     .altzoomcross {

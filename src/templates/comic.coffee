@@ -62,6 +62,16 @@ endZoom = ->
     "transform": "translate(0px, 0px) scale(1)",
   }
 
+fadeIn = ->
+  if altZoom
+    console.log("fade in")
+    $('#zoombox').finish().fadeTo(100, 0.5)
+
+fadeOut = ->
+  if altZoom
+    console.log("fade out")
+    $('#zoombox').delay(250).fadeTo(250, 0)
+
 # ---------------------------------------------------------------------------------------
 # UI Handlers
 
@@ -75,6 +85,7 @@ window.touchStart = (event) ->
   touchTimestamp = new Date().getTime()
   updateZoomPos(event)
   updateZoom()
+  fadeIn()
 
 window.touchEnd = (event) ->
   event.preventDefault()
@@ -83,6 +94,7 @@ window.touchEnd = (event) ->
   if diff < 100
     # Tap ends the zoom
     endZoom()
+  fadeOut()
 
 window.nextScale = (event) ->
   event.preventDefault()
@@ -108,6 +120,7 @@ if isMobile.any
       # Calm down a little bit on the zoombox size/position.
       $('#zoombox').css "width",  "10vw"
       $('#zoombox').css "height", "10vh"
+  fadeOut()
 
   $("body").append "<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\"></div>"
 
