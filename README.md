@@ -22,6 +22,7 @@ Commandline Usage:
             -h,--help         This help output
             -v,--verbose      Verbose output
             -c,--cover        Force regeneration of covers
+            -d,--download     Show download links when cbr/cbz files are still present
             -u,--unpack       Force reunpack of cbr/cbz files
 
 Hints and Tips

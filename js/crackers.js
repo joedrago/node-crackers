@@ -27,6 +27,7 @@
     Crackers.prototype.update = function(args) {
       var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, m, mobileGenerator, nextDir, nextParent, nextParsed, parent, parsed, unpackDir, unpackFile;
       this.force = args.force;
+      this.download = args.download;
       this.updateDir = path.resolve('.', args.dir);
       if (!cfs.dirExists(this.updateDir)) {
         return this.error("'" + this.updateDir + "' is not an existing directory.");
@@ -109,7 +110,7 @@
       indexDirs = Object.keys(indexDirSeen).sort().reverse();
       for (m = 0, len3 = indexDirs.length; m < len3; m++) {
         indexDir = indexDirs[m];
-        indexGenerator = new IndexGenerator(this.rootDir, indexDir, this.force);
+        indexGenerator = new IndexGenerator(this.rootDir, indexDir, this.force, this.download);
         indexGenerator.generate();
       }
       mobileGenerator = new MobileGenerator(this.rootDir);

@@ -78,12 +78,13 @@ class ComicGenerator
     return true
 
 class IndexGenerator
-  constructor: (@rootDir, @dir, @force) ->
+  constructor: (@rootDir, @dir, @force, @download) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @relativeRoot = path.relative(@dir, @rootDir)
     @relativeRoot = '.' if @relativeRoot.length == 0
     @rootDir = @rootDir.replace("#{path.sep}$", "")
-    @title = @dir.substr(@rootDir.length + 1)
+    @path = @dir.substr(@rootDir.length + 1)
+    @title = @path
     if @title.length == 0
       @title = constants.DEFAULT_TITLE
 
@@ -109,7 +110,9 @@ class IndexGenerator
       metadata.archive = cfs.findArchive(@dir, metadata.path)
       ieTemplate = switch metadata.type
         when 'comic'
-          if metadata.archive
+          metadata.id = "#{@path}/#{metadata.path}"
+          metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase()
+          if @download and metadata.archive
             'ie_comic_dl_html'
           else
             'ie_comic_html'

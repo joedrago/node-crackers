@@ -13,6 +13,7 @@
     log.syntax("        -h,--help         This help output");
     log.syntax("        -v,--verbose      Verbose output");
     log.syntax("        -c,--cover        Force regeneration of covers");
+    log.syntax("        -d,--download     Show download links when cbr/cbz files are still present");
     log.syntax("        -u,--unpack       Force reunpack of cbr/cbz files");
     return process.exit(1);
   };
@@ -25,6 +26,7 @@
         help: 'h',
         verbose: 'v',
         cover: 'c',
+        download: 'd',
         unpack: 'u'
       }
     });
@@ -36,6 +38,7 @@
     crackers = new Crackers;
     return crackers.update({
       dir: directoryName,
+      download: args.download,
       force: {
         cover: args.cover,
         unpack: args.unpack

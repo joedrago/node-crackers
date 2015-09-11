@@ -109,17 +109,19 @@
   })();
 
   IndexGenerator = (function() {
-    function IndexGenerator(rootDir, dir, force) {
+    function IndexGenerator(rootDir, dir, force, download) {
       this.rootDir = rootDir;
       this.dir = dir;
       this.force = force;
+      this.download = download;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
       this.relativeRoot = path.relative(this.dir, this.rootDir);
       if (this.relativeRoot.length === 0) {
         this.relativeRoot = '.';
       }
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
-      this.title = this.dir.substr(this.rootDir.length + 1);
+      this.path = this.dir.substr(this.rootDir.length + 1);
+      this.title = this.path;
       if (this.title.length === 0) {
         this.title = constants.DEFAULT_TITLE;
       }
@@ -157,7 +159,9 @@
         ieTemplate = (function() {
           switch (metadata.type) {
             case 'comic':
-              if (metadata.archive) {
+              metadata.id = this.path + "/" + metadata.path;
+              metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase();
+              if (this.download && metadata.archive) {
                 return 'ie_comic_dl_html';
               } else {
                 return 'ie_comic_html';
@@ -166,7 +170,7 @@
             case 'index':
               return 'ie_index_html';
           }
-        })();
+        }).call(this);
         listText += template(ieTemplate, metadata);
       }
       prevDir = "";

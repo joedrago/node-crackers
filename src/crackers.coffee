@@ -16,6 +16,7 @@ class Crackers
   update: (args) ->
     # Pull member variables from args, calculate the rest
     @force = args.force
+    @download = args.download
     @updateDir = path.resolve('.', args.dir)
     if not cfs.dirExists(@updateDir)
       return @error("'#{@updateDir}' is not an existing directory.")
@@ -69,7 +70,7 @@ class Crackers
     # regenerate all indices
     indexDirs = Object.keys(indexDirSeen).sort().reverse()
     for indexDir in indexDirs
-      indexGenerator = new IndexGenerator(@rootDir, indexDir, @force)
+      indexGenerator = new IndexGenerator(@rootDir, indexDir, @force, @download)
       indexGenerator.generate()
 
     mobileGenerator = new MobileGenerator(@rootDir)
