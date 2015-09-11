@@ -81,6 +81,9 @@
       var comicLoc = doc.getElementById("comics").contentWindow.location.href;
       if(comicLoc.indexOf("http") != -1) {
         comicLoc = comicLoc.split("?")[0];
+        if(window.location.hash) {
+            comicLoc += "#" + window.location.hash;
+        }
         $.cookie("comicLoc", comicLoc, { expires: 10000 });
         //console.log("save previous location: "+comicLoc);
       }
