@@ -18,7 +18,11 @@
     }
 
     .counts {
-      font-size: 0.6em;
+      font-size: 0.7em;
+    }
+
+    .recent {
+        color: #ddffdd;
     }
 
     .box {

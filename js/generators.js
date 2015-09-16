@@ -51,7 +51,8 @@
       this.nextDir = nextDir;
       this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
-      this.images = cfs.listImages(cfs.join(this.dir, constants.IMAGES_DIR));
+      this.imagesDir = cfs.join(this.dir, constants.IMAGES_DIR);
+      this.images = cfs.listImages(this.imagesDir);
       this.relativeRoot = path.relative(this.dir, this.rootDir);
       if (this.relativeRoot.length === 0) {
         this.relativeRoot = '.';
@@ -97,7 +98,7 @@
         pages: this.images.length,
         count: 1,
         cover: constants.COVER_FILENAME,
-        timestamp: cfs.dirTime(this.dir)
+        timestamp: cfs.dirTime(this.imagesDir)
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
@@ -130,7 +131,7 @@
     }
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, timestamp, totalCount;
+      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, recent, timestamp, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -157,9 +158,13 @@
         });
       }
       timestamp = 0;
+      recent = "";
       for (i = 0, len = mdList.length; i < len; i++) {
         metadata = mdList[i];
-        timestamp = metadata.timestamp;
+        if (timestamp < metadata.timestamp) {
+          timestamp = metadata.timestamp;
+          recent = metadata.path;
+        }
         totalCount += metadata.count;
         cover = metadata.path + "/" + metadata.cover;
         cover = cover.replace("#", "%23");
@@ -198,7 +203,8 @@
         title: this.title,
         count: totalCount,
         cover: constants.COVER_FILENAME,
-        timestamp: timestamp
+        timestamp: timestamp,
+        recent: recent
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);

@@ -31,7 +31,8 @@ class CoverGenerator
 class ComicGenerator
   constructor: (@rootDir, @dir, @nextDir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
-    @images = cfs.listImages(cfs.join(@dir, constants.IMAGES_DIR))
+    @imagesDir = cfs.join(@dir, constants.IMAGES_DIR)
+    @images = cfs.listImages(@imagesDir)
     @relativeRoot = path.relative(@dir, @rootDir)
     @relativeRoot = '.' if @relativeRoot.length == 0
 
@@ -71,7 +72,7 @@ class ComicGenerator
       pages: @images.length
       count: 1
       cover: constants.COVER_FILENAME
-      timestamp: cfs.dirTime(@dir)
+      timestamp: cfs.dirTime(@imagesDir)
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
@@ -109,8 +110,11 @@ class IndexGenerator
         title: @title
       })
     timestamp = 0
+    recent = ""
     for metadata in mdList
-      timestamp = metadata.timestamp
+      if timestamp < metadata.timestamp
+        timestamp = metadata.timestamp
+        recent = metadata.path
       totalCount += metadata.count
       cover = "#{metadata.path}/#{metadata.cover}"
       cover = cover.replace("#", "%23")
@@ -143,6 +147,7 @@ class IndexGenerator
       count: totalCount
       cover: constants.COVER_FILENAME
       timestamp: timestamp
+      recent: recent
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
