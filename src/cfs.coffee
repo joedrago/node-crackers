@@ -23,12 +23,25 @@ cfs.dirExists = (dir) ->
     return true
   return false
 
+cfs.dirTime = (dir) ->
+  dirStats = fs.statSync(dir)
+  return 0 if not dirStats?
+  return Math.floor(dirStats.birthtime.getTime() / 1000)
+
 cfs.fileExists = (file) ->
   if not fs.existsSync(file)
     return false
   stats = fs.statSync(file)
   if stats.isFile()
     return true
+  return false
+
+cfs.fileHasBytes = (file) ->
+  if not fs.existsSync(file)
+    return false
+  stats = fs.statSync(file)
+  if stats.isFile()
+    return (stats.size > 0)
   return false
 
 cfs.findArchive = (dir, comic) ->
@@ -97,6 +110,27 @@ cfs.readMetadata = (dir) ->
   catch
     metadata = false
   return metadata
+
+cfs.touchRoot = (dir) ->
+  rootFilename = cfs.join(dir, constants.ROOT_FILENAME)
+  return if cfs.fileHasBytes(rootFilename)
+  rootinfo = {
+    title: constants.DEFAULT_TITLE
+  }
+  json = JSON.stringify(rootinfo, null, 2)
+  fs.writeFileSync rootFilename, json
+
+cfs.getRootTitle = (dir) ->
+  rootFilename = cfs.join(dir, constants.ROOT_FILENAME)
+  if cfs.fileHasBytes(rootFilename)
+    try
+      rawJSON = fs.readFileSync(rootFilename)
+      data = JSON.parse(rawJSON)
+      if data.title
+        return data.title
+    catch
+
+  return constants.DEFAULT_TITLE
 
 cfs.writeMetadata = (dir, metadata) ->
   metaFilename = cfs.join(dir, constants.META_FILENAME)

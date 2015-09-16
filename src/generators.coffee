@@ -71,6 +71,7 @@ class ComicGenerator
       pages: @images.length
       count: 1
       cover: constants.COVER_FILENAME
+      timestamp: cfs.dirTime(@dir)
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
@@ -83,10 +84,11 @@ class IndexGenerator
     @relativeRoot = path.relative(@dir, @rootDir)
     @relativeRoot = '.' if @relativeRoot.length == 0
     @rootDir = @rootDir.replace("#{path.sep}$", "")
+    @isRoot = (@rootDir == @dir)
     @path = @dir.substr(@rootDir.length + 1)
     @title = @path
     if @title.length == 0
-      @title = constants.DEFAULT_TITLE
+      @title = cfs.getRootTitle(@rootDir)
 
   generate: ->
     mdList = cfs.gatherMetadata(@dir)
@@ -102,7 +104,13 @@ class IndexGenerator
 
     listText = ""
     totalCount = 0
+    if @isRoot and (mdList.length > 0)
+      listText += template('ie_sort_html', {
+        title: @title
+      })
+    timestamp = 0
     for metadata in mdList
+      timestamp = metadata.timestamp
       totalCount += metadata.count
       cover = "#{metadata.path}/#{metadata.cover}"
       cover = cover.replace("#", "%23")
@@ -119,7 +127,7 @@ class IndexGenerator
         when 'index' then 'ie_index_html'
       listText += template(ieTemplate, metadata)
     prevDir = ""
-    if @rootDir != @dir
+    if not @isRoot
       prevDir = "../"
     outputText = template('index_html', {
       generator: 'index'
@@ -134,6 +142,7 @@ class IndexGenerator
       title: @title
       count: totalCount
       cover: constants.COVER_FILENAME
+      timestamp: timestamp
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"
@@ -144,7 +153,7 @@ class MobileGenerator
     @mobileFilename = cfs.join(@rootDir, constants.MOBILE_FILENAME)
 
   generate: ->
-    outputText = template('mobile_html', { title: constants.DEFAULT_TITLE })
+    outputText = template('mobile_html', { title: cfs.getRootTitle(@rootDir) })
     fs.writeFileSync @mobileFilename, outputText
     log.progress "Generated mobile page (#{constants.MOBILE_FILENAME})"
 

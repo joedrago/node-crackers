@@ -35,6 +35,15 @@
     return false;
   };
 
+  cfs.dirTime = function(dir) {
+    var dirStats;
+    dirStats = fs.statSync(dir);
+    if (dirStats == null) {
+      return 0;
+    }
+    return Math.floor(dirStats.birthtime.getTime() / 1000);
+  };
+
   cfs.fileExists = function(file) {
     var stats;
     if (!fs.existsSync(file)) {
@@ -43,6 +52,18 @@
     stats = fs.statSync(file);
     if (stats.isFile()) {
       return true;
+    }
+    return false;
+  };
+
+  cfs.fileHasBytes = function(file) {
+    var stats;
+    if (!fs.existsSync(file)) {
+      return false;
+    }
+    stats = fs.statSync(file);
+    if (stats.isFile()) {
+      return stats.size > 0;
     }
     return false;
   };
@@ -142,6 +163,36 @@
       metadata = false;
     }
     return metadata;
+  };
+
+  cfs.touchRoot = function(dir) {
+    var json, rootFilename, rootinfo;
+    rootFilename = cfs.join(dir, constants.ROOT_FILENAME);
+    if (cfs.fileHasBytes(rootFilename)) {
+      return;
+    }
+    rootinfo = {
+      title: constants.DEFAULT_TITLE
+    };
+    json = JSON.stringify(rootinfo, null, 2);
+    return fs.writeFileSync(rootFilename, json);
+  };
+
+  cfs.getRootTitle = function(dir) {
+    var data, rawJSON, rootFilename;
+    rootFilename = cfs.join(dir, constants.ROOT_FILENAME);
+    if (cfs.fileHasBytes(rootFilename)) {
+      try {
+        rawJSON = fs.readFileSync(rootFilename);
+        data = JSON.parse(rawJSON);
+        if (data.title) {
+          return data.title;
+        }
+      } catch (_error) {
+
+      }
+    }
+    return constants.DEFAULT_TITLE;
   };
 
   cfs.writeMetadata = function(dir, metadata) {

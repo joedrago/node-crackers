@@ -96,7 +96,8 @@
         title: this.title,
         pages: this.images.length,
         count: 1,
-        cover: constants.COVER_FILENAME
+        cover: constants.COVER_FILENAME,
+        timestamp: cfs.dirTime(this.dir)
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
@@ -120,15 +121,16 @@
         this.relativeRoot = '.';
       }
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
+      this.isRoot = this.rootDir === this.dir;
       this.path = this.dir.substr(this.rootDir.length + 1);
       this.title = this.path;
       if (this.title.length === 0) {
-        this.title = constants.DEFAULT_TITLE;
+        this.title = cfs.getRootTitle(this.rootDir);
       }
     }
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, totalCount;
+      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, timestamp, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -149,8 +151,15 @@
       coverGenerator.generate();
       listText = "";
       totalCount = 0;
+      if (this.isRoot && (mdList.length > 0)) {
+        listText += template('ie_sort_html', {
+          title: this.title
+        });
+      }
+      timestamp = 0;
       for (i = 0, len = mdList.length; i < len; i++) {
         metadata = mdList[i];
+        timestamp = metadata.timestamp;
         totalCount += metadata.count;
         cover = metadata.path + "/" + metadata.cover;
         cover = cover.replace("#", "%23");
@@ -174,7 +183,7 @@
         listText += template(ieTemplate, metadata);
       }
       prevDir = "";
-      if (this.rootDir !== this.dir) {
+      if (!this.isRoot) {
         prevDir = "../";
       }
       outputText = template('index_html', {
@@ -188,7 +197,8 @@
         type: 'index',
         title: this.title,
         count: totalCount,
-        cover: constants.COVER_FILENAME
+        cover: constants.COVER_FILENAME,
+        timestamp: timestamp
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
@@ -208,7 +218,7 @@
     MobileGenerator.prototype.generate = function() {
       var outputText;
       outputText = template('mobile_html', {
-        title: constants.DEFAULT_TITLE
+        title: cfs.getRootTitle(this.rootDir)
       });
       fs.writeFileSync(this.mobileFilename, outputText);
       return log.progress("Generated mobile page (" + constants.MOBILE_FILENAME + ")");

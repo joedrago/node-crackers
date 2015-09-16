@@ -39,8 +39,7 @@
         log.warning("crackers root not found (" + constants.ROOT_FILENAME + " not detected in parents).");
       }
       log.verbose("rootDir  : " + this.rootDir);
-      this.rootFilename = cfs.join(this.rootDir, constants.ROOT_FILENAME);
-      touch.sync(this.rootFilename);
+      cfs.touchRoot(this.rootDir);
       filesToUnpack = (function() {
         var j, len, ref1, results;
         ref1 = cfs.listDir(this.updateDir);

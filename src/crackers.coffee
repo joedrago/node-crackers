@@ -27,8 +27,7 @@ class Crackers
       log.warning "crackers root not found (#{constants.ROOT_FILENAME} not detected in parents)."
     log.verbose "rootDir  : #{@rootDir}"
 
-    @rootFilename = cfs.join(@rootDir, constants.ROOT_FILENAME)
-    touch.sync(@rootFilename)
+    cfs.touchRoot @rootDir
 
     # Unpack any cbr or cbz files that need unpacking in the update dir
     filesToUnpack = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/\.cb[rz]$/))
