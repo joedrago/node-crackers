@@ -80,9 +80,15 @@
 
       var comicLoc = doc.getElementById("comics").contentWindow.location.href;
       if(comicLoc.indexOf("http") != -1) {
+        var hashPieces = comicLoc.split("#");
+        var hash = "";
+        if(hashPieces.length > 1) {
+          comicLoc = hashPieces[0];
+          hash = "#" + hashPieces[1];
+        }
         comicLoc = comicLoc.split("?")[0];
-        if(window.location.hash) {
-            comicLoc += "#" + window.location.hash;
+        if(hash) {
+          comicLoc += hash;
         }
         $.cookie("comicLoc", comicLoc, { expires: 10000 });
         //console.log("save previous location: "+comicLoc);
@@ -91,11 +97,18 @@
 
     $(function() {
       var comicLoc = $.cookie("comicLoc");
+      var hashPieces = comicLoc.split("#");
+      var hash = "";
+      if(hashPieces.length > 1) {
+        comicLoc = hashPieces[0];
+        hash = "#" + hashPieces[1];
+      }
       var qs = String(window.location.search);
       var doc = window.document;
       if(comicLoc) {
+        comicLoc += qs + hash;
         //console.log("going to previous location: "+comicLoc);
-        doc.getElementById("comics").src = comicLoc + qs;
+        doc.getElementById("comics").src = comicLoc;
       } else {
         doc.getElementById("comics").src = "./" + qs;
       }
