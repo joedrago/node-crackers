@@ -77,6 +77,20 @@ cfs.listImages = (dir) ->
   images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg)$/i))
   return images.sort()
 
+cfs.gatherComics = (rootDir) ->
+  rootDir = rootDir.replace("#{path.sep}$", "")
+  list = wrench.readdirSyncRecursive(rootDir)
+  comicDirs = (path.resolve(rootDir, file).replace(/\/images$/, "") for file in list when file.match(/images$/i))
+  comics = []
+  for dir in comicDirs
+    relativeDir = dir.substr(rootDir.length + 1)
+    metadata = cfs.readMetadata(dir)
+    if metadata
+      metadata.dir = dir
+      metadata.relativeDir = relativeDir
+      comics.push metadata
+  return comics
+
 cfs.gatherMetadata = (dir) ->
   mdList = []
   fileList = fs.readdirSync(dir).sort()

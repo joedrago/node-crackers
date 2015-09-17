@@ -10,6 +10,7 @@
     COVER_FILENAME: 'cover.png',
     RECENT_COVER_FILENAME: 'recentcover.png',
     MOBILE_FILENAME: 'mobile.html',
+    UPDATES_FILENAME: 'updates.html',
     IMAGES_DIR: 'images',
     TEMP_UNPACK_DIR: 'unpackTmp',
     COVER_WIDTH: 150,

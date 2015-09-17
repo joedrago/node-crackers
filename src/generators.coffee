@@ -5,6 +5,7 @@ fs = require 'fs'
 log = require './log'
 path = require 'path'
 template = require './template'
+Updates = require './updates'
 
 class CoverGenerator
   constructor: (@rootDir, @dir, @images, @force) ->
@@ -80,6 +81,7 @@ class ComicGenerator
 class IndexGenerator
   constructor: (@rootDir, @dir, @force, @download) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
+    @updatesFilename = cfs.join(@dir, constants.UPDATES_FILENAME)
     @relativeRoot = path.relative(@dir, @rootDir)
     @relativeRoot = '.' if @relativeRoot.length == 0
     @rootDir = @rootDir.replace("#{path.sep}$", "")
@@ -104,8 +106,33 @@ class IndexGenerator
     listText = ""
     totalCount = 0
     if @isRoot and (mdList.length > 0)
+      updates = new Updates(@rootDir).getUpdates()
+      ueText = ""
+      ueTerseText = ""
+      ueTerseCount = 0
+      for update in updates
+        updateListText = ""
+        for comic in update.list
+          pieces = comic.dir.split(path.sep)
+          comic.title = pieces.join(" | ")
+          if comic.start? and comic.end? and (comic.start != comic.end)
+            updateListText += template('ue_range_html', comic)
+          else if comic.start?
+            updateListText += template('ue_issue_html', comic)
+          else
+            updateListText += template('ue_single_html', comic)
+        ueText += template('ue_html', { date: update.date, list: updateListText })
+        ueTerseCount += 1
+        if (ueTerseText.length == 0) and (ueTerseCount >= 2)
+          ueTerseText = ueText
+      if ueTerseText.length == 0
+        ueTerseText = ueText
+      updatesText = template('updates_html', { title: @title, updates: ueText })
+      fs.writeFileSync @updatesFilename, updatesText
+
       listText += template('ie_sort_html', {
         title: @title
+        updates: ueTerseText
       })
     timestamp = 0
     recent = ""
@@ -134,6 +161,7 @@ class IndexGenerator
     prevDir = ""
     if not @isRoot
       prevDir = "../"
+
     outputText = template('index_html', {
       generator: 'index'
       root: @relativeRoot

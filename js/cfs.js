@@ -121,6 +121,35 @@
     return images.sort();
   };
 
+  cfs.gatherComics = function(rootDir) {
+    var comicDirs, comics, dir, file, i, len, list, metadata, relativeDir;
+    rootDir = rootDir.replace(path.sep + "$", "");
+    list = wrench.readdirSyncRecursive(rootDir);
+    comicDirs = (function() {
+      var i, len, results;
+      results = [];
+      for (i = 0, len = list.length; i < len; i++) {
+        file = list[i];
+        if (file.match(/images$/i)) {
+          results.push(path.resolve(rootDir, file).replace(/\/images$/, ""));
+        }
+      }
+      return results;
+    })();
+    comics = [];
+    for (i = 0, len = comicDirs.length; i < len; i++) {
+      dir = comicDirs[i];
+      relativeDir = dir.substr(rootDir.length + 1);
+      metadata = cfs.readMetadata(dir);
+      if (metadata) {
+        metadata.dir = dir;
+        metadata.relativeDir = relativeDir;
+        comics.push(metadata);
+      }
+    }
+    return comics;
+  };
+
   cfs.gatherMetadata = function(dir) {
     var file, fileList, i, len, mdList, metadata, resolvedPath;
     mdList = [];
