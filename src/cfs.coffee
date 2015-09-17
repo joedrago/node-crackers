@@ -181,6 +181,6 @@ cfs.newer = (amINewer, thanThisFile) ->
 
   amINewerStats = fs.statSync(amINewer)
   thanThisFileStats = fs.statSync(thanThisFile)
-  return amINewerStats.mtime > thanThisFile.mtime
+  return amINewerStats.mtime > thanThisFileStats.mtime
 
 module.exports = cfs

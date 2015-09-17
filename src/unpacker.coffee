@@ -5,6 +5,7 @@ exec = require './exec'
 log = require './log'
 path = require 'path'
 sizeOf = require 'image-size'
+touch = require 'touch'
 which = require 'which'
 
 class Unpacker
@@ -144,6 +145,7 @@ class Unpacker
       parsed = path.parse(image)
       finalImagePath = cfs.join(@imagesDir, parsed.base)
       fs.renameSync(image, finalImagePath)
+      touch.sync(finalImagePath) # touch the image so that its mtime is unpack time
 
     @valid = true
     return true
