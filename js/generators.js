@@ -22,21 +22,20 @@
       this.dir = dir;
       this.images = images1;
       this.force = force;
-      this.filename = cfs.join(this.dir, constants.COVER_FILENAME);
-      log.verbose("CoverGenerator: creating " + this.filename);
-      log.verbose("CoverGenerator: list", this.images);
     }
 
-    CoverGenerator.prototype.generate = function() {
-      if (!this.force.cover) {
-        if (cfs.fileExists(this.filename)) {
-          log.verbose("Skipping thumbnail generation, file exists: " + this.filename);
-          return;
-        }
-      } else {
-        log.verbose("Forcing thumbnail generation: " + this.filename);
+    CoverGenerator.prototype.generateImage = function(src, dst) {
+      if (this.force.cover || cfs.newer(src, dst)) {
+        log.verbose("Generating thumbnail: " + src + " -> " + dst);
+        return exec('convert', ['-resize', constants.COVER_WIDTH + "x", src, dst], this.dir);
       }
-      return exec('convert', ['-resize', constants.COVER_WIDTH + "x", path.resolve(this.dir, this.images[0]), this.filename], this.dir);
+    };
+
+    CoverGenerator.prototype.generate = function() {
+      if (this.images.length > 0) {
+        this.generateImage(path.resolve(this.dir, this.images[0]), cfs.join(this.dir, constants.COVER_FILENAME));
+        return this.generateImage(path.resolve(this.dir, this.images[this.images.length - 1]), cfs.join(this.dir, constants.RECENT_COVER_FILENAME));
+      }
     };
 
     return CoverGenerator;
@@ -90,7 +89,7 @@
         prev: "../",
         next: this.nextDir
       });
-      coverGenerator = new CoverGenerator(this.rootDir, this.dir, [this.images[0]], this.force);
+      coverGenerator = new CoverGenerator(this.rootDir, this.dir, this.images, this.force);
       coverGenerator.generate();
       cfs.writeMetadata(this.dir, {
         type: 'comic',
@@ -98,6 +97,7 @@
         pages: this.images.length,
         count: 1,
         cover: constants.COVER_FILENAME,
+        recentcover: constants.RECENT_COVER_FILENAME,
         timestamp: cfs.dirTime(this.imagesDir)
       });
       fs.writeFileSync(this.indexFilename, outputText);
@@ -131,7 +131,7 @@
     }
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, recent, timestamp, totalCount;
+      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, recent, recentcover, timestamp, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -169,6 +169,9 @@
         cover = metadata.path + "/" + metadata.cover;
         cover = cover.replace("#", "%23");
         metadata.cover = cover;
+        recentcover = metadata.path + "/" + metadata.recentcover;
+        recentcover = recentcover.replace("#", "%23");
+        metadata.recentcover = recentcover;
         metadata.archive = cfs.findArchive(this.dir, metadata.path);
         ieTemplate = (function() {
           switch (metadata.type) {
@@ -203,6 +206,7 @@
         title: this.title,
         count: totalCount,
         cover: constants.COVER_FILENAME,
+        recentcover: constants.RECENT_COVER_FILENAME,
         timestamp: timestamp,
         recent: recent
       });

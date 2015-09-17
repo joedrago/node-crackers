@@ -3,6 +3,7 @@ if isMobile.any
   if prevUrl
     $("body").append "<a class=\"box prevbox\" href=\""+prevUrl+"\"></a>"
 
+recentCover = false
 currentSort = -1
 sorts = [
   {
@@ -35,7 +36,19 @@ window.nextsort = (event) ->
   $('#sortorder').text(sorts[currentSort].name)
   return
 
+window.toggleRecentCover = (event) ->
+  event.preventDefault() if event?
+  attrName = 'data-cover'
+  name = 'First Cover'
+  recentCover = !recentCover
+  if recentCover
+    attrName = 'data-recentcover'
+    name = 'Newest Cover'
+  $('.sorted img').each ->
+    cover = $(this).attr(attrName)
+    $(this).attr('src', cover)
+  $('#togglerecent').text(name)
+
 $(->
   nextsort()
 )
-

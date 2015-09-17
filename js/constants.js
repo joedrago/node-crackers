@@ -8,6 +8,7 @@
     META_FILENAME: 'meta.crackers',
     INDEX_FILENAME: 'index.html',
     COVER_FILENAME: 'cover.png',
+    RECENT_COVER_FILENAME: 'recentcover.png',
     MOBILE_FILENAME: 'mobile.html',
     IMAGES_DIR: 'images',
     TEMP_UNPACK_DIR: 'unpackTmp',

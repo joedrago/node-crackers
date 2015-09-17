@@ -8,19 +8,16 @@ template = require './template'
 
 class CoverGenerator
   constructor: (@rootDir, @dir, @images, @force) ->
-    @filename = cfs.join(@dir, constants.COVER_FILENAME)
-    log.verbose "CoverGenerator: creating #{@filename}"
-    log.verbose "CoverGenerator: list", @images
+
+  generateImage: (src, dst) ->
+    if @force.cover or cfs.newer(src, dst)
+      log.verbose "Generating thumbnail: #{src} -> #{dst}"
+      exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", src, dst], @dir)
 
   generate: ->
-    if not @force.cover
-      if cfs.fileExists(@filename)
-        log.verbose "Skipping thumbnail generation, file exists: #{@filename}"
-        return
-    else
-      log.verbose "Forcing thumbnail generation: #{@filename}"
-
-    exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", path.resolve(@dir, @images[0]), @filename], @dir)
+    if @images.length > 0
+      @generateImage(path.resolve(@dir, @images[0]), cfs.join(@dir, constants.COVER_FILENAME))
+      @generateImage(path.resolve(@dir, @images[@images.length - 1]), cfs.join(@dir, constants.RECENT_COVER_FILENAME))
 
 #    count = Math.min(@images.length - 1, 15)
 #    if count > 0
@@ -63,7 +60,7 @@ class ComicGenerator
       next: @nextDir
     })
 
-    coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
+    coverGenerator = new CoverGenerator(@rootDir, @dir, @images, @force)
     coverGenerator.generate()
 
     cfs.writeMetadata @dir, {
@@ -72,6 +69,7 @@ class ComicGenerator
       pages: @images.length
       count: 1
       cover: constants.COVER_FILENAME
+      recentcover: constants.RECENT_COVER_FILENAME
       timestamp: cfs.dirTime(@imagesDir)
     }
     fs.writeFileSync @indexFilename, outputText
@@ -119,6 +117,9 @@ class IndexGenerator
       cover = "#{metadata.path}/#{metadata.cover}"
       cover = cover.replace("#", "%23")
       metadata.cover = cover
+      recentcover = "#{metadata.path}/#{metadata.recentcover}"
+      recentcover = recentcover.replace("#", "%23")
+      metadata.recentcover = recentcover
       metadata.archive = cfs.findArchive(@dir, metadata.path)
       ieTemplate = switch metadata.type
         when 'comic'
@@ -146,6 +147,7 @@ class IndexGenerator
       title: @title
       count: totalCount
       cover: constants.COVER_FILENAME
+      recentcover: constants.RECENT_COVER_FILENAME
       timestamp: timestamp
       recent: recent
     }
