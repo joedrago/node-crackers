@@ -91,7 +91,7 @@
         prev: "../",
         next: this.nextDir
       });
-      coverGenerator = new CoverGenerator(this.rootDir, this.dir, this.images, this.force);
+      coverGenerator = new CoverGenerator(this.rootDir, this.dir, [this.images[0]], this.force);
       coverGenerator.generate();
       cfs.writeMetadata(this.dir, {
         type: 'comic',

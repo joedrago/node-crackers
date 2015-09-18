@@ -61,7 +61,7 @@ class ComicGenerator
       next: @nextDir
     })
 
-    coverGenerator = new CoverGenerator(@rootDir, @dir, @images, @force)
+    coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
     coverGenerator.generate()
 
     cfs.writeMetadata @dir, {
