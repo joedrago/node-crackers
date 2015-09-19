@@ -20,12 +20,6 @@ class CoverGenerator
       @generateImage(path.resolve(@dir, @images[0]), cfs.join(@dir, constants.COVER_FILENAME))
       @generateImage(path.resolve(@dir, @images[@images.length - 1]), cfs.join(@dir, constants.RECENT_COVER_FILENAME))
 
-#    count = Math.min(@images.length - 1, 15)
-#    if count > 0
-#      for i in [1...count]
-#        offset = i * Math.floor(constants.COVER_WIDTH / 15)
-#        exec('composite', ['-geometry', "+#{offset}+#{offset}", path.resolve(@dir, @images[i]), @filename, @filename], @dir)
-
 class ComicGenerator
   constructor: (@rootDir, @dir, @nextDir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
@@ -91,6 +85,31 @@ class IndexGenerator
     if @title.length == 0
       @title = cfs.getRootTitle(@rootDir)
 
+  generateUpdateList: (updates, limit = 0) ->
+    text = ""
+    remaining = limit
+    for update in updates
+      updateListText = ""
+      for comic in update.list
+        pieces = comic.dir.split(path.sep)
+        comic.title = pieces.join(" | ")
+        if comic.start? and comic.end? and (comic.start != comic.end)
+          updateListText += template('ue_range_html', comic)
+        else if comic.start?
+          updateListText += template('ue_issue_html', comic)
+        else
+          updateListText += template('ue_single_html', comic)
+        if limit
+          remaining -= 1
+          if remaining <= 0
+            updateListText += template('ue_more_html', comic)
+            break
+      text += template('ue_html', { date: update.date, list: updateListText })
+      if limit
+        remaining -= 1
+        break if remaining <= 0
+    return text
+
   generate: ->
     mdList = cfs.gatherMetadata(@dir)
     if mdList.length == 0
@@ -107,26 +126,8 @@ class IndexGenerator
     totalCount = 0
     if @isRoot and (mdList.length > 0)
       updates = new Updates(@rootDir).getUpdates()
-      ueText = ""
-      ueTerseText = ""
-      ueTerseCount = 0
-      for update in updates
-        updateListText = ""
-        for comic in update.list
-          pieces = comic.dir.split(path.sep)
-          comic.title = pieces.join(" | ")
-          if comic.start? and comic.end? and (comic.start != comic.end)
-            updateListText += template('ue_range_html', comic)
-          else if comic.start?
-            updateListText += template('ue_issue_html', comic)
-          else
-            updateListText += template('ue_single_html', comic)
-        ueText += template('ue_html', { date: update.date, list: updateListText })
-        ueTerseCount += 1
-        if (ueTerseText.length == 0) and (ueTerseCount >= 2)
-          ueTerseText = ueText
-      if ueTerseText.length == 0
-        ueTerseText = ueText
+      ueText = @generateUpdateList(updates)
+      ueTerseText = @generateUpdateList(updates, constants.MAX_TERSE_UPDATES)
       updatesText = template('updates_html', { title: @title, updates: ueText })
       fs.writeFileSync @updatesFilename, updatesText
 

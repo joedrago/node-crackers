@@ -14,7 +14,8 @@
     IMAGES_DIR: 'images',
     TEMP_UNPACK_DIR: 'unpackTmp',
     COVER_WIDTH: 150,
-    SPAM_SIZE_TOLERANCE: 0.25
+    SPAM_SIZE_TOLERANCE: 0.25,
+    MAX_TERSE_UPDATES: 6
   };
 
   constants.COVER_HEIGHT = constants.COVER_WIDTH * 1.5;

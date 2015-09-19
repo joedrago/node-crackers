@@ -133,8 +133,52 @@
       }
     }
 
+    IndexGenerator.prototype.generateUpdateList = function(updates, limit) {
+      var comic, i, j, len, len1, pieces, ref, remaining, text, update, updateListText;
+      if (limit == null) {
+        limit = 0;
+      }
+      text = "";
+      remaining = limit;
+      for (i = 0, len = updates.length; i < len; i++) {
+        update = updates[i];
+        updateListText = "";
+        ref = update.list;
+        for (j = 0, len1 = ref.length; j < len1; j++) {
+          comic = ref[j];
+          pieces = comic.dir.split(path.sep);
+          comic.title = pieces.join(" | ");
+          if ((comic.start != null) && (comic.end != null) && (comic.start !== comic.end)) {
+            updateListText += template('ue_range_html', comic);
+          } else if (comic.start != null) {
+            updateListText += template('ue_issue_html', comic);
+          } else {
+            updateListText += template('ue_single_html', comic);
+          }
+          if (limit) {
+            remaining -= 1;
+            if (remaining <= 0) {
+              updateListText += template('ue_more_html', comic);
+              break;
+            }
+          }
+        }
+        text += template('ue_html', {
+          date: update.date,
+          list: updateListText
+        });
+        if (limit) {
+          remaining -= 1;
+          if (remaining <= 0) {
+            break;
+          }
+        }
+      }
+      return text;
+    };
+
     IndexGenerator.prototype.generate = function() {
-      var comic, cover, coverGenerator, i, ieTemplate, images, j, k, len, len1, len2, listText, md, mdList, metadata, outputText, pieces, prevDir, recent, recentcover, ref, timestamp, totalCount, ueTerseCount, ueTerseText, ueText, update, updateListText, updates, updatesText;
+      var cover, coverGenerator, i, ieTemplate, images, len, listText, md, mdList, metadata, outputText, prevDir, recent, recentcover, timestamp, totalCount, ueTerseText, ueText, updates, updatesText;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -157,37 +201,8 @@
       totalCount = 0;
       if (this.isRoot && (mdList.length > 0)) {
         updates = new Updates(this.rootDir).getUpdates();
-        ueText = "";
-        ueTerseText = "";
-        ueTerseCount = 0;
-        for (i = 0, len = updates.length; i < len; i++) {
-          update = updates[i];
-          updateListText = "";
-          ref = update.list;
-          for (j = 0, len1 = ref.length; j < len1; j++) {
-            comic = ref[j];
-            pieces = comic.dir.split(path.sep);
-            comic.title = pieces.join(" | ");
-            if ((comic.start != null) && (comic.end != null) && (comic.start !== comic.end)) {
-              updateListText += template('ue_range_html', comic);
-            } else if (comic.start != null) {
-              updateListText += template('ue_issue_html', comic);
-            } else {
-              updateListText += template('ue_single_html', comic);
-            }
-          }
-          ueText += template('ue_html', {
-            date: update.date,
-            list: updateListText
-          });
-          ueTerseCount += 1;
-          if ((ueTerseText.length === 0) && (ueTerseCount >= 2)) {
-            ueTerseText = ueText;
-          }
-        }
-        if (ueTerseText.length === 0) {
-          ueTerseText = ueText;
-        }
+        ueText = this.generateUpdateList(updates);
+        ueTerseText = this.generateUpdateList(updates, constants.MAX_TERSE_UPDATES);
         updatesText = template('updates_html', {
           title: this.title,
           updates: ueText
@@ -200,8 +215,8 @@
       }
       timestamp = 0;
       recent = "";
-      for (k = 0, len2 = mdList.length; k < len2; k++) {
-        metadata = mdList[k];
+      for (i = 0, len = mdList.length; i < len; i++) {
+        metadata = mdList[i];
         if (timestamp < metadata.timestamp) {
           timestamp = metadata.timestamp;
           recent = metadata.path;
