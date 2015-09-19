@@ -5,8 +5,11 @@ VERBOSE = false
 internalLog = (type, args) ->
   if not VERBOSE and (type == 'verbose')
     return
-  args.unshift("[#{type}]")
-  util.log.apply(null, args)
+  if type == 'syntax'
+    console.error.apply(null, args)
+  else
+    args.unshift("[#{type}]")
+    util.log.apply(null, args)
 
 module.exports = {}
 for type in ['verbose', 'progress', 'warning', 'error', 'syntax']

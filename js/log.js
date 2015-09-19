@@ -10,8 +10,12 @@
     if (!VERBOSE && (type === 'verbose')) {
       return;
     }
-    args.unshift("[" + type + "]");
-    return util.log.apply(null, args);
+    if (type === 'syntax') {
+      return console.error.apply(null, args);
+    } else {
+      args.unshift("[" + type + "]");
+      return util.log.apply(null, args);
+    }
   };
 
   module.exports = {};

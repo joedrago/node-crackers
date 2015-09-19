@@ -8,8 +8,8 @@
     "generator"
   ],
   "author": "Joe Drago",
-  "version": "0.0.26",
-  "license": "Boost",
+  "version": "0.0.27",
+  "license": "BSL-1.0",
   "engines": {
     "node": ">=0.8.0"
   },
@@ -26,14 +26,14 @@
     "build": "cake build"
   },
   "devDependencies": {
-    "coffee-script": "*"
+    "coffee-script": "1.9.3"
   },
   "dependencies": {
-    "minimist": "*",
-    "moment": "*",
-    "wrench": "*",
-    "touch": "*",
-    "which": "*",
-    "image-size": "*"
+    "image-size": "0.3.5",
+    "minimist": "1.2.0",
+    "moment": "2.10.6",
+    "touch": "1.0.0",
+    "which": "1.1.1",
+    "wrench": "1.5.8"
   }
 }

@@ -18,19 +18,32 @@ Uses external commands *unrar*, *unzip*, and (from ImageMagick) *convert* and *c
 Commandline Usage:
 ------------------
 
-    Syntax: crackers [-h] [-v] [-f] directoryName
+    Syntax: crackers [-h]
+            crackers [-v] [-c] [-u] update   PATH           (aliases: create, generate, gen)
+            crackers [-v] [-x]      organize PATH [PATH...] (aliases: rename, mv)
+            crackers [-v] [-x]      cleanup  PATH [PATH...] (aliases: remove, rm, del)
+
+    Global options:
             -h,--help         This help output
             -v,--verbose      Verbose output
+
+    Update options:
             -c,--cover        Force regeneration of covers
             -d,--download     Show download links when cbr/cbz files are still present
             -u,--unpack       Force reunpack of cbr/cbz files
 
+    Organize / Cleanup options:
+            -x,--execute      Perform rename/remove (default is to simply list actions)
+
+
 Hints and Tips
 --------------
 
-The basic usage is simply to run crackers with the root of your comic gallery as the only argument. It will make a best effort to not unpack any archives that it doesn't think need to be unpacked, and it will not regenerate any cover art thumbnails as well (both are forceable via the commandline).
+The basic usage is simply to run crackers with the root of your comic gallery as the only argument to "crackers update". It will make a best effort to not unpack any archives that it doesn't think need to be unpacked, and it will not regenerate any cover art thumbnails as well (both are forceable via the commandline).
 
 If you want to unpack or regenerate any specific subset of your gallery, you can use that subdirectory on the commandline instead, and it'll walk up your file tree to find the actual "root" of the gallery, fixing as minimum of things as possible. Also, you can simply delete whatever subdirs you want and rerun crackers on the root of your gallery, and it will figure it out.
+
+The organize and cleanup commandlines are simple tools used to organize your directories. Use -x with caution!
 
 Libraries Used
 --------------

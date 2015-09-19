@@ -1,5 +1,6 @@
 cfs = require './cfs'
 constants = require './constants'
+fs = require 'fs'
 log = require './log'
 path = require 'path'
 touch = require 'touch'
@@ -98,5 +99,80 @@ class Crackers
       log.verbose "Unpack not required: (#{file} older than #{indexFilename})"
 
     return true
+
+  findArchives: (filenames) ->
+    archives = []
+    cbrRegex = /\.cb[rz]$/i
+    for filename in filenames
+      if not fs.existsSync(filename)
+        log.warning "Ignoring nonexistent filename: #{filename}"
+        continue
+      stat = fs.statSync(filename)
+      if stat.isFile()
+        if filename.match(cbrRegex)
+          archives.push filename
+      else if stat.isDirectory()
+        list = cfs.listDir(filename)
+        for fn in list
+          fn = path.resolve(filename, fn)
+          if fn.match(cbrRegex)
+            archives.push fn
+      else
+        log.warning "Ignoring unrecognized filename: #{filename}"
+    return archives
+
+  organize: (args) ->
+    archives = @findArchives(args.filenames)
+    if archives.length == 0
+      log.warning "organize: Nothing to do!"
+      return
+
+    madeDir = {}
+    cmd = "mv"
+    cmd = "rename" if process.platform == 'win32'
+    for src in archives
+      parsed = path.parse(src)
+      # console.log parsed
+      dst = src
+      match = parsed.base.match(/^(\D*)(\d+)/)
+      if match
+        if match[1].length > 0
+          dstDir = path.join(parsed.dir, match[1])
+          dstDir = dstDir.replace(/[\. ]$/, '')
+          if not madeDir[dstDir] and not cfs.dirExists(dstDir)
+            madeDir[dstDir] = true
+            if args.execute
+              console.log "Mkdir : \"#{dstDir}\""
+              fs.mkdirSync(dstDir)
+            else
+              console.log "mkdir \"#{dstDir}\""
+        else
+          dstDir = parsed.dir
+        num = "000" + match[2]
+        num = num.substr(num.length - 3)
+        dst = path.join(dstDir, num) + parsed.ext
+      if args.execute
+        console.log "Rename: \"#{src}\""
+        console.log "    to: \"#{dst}\""
+        fs.renameSync(src, dst)
+      else
+        console.log "#{cmd} \"#{src}\" \"#{dst}\""
+    return
+
+  cleanup: (args) ->
+    archives = @findArchives(args.filenames)
+    if archives.length == 0
+      log.warning "cleanup: Nothing to do!"
+      return
+
+    cmd = "rm"
+    cmd = "del" if process.platform == 'win32'
+    for filename in archives
+      if args.execute
+        console.log "Removing: #{filename}"
+        fs.unlinkSync(filename)
+      else
+        console.log "#{cmd} \"#{filename}\""
+    return
 
 module.exports = Crackers
