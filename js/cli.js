@@ -10,9 +10,9 @@
 
   syntax = function() {
     log.syntax("Syntax: crackers [-h]");
-    log.syntax("        crackers [-v] [-c] [-u] update   PATH           (aliases: create, generate, gen)");
-    log.syntax("        crackers [-v] [-x]      organize PATH [PATH...] (aliases: rename, mv)");
-    log.syntax("        crackers [-v] [-x]      cleanup  PATH [PATH...] (aliases: remove, rm, del)");
+    log.syntax("        crackers [-v] [-c] [-u]   update   PATH           (aliases: create, generate, gen)");
+    log.syntax("        crackers [-v] [-x] [-t T] organize PATH [PATH...] (aliases: rename, mv)");
+    log.syntax("        crackers [-v] [-x]        cleanup  PATH [PATH...] (aliases: remove, rm, del)");
     log.syntax("");
     log.syntax("Global options:");
     log.syntax("        -h,--help         This help output");
@@ -22,6 +22,9 @@
     log.syntax("        -c,--cover        Force regeneration of covers");
     log.syntax("        -d,--download     Show download links when cbr/cbz files are still present");
     log.syntax("        -u,--unpack       Force reunpack of cbr/cbz files");
+    log.syntax("");
+    log.syntax("Organize options:");
+    log.syntax("        -t,--template T   Use template T when renaming. Default: {name}/{issue.3}");
     log.syntax("");
     log.syntax("Organize / Cleanup options:");
     log.syntax("        -x,--execute      Perform rename/remove (default is to simply list actions)");
@@ -33,11 +36,13 @@
     var args, crackers, directoryName, mode, modeInput;
     args = require('minimist')(process.argv.slice(2), {
       boolean: ['h', 'v', 'c', 'u', 'x'],
+      string: ['t'],
       alias: {
         help: 'h',
         verbose: 'v',
         cover: 'c',
         download: 'd',
+        template: 't',
         unpack: 'u',
         execute: 'x'
       }
@@ -90,7 +95,8 @@
       }
       return crackers.organize({
         filenames: args._,
-        execute: args.execute
+        execute: args.execute,
+        template: args.template
       });
     } else if (mode === 'cleanup') {
       if (args._.length === 0) {

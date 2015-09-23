@@ -4,6 +4,7 @@ fs = require 'fs'
 log = require './log'
 path = require 'path'
 touch = require 'touch'
+wrench = require 'wrench'
 {ComicGenerator, IndexGenerator, MobileGenerator} = require './generators'
 Unpacker = require './unpacker'
 
@@ -121,42 +122,74 @@ class Crackers
         log.warning "Ignoring unrecognized filename: #{filename}"
     return archives
 
+  processTemplate: (template, name) ->
+    keys = {}
+
+    match = name.match(/^(\D*)(\d+)/)
+    if match
+      keys.name = match[1]
+      keys.name = keys.name.replace(/[\. ]+$/, '')
+      keys.issue = match[2]
+    else
+      return name
+
+    output = template
+    output = output.replace /\{([^\}]+)\}/g, (match, key) ->
+      replacement = keys[key] ? ""
+      pieces = key.split(/\./)
+      if pieces.length > 1
+        replacement = keys[pieces[0]] ? ""
+        places = parseInt(pieces[1])
+        if replacement.length < places
+          replacement = "00000000000000000000000000000" + replacement
+          replacement = replacement.substr(replacement.length - places)
+      return replacement
+    output = output.replace(/^[ \/]+/, '')
+    output = output.replace(/[ \/]+$/, '')
+    return output
+
   organize: (args) ->
     archives = @findArchives(args.filenames)
     if archives.length == 0
       log.warning "organize: Nothing to do!"
       return
 
+    template = args.template
+    if not template
+      template = "{name}/{issue.3}"
+    template = template.replace(/\\/g, '/')
+    template = template.replace(/\/\//g, '/')
+    template = template.replace(/\//g, path.sep)
+
     madeDir = {}
-    cmd = "mv"
-    cmd = "rename" if process.platform == 'win32'
+    mvCmd = "mv"
+    mvCmd = "rename" if process.platform == 'win32'
+    mkdirCmd = "mkdir -p"
+    mkdirCmd = "mkdir" if process.platform == 'win32'
     for src in archives
       parsed = path.parse(src)
       # console.log parsed
-      dst = src
-      match = parsed.base.match(/^(\D*)(\d+)/)
-      if match
-        if match[1].length > 0
-          dstDir = path.join(parsed.dir, match[1])
-          dstDir = dstDir.replace(/[\. ]$/, '')
-          if not madeDir[dstDir] and not cfs.dirExists(dstDir)
-            madeDir[dstDir] = true
-            if args.execute
-              console.log "Mkdir : \"#{dstDir}\""
-              fs.mkdirSync(dstDir)
-            else
-              console.log "mkdir \"#{dstDir}\""
+      processed = @processTemplate(template, parsed.name)
+      dst = cfs.join(parsed.dir, processed) + parsed.ext
+      parsed = path.parse(dst)
+      dstDir = parsed.dir
+      if not madeDir[dstDir] and not cfs.dirExists(dstDir)
+        madeDir[dstDir] = true
+        if args.execute
+          console.log " Mkdir: \"#{dstDir}\""
+          wrench.mkdirSyncRecursive(dstDir)
         else
-          dstDir = parsed.dir
-        num = "000" + match[2]
-        num = num.substr(num.length - 3)
-        dst = path.join(dstDir, num) + parsed.ext
-      if args.execute
-        console.log "Rename: \"#{src}\""
-        console.log "    to: \"#{dst}\""
-        fs.renameSync(src, dst)
+          console.log "#{mkdirCmd} \"#{dstDir}\""
+      if src == dst
+        if args.execute
+          console.log "Skip  : \"#{src}\""
       else
-        console.log "#{cmd} \"#{src}\" \"#{dst}\""
+        if args.execute
+          console.log "Rename: \"#{src}\""
+          console.log "    to: \"#{dst}\""
+          fs.renameSync(src, dst)
+        else
+          console.log "#{mvCmd} \"#{src}\" \"#{dst}\""
     return
 
   cleanup: (args) ->

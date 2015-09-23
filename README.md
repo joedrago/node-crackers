@@ -19,9 +19,9 @@ Commandline Usage:
 ------------------
 
     Syntax: crackers [-h]
-            crackers [-v] [-c] [-u] update   PATH           (aliases: create, generate, gen)
-            crackers [-v] [-x]      organize PATH [PATH...] (aliases: rename, mv)
-            crackers [-v] [-x]      cleanup  PATH [PATH...] (aliases: remove, rm, del)
+            crackers [-v] [-c] [-u]   update   PATH           (aliases: create, generate, gen)
+            crackers [-v] [-x] [-t T] organize PATH [PATH...] (aliases: rename, mv)
+            crackers [-v] [-x]        cleanup  PATH [PATH...] (aliases: remove, rm, del)
 
     Global options:
             -h,--help         This help output
@@ -31,6 +31,9 @@ Commandline Usage:
             -c,--cover        Force regeneration of covers
             -d,--download     Show download links when cbr/cbz files are still present
             -u,--unpack       Force reunpack of cbr/cbz files
+
+    Organize options:
+            -t,--template T   Use template T when renaming. Default: {name}/{issue.3}
 
     Organize / Cleanup options:
             -x,--execute      Perform rename/remove (default is to simply list actions)
