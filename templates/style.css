@@ -152,3 +152,24 @@
     .updatemore {
       color: #555555;
     }
+
+    #help {
+      display: block;
+      position:absolute;
+      left: 10px;
+      bottom: 10px;
+      width: 300px;
+      height: 300px;
+      background:#fff4a3;
+      border:1px solid #000000;
+      z-index:101;
+      display: none;
+    }
+
+    .helpcontent {
+      margin: 10px;
+      font-family: monospace;
+      white-space: pre;
+      font-size: 0.8em;
+      font-weight: 900;
+    }

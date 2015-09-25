@@ -29,7 +29,7 @@
     };
 
     Crackers.prototype.update = function(args) {
-      var comicDir, comicGenerator, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, m, mobileGenerator, nextDir, nextParent, nextParsed, parent, parsed, unpackDir, unpackFile;
+      var comicDir, comicGenerator, comicName, file, filesToUnpack, i, imageDir, imageDirPieces, imageDirs, indexDir, indexDirSeen, indexDirs, indexGenerator, j, k, l, len, len1, len2, len3, m, mobileGenerator, nextDir, nextParent, nextParsed, parent, parsed, prevDir, unpackDir, unpackFile;
       this.force = args.force;
       this.download = args.download;
       this.updateDir = path.resolve('.', args.dir);
@@ -75,6 +75,7 @@
         }
         return results;
       }).call(this);
+      prevDir = "";
       for (i = k = 0, len1 = imageDirs.length; k < len1; i = ++k) {
         imageDir = imageDirs[i];
         parsed = path.parse(imageDir);
@@ -82,6 +83,7 @@
           comicDir = parsed.dir;
           parent = path.parse(parsed.dir);
           nextDir = "";
+          comicName = parent.name;
           if (i + 1 < imageDirs.length) {
             nextParsed = path.parse(imageDirs[i + 1]);
             if (nextParsed.dir) {
@@ -91,8 +93,13 @@
               }
             }
           }
-          comicGenerator = new ComicGenerator(this.rootDir, comicDir, nextDir, this.force);
+          comicGenerator = new ComicGenerator(this.rootDir, comicDir, prevDir, nextDir, this.force);
           comicGenerator.generate();
+          if ((nextDir.length > 0) && (comicName.length > 0)) {
+            prevDir = "../" + comicName;
+          } else {
+            prevDir = "";
+          }
         }
       }
       indexDirSeen = {};

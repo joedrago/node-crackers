@@ -10,6 +10,10 @@ zoomY = 0
 altZoom = getOptBool 'altzoom'
 spaceHeld = false
 spaceMovedZoom = false
+helpShowing = false
+
+prevUrl = "#inject{prev}"
+nextUrl = "#inject{next}"
 
 # ---------------------------------------------------------------------------------------
 # Helpers
@@ -107,7 +111,11 @@ window.nextScale = (event) ->
 # Keyboard
 
 $(document).keydown (event) ->
-  # console.log "keydown", event.keyCode
+  console.log "keydown", event.keyCode
+  if helpShowing
+    helpShowing = false
+    $('#help').fadeOut()
+
   switch event.keyCode
     # 1-4
     when 49, 50, 51, 52
@@ -152,6 +160,26 @@ $(document).keydown (event) ->
     when 88
       fotorama = $('.fotorama').data('fotorama')
       fotorama.show('>')
+
+    # N
+    when 78
+      if nextUrl
+        window.location = nextUrl
+
+    # P
+    when 80
+      if prevUrl
+        window.location = prevUrl
+
+    # B, I
+    when 66, 73
+      window.location = '../'
+
+    # H, ?
+    when 72, 191
+      if not helpShowing
+        helpShowing = true
+        $('#help').fadeIn()
 
     # Space
     when 32
@@ -199,8 +227,6 @@ if isMobile.any
 
   $("body").append "<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\"></div>"
 
-  prevUrl = "#inject{prev}"
-  nextUrl = "#inject{next}"
   if prevUrl
     $("body").append "<a class=\"box prevbox\" href=\""+prevUrl+"\"></a>"
   if nextUrl

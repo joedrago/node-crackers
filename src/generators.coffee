@@ -21,7 +21,7 @@ class CoverGenerator
       @generateImage(path.resolve(@dir, @images[@images.length - 1]), cfs.join(@dir, constants.RECENT_COVER_FILENAME))
 
 class ComicGenerator
-  constructor: (@rootDir, @dir, @nextDir, @force) ->
+  constructor: (@rootDir, @dir, @prevDir, @nextDir, @force) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @imagesDir = cfs.join(@dir, constants.IMAGES_DIR)
     @images = cfs.listImages(@imagesDir)
@@ -51,7 +51,7 @@ class ComicGenerator
       root: @relativeRoot
       title: @title
       list: listText
-      prev: "../"
+      prev: @prevDir
       next: @nextDir
     })
 

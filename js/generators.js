@@ -45,10 +45,11 @@
   })();
 
   ComicGenerator = (function() {
-    function ComicGenerator(rootDir, dir, nextDir, force) {
+    function ComicGenerator(rootDir, dir, prevDir1, nextDir, force) {
       var pieces, tmp;
       this.rootDir = rootDir;
       this.dir = dir;
+      this.prevDir = prevDir1;
       this.nextDir = nextDir;
       this.force = force;
       this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
@@ -88,7 +89,7 @@
         root: this.relativeRoot,
         title: this.title,
         list: listText,
-        prev: "../",
+        prev: this.prevDir,
         next: this.nextDir
       });
       coverGenerator = new CoverGenerator(this.rootDir, this.dir, [this.images[0]], this.force);
