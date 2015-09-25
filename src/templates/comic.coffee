@@ -8,6 +8,8 @@ zoomScale = zoomScales[zoomScaleIndex]
 zoomX = 0
 zoomY = 0
 altZoom = getOptBool 'altzoom'
+spaceHeld = false
+spaceMovedZoom = false
 
 # ---------------------------------------------------------------------------------------
 # Helpers
@@ -18,8 +20,7 @@ Number.prototype.clamp = (min, max) ->
 # ---------------------------------------------------------------------------------------
 # Zoom
 
-updateZoomPos = (event) ->
-  t = event.changedTouches[0]
+updateZoomPos = (t) ->
   zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1)
   zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1)
   if altZoom
@@ -77,13 +78,13 @@ fadeOut = ->
 
 window.touchMove = (event) ->
   event.preventDefault()
-  updateZoomPos(event)
+  updateZoomPos(event.changedTouches[0])
   updateZoom()
 
 window.touchStart = (event) ->
   event.preventDefault()
   touchTimestamp = new Date().getTime()
-  updateZoomPos(event)
+  updateZoomPos(event.changedTouches[0])
   updateZoom()
   fadeIn()
 
@@ -101,6 +102,80 @@ window.nextScale = (event) ->
   zoomScaleIndex = (zoomScaleIndex + 1) % zoomScales.length
   zoomScale = zoomScales[zoomScaleIndex]
   updateZoom()
+
+# ---------------------------------------------------------------------------------------
+# Keyboard
+
+$(document).keydown (event) ->
+  # console.log "keydown", event.keyCode
+  switch event.keyCode
+    # 1-4
+    when 49, 50, 51, 52
+      zoomScaleIndex = event.keyCode - 49
+      zoomScale = zoomScales[zoomScaleIndex]
+      updateZoom()
+
+    # backtick
+    when 192
+      endZoom()
+
+    # Q
+    when 81
+      zoomX = 0
+      zoomY = 0
+      updateZoom()
+
+    # W
+    when 87
+      zoomX = 1
+      zoomY = 0
+      updateZoom()
+
+    # A
+    when 65
+      zoomX = 0
+      zoomY = 1
+      updateZoom()
+
+    # S
+    when 83
+      zoomX = 1
+      zoomY = 1
+      updateZoom()
+
+    # Z
+    when 90
+      fotorama = $('.fotorama').data('fotorama')
+      fotorama.show('<')
+
+    # X
+    when 88
+      fotorama = $('.fotorama').data('fotorama')
+      fotorama.show('>')
+
+    # Space
+    when 32
+      spaceHeld = true
+
+  return
+
+$(document).keyup (event) ->
+  switch event.keyCode
+    # Space
+    when 32
+      spaceHeld = false
+      if spaceMovedZoom
+        spaceMovedZoom = false
+      else
+        endZoom()
+
+  return
+
+$(document).mousemove (event) ->
+  if spaceHeld
+    updateZoomPos(event)
+    updateZoom()
+    spaceMovedZoom = true
 
 # ---------------------------------------------------------------------------------------
 # Setup
