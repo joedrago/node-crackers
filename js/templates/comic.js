@@ -40,7 +40,7 @@
   };
 
   updateZoom = function() {
-    var diffh, diffw, h, ih, iw, offX, offY, tf, w;
+    var diffh, diffw, h, ih, iw, offX, offY, scaledH, scaledW, tf, transformOriginX, transformOriginY, w;
     w = 0;
     h = 0;
     $(".fotorama__stage__frame.fotorama__active").each(function() {
@@ -53,6 +53,8 @@
       iw = this.width;
       return ih = this.height;
     });
+    transformOriginX = "0px";
+    transformOriginY = "0px";
     if ((w > 0) && (h > 0)) {
       offX = (zoomScale - 1) * -w * zoomX;
       offY = (zoomScale - 1) * -h * zoomY;
@@ -62,9 +64,19 @@
         offX += (zoomX - 0.5) * (diffw * zoomScale);
         offY += (zoomY - 0.5) * (diffh * zoomScale);
       }
+      scaledW = zoomScale * iw;
+      scaledH = zoomScale * ih;
+      if (scaledW < w) {
+        transformOriginX = "50%";
+        offX = 0;
+      }
+      if (scaledH < h) {
+        transformOriginY = "50%";
+        offY = 0;
+      }
       tf = "translate(" + offX + "px, " + offY + "px) scale(" + zoomScale + ")";
       return $(".fotorama__stage__frame.fotorama__active").css({
-        "transform-origin": "0px 0px",
+        "transform-origin": transformOriginX + " " + transformOriginY,
         "transform": tf
       });
     }

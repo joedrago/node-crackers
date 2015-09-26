@@ -44,6 +44,9 @@ updateZoom = ->
     iw = this.width
     ih = this.height
 
+  transformOriginX = "0px"
+  transformOriginY = "0px"
+
   if (w > 0) and (h > 0)
     offX = (zoomScale - 1) * -w * zoomX
     offY = (zoomScale - 1) * -h * zoomY
@@ -55,9 +58,19 @@ updateZoom = ->
       offX += (zoomX - 0.5) * (diffw * zoomScale)
       offY += (zoomY - 0.5) * (diffh * zoomScale)
 
+    # If the scaled image is smaller than an axis, attempt to center it post-scale
+    scaledW = zoomScale * iw
+    scaledH = zoomScale * ih
+    if scaledW < w
+      transformOriginX = "50%"
+      offX = 0
+    if scaledH < h
+      transformOriginY = "50%"
+      offY = 0
+
     tf = "translate("+offX+"px, "+offY+"px) scale("+zoomScale+")"
     $(".fotorama__stage__frame.fotorama__active").css {
-      "transform-origin": "0px 0px",
+      "transform-origin": "#{transformOriginX} #{transformOriginY}",
       "transform": tf,
     }
 
