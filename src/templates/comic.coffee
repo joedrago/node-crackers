@@ -10,6 +10,7 @@ zoomY = 0
 altZoom = getOptBool 'altzoom'
 spaceHeld = false
 spaceMovedZoom = false
+zoomOnShowEnd = false
 helpShowing = false
 
 prevUrl = "#inject{prev}"
@@ -120,6 +121,11 @@ window.nextScale = (event) ->
   zoomScale = zoomScales[zoomScaleIndex]
   updateZoom()
 
+zoomToCorner = (x, y) ->
+  zoomX = x
+  zoomY = y
+  updateZoom()
+
 # ---------------------------------------------------------------------------------------
 # Keyboard
 
@@ -142,27 +148,19 @@ $(document).keydown (event) ->
 
     # Q
     when 81
-      zoomX = 0
-      zoomY = 0
-      updateZoom()
+      zoomToCorner(0, 0)
 
     # W
     when 87
-      zoomX = 1
-      zoomY = 0
-      updateZoom()
+      zoomToCorner(1, 0)
 
     # A
     when 65
-      zoomX = 0
-      zoomY = 1
-      updateZoom()
+      zoomToCorner(0, 1)
 
     # S
     when 83
-      zoomX = 1
-      zoomY = 1
-      updateZoom()
+      zoomToCorner(1, 1)
 
     # Z
     when 90
@@ -171,6 +169,18 @@ $(document).keydown (event) ->
 
     # X
     when 88
+      fotorama = $('.fotorama').data('fotorama')
+      fotorama.show('>')
+
+    # E
+    when 69
+      zoomOnShowEnd = true
+      fotorama = $('.fotorama').data('fotorama')
+      fotorama.show('<')
+
+    # D
+    when 68
+      zoomOnShowEnd = true
       fotorama = $('.fotorama').data('fotorama')
       fotorama.show('>')
 
@@ -224,6 +234,10 @@ $(document).mousemove (event) ->
 fotorama = $('.fotorama')
 fotorama.on 'fotorama:show fotorama:showend', (e, fotorama, extra) ->
   endZoom()
+fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
+  if zoomOnShowEnd
+    zoomOnShowEnd = false
+    zoomToCorner(0, 0)
 fotorama.fotorama()
 
 if isMobile.any
