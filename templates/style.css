@@ -36,8 +36,13 @@
       z-index:100;
     }
 
-    .prevbox {
+    .indexbox {
       left: 2vw;
+      top: 2vw;
+    }
+
+    .prevbox {
+      right: 8vw;
       top: 2vw;
     }
 

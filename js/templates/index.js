@@ -5,7 +5,7 @@
   if (isMobile.any) {
     prevUrl = "#inject{prev}";
     if (prevUrl) {
-      $("body").append("<a class=\"box prevbox\" href=\"" + prevUrl + "\"></a>");
+      $("body").append("<a class=\"box indexbox\" href=\"" + prevUrl + "\"></a>");
     }
   }
 

@@ -245,4 +245,6 @@ if isMobile.any
   if nextUrl
     $("body").append "<a class=\"box nextbox\" href=\""+nextUrl+"\"></a>"
 
+  $("body").append "<a class=\"box indexbox\" href=\"../\"></a>"
+
 # ---------------------------------------------------------------------------------------
