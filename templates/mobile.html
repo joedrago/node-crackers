@@ -97,6 +97,9 @@
 
     $(function() {
       var comicLoc = $.cookie("comicLoc");
+      if(!comicLoc) {
+        comicLoc = "";
+      }
       var hashPieces = comicLoc.split("#");
       var hash = "";
       if(hashPieces.length > 1) {
