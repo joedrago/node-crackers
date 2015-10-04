@@ -41,16 +41,19 @@ class ComicGenerator
       return false
 
     listText = ""
+    jsList = ""
     for image in @images
       parsed = path.parse(image)
-      href = "#{constants.IMAGES_DIR}/#{parsed.base}"
-      href = href.replace("#", "%23")
-      listText += template('image_html', { href: href })
+      url = "#{constants.IMAGES_DIR}/#{parsed.base}"
+      url = url.replace("#", "%23")
+      listText += template('image_html', { url: url })
+      jsList += template('image_js', { url: url })
     outputText = template('comic_html', {
       generator: 'comic'
       root: @relativeRoot
       title: @title
       list: listText
+      jslist: jsList
       prev: @prevDir
       next: @nextDir
     })

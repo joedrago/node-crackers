@@ -8,6 +8,8 @@ zoomScale = zoomScales[zoomScaleIndex]
 zoomX = 0
 zoomY = 0
 altZoom = getOptBool 'altzoom'
+preloadImagesDefault = not isMobile.any
+preloadImages = getOptBool('preload', preloadImagesDefault)
 spaceHeld = false
 spaceMovedZoom = false
 zoomOnShowEnd = false
@@ -15,6 +17,12 @@ helpShowing = false
 
 prevUrl = "#inject{prev}"
 nextUrl = "#inject{next}"
+
+`
+var comicImages = [
+#inject{jslist}
+null]
+`
 
 # ---------------------------------------------------------------------------------------
 # Helpers
@@ -260,5 +268,24 @@ if isMobile.any
     $("body").append "<a class=\"box nextbox\" href=\""+nextUrl+"\"></a>"
 
   $("body").append "<a class=\"box indexbox\" href=\"../\"></a>"
+
+# Image preloading code
+console.log "preloading images: #{preloadImages}"
+if preloadImages
+  loadedImages = []
+  nextLoadIndex = 0
+  loadNextImage = ->
+    if (nextLoadIndex < comicImages.length) and (comicImages[nextLoadIndex] != null)
+      img = new Image()
+      img.onload = ->
+        loadNextImage()
+      loadedImages.push img
+      console.log "Preloading #{comicImages[nextLoadIndex]}"
+      img.src = comicImages[nextLoadIndex]
+      nextLoadIndex += 1
+    else
+      console.log "Preloading complete."
+
+  loadNextImage()
 
 # ---------------------------------------------------------------------------------------

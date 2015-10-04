@@ -66,7 +66,7 @@
     }
 
     ComicGenerator.prototype.generate = function() {
-      var coverGenerator, href, i, image, len, listText, outputText, parsed, ref;
+      var coverGenerator, i, image, jsList, len, listText, outputText, parsed, ref, url;
       if (this.images.length === 0) {
         log.error("No images in '" + this.dir + "', removing index");
         fs.unlinkSync(this.indexFilename);
@@ -74,14 +74,18 @@
         return false;
       }
       listText = "";
+      jsList = "";
       ref = this.images;
       for (i = 0, len = ref.length; i < len; i++) {
         image = ref[i];
         parsed = path.parse(image);
-        href = constants.IMAGES_DIR + "/" + parsed.base;
-        href = href.replace("#", "%23");
+        url = constants.IMAGES_DIR + "/" + parsed.base;
+        url = url.replace("#", "%23");
         listText += template('image_html', {
-          href: href
+          url: url
+        });
+        jsList += template('image_js', {
+          url: url
         });
       }
       outputText = template('comic_html', {
@@ -89,6 +93,7 @@
         root: this.relativeRoot,
         title: this.title,
         list: listText,
+        jslist: jsList,
         prev: this.prevDir,
         next: this.nextDir
       });

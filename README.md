@@ -48,6 +48,8 @@ If you want to unpack or regenerate any specific subset of your gallery, you can
 
 The organize and cleanup commandlines are simple tools used to organize your directories. Use -x with caution!
 
+There are two querystring options available: `altzoom` and `preload` (true/false). `altzoom` will use a quadrant-based zoom in the bottom center of the screen, and `preload` will attempt to preload all images (in order) as you read, so you never have to wait for the next image to load. `preload` is on by default when browsing on the desktop.
+
 Libraries Used
 --------------
 

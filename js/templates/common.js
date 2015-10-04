@@ -22,8 +22,13 @@
     return String(decodeURIComponent(match[1].replace(/\+/g, ' ')));
   };
 
-  window.getOptBool = function(name) {
+  window.getOptBool = function(name, defaultValue) {
+    if (defaultValue == null) {
+      defaultValue = false;
+    }
     switch (getOpt(name)) {
+      case "":
+        return defaultValue;
       case "1":
       case "true":
       case "on":

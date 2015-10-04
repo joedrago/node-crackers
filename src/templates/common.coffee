@@ -12,8 +12,10 @@ window.getOpt = (name) ->
   return "" if not match
   return String(decodeURIComponent(match[1].replace(/\+/g, ' ')))
 
-window.getOptBool = (name) ->
+window.getOptBool = (name, defaultValue = false) ->
   switch getOpt(name)
+    when ""
+      defaultValue 
     when "1", "true", "on", "yes"
       true
     else
