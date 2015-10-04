@@ -22,6 +22,7 @@ nextUrl = "#inject{next}"
 var comicImages = [
 #inject{jslist}
 null]
+comicImages.pop()
 `
 
 # ---------------------------------------------------------------------------------------
@@ -269,22 +270,31 @@ if isMobile.any
 
   $("body").append "<a class=\"box indexbox\" href=\"../\"></a>"
 
+
 # Image preloading code
 console.log "preloading images: #{preloadImages}"
 if preloadImages
-  loadedImages = []
+  $("body").append "<div id=\"preloadbar\"><div id=\"preloadbarinner\"></div></div>"
+  loadedImages = {}
   nextLoadIndex = 0
   loadNextImage = ->
-    if (nextLoadIndex < comicImages.length) and (comicImages[nextLoadIndex] != null)
+    percentage = Math.floor(100 * (nextLoadIndex+1) / comicImages.length)
+    $('#preloadbarinner').width("#{percentage}%")
+    if nextLoadIndex < comicImages.length
       img = new Image()
       img.onload = ->
         loadNextImage()
-      loadedImages.push img
+      img.onerror = ->
+        nextLoadIndex -= 1
+        console.log "retrying #{comicImages[nextLoadIndex]}"
+        loadNextImage()
+      loadedImages[comicImages[nextLoadIndex]] = img
       console.log "Preloading #{comicImages[nextLoadIndex]}"
       img.src = comicImages[nextLoadIndex]
       nextLoadIndex += 1
     else
       console.log "Preloading complete."
+      $('#preloadbar').fadeOut(2500)
 
   loadNextImage()
 

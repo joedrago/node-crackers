@@ -36,6 +36,7 @@
 var comicImages = [
 #inject{jslist}
 null]
+comicImages.pop()
 ;
 
   Number.prototype.clamp = function(min, max) {
@@ -288,21 +289,30 @@ null]
   console.log("preloading images: " + preloadImages);
 
   if (preloadImages) {
-    loadedImages = [];
+    $("body").append("<div id=\"preloadbar\"><div id=\"preloadbarinner\"></div></div>");
+    loadedImages = {};
     nextLoadIndex = 0;
     loadNextImage = function() {
-      var img;
-      if ((nextLoadIndex < comicImages.length) && (comicImages[nextLoadIndex] !== null)) {
+      var img, percentage;
+      percentage = Math.floor(100 * (nextLoadIndex + 1) / comicImages.length);
+      $('#preloadbarinner').width(percentage + "%");
+      if (nextLoadIndex < comicImages.length) {
         img = new Image();
         img.onload = function() {
           return loadNextImage();
         };
-        loadedImages.push(img);
+        img.onerror = function() {
+          nextLoadIndex -= 1;
+          console.log("retrying " + comicImages[nextLoadIndex]);
+          return loadNextImage();
+        };
+        loadedImages[comicImages[nextLoadIndex]] = img;
         console.log("Preloading " + comicImages[nextLoadIndex]);
         img.src = comicImages[nextLoadIndex];
         return nextLoadIndex += 1;
       } else {
-        return console.log("Preloading complete.");
+        console.log("Preloading complete.");
+        return $('#preloadbar').fadeOut(2500);
       }
     };
     loadNextImage();

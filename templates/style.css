@@ -178,3 +178,21 @@
       font-size: 0.8em;
       font-weight: 900;
     }
+
+    #preloadbar {
+      display: block;
+      position:absolute;
+      width: 10vw;
+      height: 1vw;
+      background:#333333;
+      border:1px solid #000000;
+      z-index:100;
+      left: 2vw;
+      bottom: 0vw;
+    }
+
+    #preloadbarinner {
+      background-color: #669966;
+      height: 100%;
+      width: 0%;
+    }
