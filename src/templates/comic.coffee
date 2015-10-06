@@ -12,7 +12,6 @@ preloadImagesDefault = not isMobile.any
 preloadImages = getOptBool('preload', preloadImagesDefault)
 spaceHeld = false
 spaceMovedZoom = false
-zoomOnShowEnd = false
 helpShowing = false
 
 prevUrl = "#inject{prev}"
@@ -24,6 +23,16 @@ var comicImages = [
 null]
 comicImages.pop()
 `
+
+# ---------------------------------------------------------------------------------------
+# Auto state (A/D) for desktop nav
+
+Auto =
+  None: 0
+  TopLeft: 1
+  BottomRight: 2
+autoState = Auto.None
+autoStateOnShowEnd = Auto.None
 
 # ---------------------------------------------------------------------------------------
 # Helpers
@@ -89,15 +98,16 @@ endZoom = ->
     "transform-origin": "0px 0px",
     "transform": "translate(0px, 0px) scale(1)",
   }
+  autoState = Auto.None
 
 fadeIn = ->
   if altZoom
-    console.log("fade in")
+    # console.log("fade in")
     $('#zoombox').finish().fadeTo(100, 0.5)
 
 fadeOut = ->
   if altZoom
-    console.log("fade out")
+    # console.log("fade out")
     $('#zoombox').delay(250).fadeTo(250, 0)
 
 # ---------------------------------------------------------------------------------------
@@ -131,9 +141,37 @@ window.nextScale = (event) ->
   updateZoom()
 
 zoomToCorner = (x, y) ->
+  if (x == 0) and (x == 0)
+    autoState = Auto.TopLeft
+  else if (x == 1) and (y == 1)
+    autoState = Auto.BottomRight
+  else
+    autoState = Auto.None
+
   zoomX = x
   zoomY = y
   updateZoom()
+
+autoPrev = ->
+  switch autoState
+    when Auto.None
+      autoStateOnShowEnd = Auto.BottomRight
+      fotorama = $('.fotorama').data('fotorama')
+      fotorama.show('<')
+    when Auto.TopLeft
+      endZoom()
+    when Auto.BottomRight
+      zoomToCorner(0, 0)
+
+autoNext = ->
+  switch autoState
+    when Auto.None
+      zoomToCorner(0, 0)
+    when Auto.TopLeft
+      zoomToCorner(1, 1)
+    when Auto.BottomRight
+      fotorama = $('.fotorama').data('fotorama')
+      fotorama.show('>')
 
 # ---------------------------------------------------------------------------------------
 # Keyboard
@@ -145,6 +183,9 @@ $(document).keydown (event) ->
     $('#help').fadeOut()
 
   switch event.keyCode
+    # -----------------------------------------
+    # Adjust scale
+
     # 1-4
     when 49, 50, 51, 52
       zoomScaleIndex = event.keyCode - 49
@@ -155,43 +196,55 @@ $(document).keydown (event) ->
     when 192
       endZoom()
 
-    # Q
-    when 81
-      zoomToCorner(0, 0)
+    # Space
+    when 32
+      spaceHeld = true
+      autoState = Auto.None
+      console.log "autoState: None (space)"
 
-    # W
-    when 87
-      zoomToCorner(1, 0)
-
-    # A
-    when 65
-      zoomToCorner(0, 1)
-
-    # S
-    when 83
-      zoomToCorner(1, 1)
+    # -----------------------------------------
+    # Switch page
 
     # Z
     when 90
+      autoState = Auto.None
       fotorama = $('.fotorama').data('fotorama')
       fotorama.show('<')
 
     # X
     when 88
+      autoState = Auto.None
       fotorama = $('.fotorama').data('fotorama')
       fotorama.show('>')
 
-    # E
-    when 69
-      zoomOnShowEnd = true
-      fotorama = $('.fotorama').data('fotorama')
-      fotorama.show('<')
+    # -----------------------------------------
+    # Zoom to corners
+
+    # Q
+    when 81
+      zoomToCorner(0, 0)
+    # W
+    when 87
+      zoomToCorner(1, 0)
+    # A
+    when 65
+      zoomToCorner(0, 1)
+    # S
+    when 83
+      zoomToCorner(1, 1)
+
+    # -----------------------------------------
+    # Auto mode
 
     # D
     when 68
-      zoomOnShowEnd = true
-      fotorama = $('.fotorama').data('fotorama')
-      fotorama.show('>')
+      autoPrev()
+    # F
+    when 70
+      autoNext()
+
+    # -----------------------------------------
+    # Switch issue / back to index
 
     # N
     when 78
@@ -207,15 +260,14 @@ $(document).keydown (event) ->
     when 66, 73
       window.location = '../'
 
+    # -----------------------------------------
+    # Help
+
     # H, ?
     when 72, 191
       if not helpShowing
         helpShowing = true
         $('#help').fadeIn()
-
-    # Space
-    when 32
-      spaceHeld = true
 
   return
 
@@ -244,9 +296,10 @@ fotorama = $('.fotorama')
 fotorama.on 'fotorama:show fotorama:showend', (e, fotorama, extra) ->
   endZoom()
 fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
-  if zoomOnShowEnd
-    zoomOnShowEnd = false
-    zoomToCorner(0, 0)
+  switch autoStateOnShowEnd
+    when Auto.BottomRight
+      zoomToCorner(1, 1)
+  autoStateOnShowEnd = Auto.None
 fotorama.fotorama()
 
 if isMobile.any
