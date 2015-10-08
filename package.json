@@ -8,7 +8,7 @@
     "generator"
   ],
   "author": "Joe Drago",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "license": "BSL-1.0",
   "engines": {
     "node": ">=0.8.0"

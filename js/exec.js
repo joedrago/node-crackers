@@ -13,17 +13,20 @@
   which = require('which');
 
   commandPaths = {
-    unzip: null,
-    unrar: null,
+    composite: null,
     convert: null,
-    composite: null
+    dwebp: null,
+    tar: null,
+    unrar: null,
+    unzip: null
   };
 
   if (process.platform === 'win32') {
-    commandPaths.unzip = path.resolve(__dirname, "../wbin/unzip.exe");
-    commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe");
-    commandPaths.convert = path.resolve(__dirname, "../wbin/convert.exe");
     commandPaths.composite = path.resolve(__dirname, "../wbin/composite.exe");
+    commandPaths.convert = path.resolve(__dirname, "../wbin/convert.exe");
+    commandPaths.tar = path.resolve(__dirname, "../wbin/tar.exe");
+    commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe");
+    commandPaths.unzip = path.resolve(__dirname, "../wbin/unzip.exe");
   } else {
     for (name in commandPaths) {
       try {

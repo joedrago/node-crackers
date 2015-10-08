@@ -74,6 +74,9 @@
     if (cfs.fileExists(basename + ".cbr")) {
       return comic + ".cbr";
     }
+    if (cfs.fileExists(basename + ".cbt")) {
+      return comic + ".cbt";
+    }
     if (cfs.fileExists(basename + ".cbz")) {
       return comic + ".cbz";
     }
@@ -112,7 +115,7 @@
       results = [];
       for (i = 0, len = list.length; i < len; i++) {
         file = list[i];
-        if (file.match(/\.(png|jpg|jpeg)$/i)) {
+        if (file.match(/\.(png|jpg|jpeg|webp)$/i)) {
           results.push(path.resolve(dir, file));
         }
       }

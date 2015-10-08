@@ -1,7 +1,7 @@
 Crackers: Comic Rack Generator
 ------------------------------
 
-A commandline tool for turning an organized directory of .cbr and .cbz files into a pretty comic book reader.
+A commandline tool for organizing a directory of .cbr, .cbt, and .cbz files into a pretty comic book reader.
 
 Released under the Boost Software License (Version 1.0).
 
@@ -13,7 +13,7 @@ Installation:
 Requirements:
 -------------
 
-Uses external commands *unrar*, *unzip*, and (from ImageMagick) *convert* and *composite*. The tool will complain wildly if it cannot find these on your machine, and they should be built-in on Windows (no extra installation necessary).
+Uses external commands *unrar*, *unzip*, *tar*, *dwebp* (from webp), and (from ImageMagick) *convert* and *composite*. The tool will complain wildly if it cannot find these on your machine, and they should be built-in on Windows (no extra installation necessary). If you're missing any of these on OSX, I recommend installing via Homebrew. For linux, use your package manager (typically packages *imagemagick* and *webp*).
 
 Commandline Usage:
 ------------------

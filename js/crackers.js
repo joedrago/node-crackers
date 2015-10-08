@@ -50,7 +50,7 @@
         results = [];
         for (j = 0, len = ref1.length; j < len; j++) {
           file = ref1[j];
-          if (file.match(/\.cb[rz]$/)) {
+          if (file.match(/\.cb[rtz]$/)) {
             results.push(path.resolve(this.updateDir, file));
           }
         }
@@ -155,7 +155,7 @@
     Crackers.prototype.findArchives = function(filenames) {
       var archives, cbrRegex, filename, fn, j, k, len, len1, list, stat;
       archives = [];
-      cbrRegex = /\.cb[rz]$/i;
+      cbrRegex = /\.cb[rtz]$/i;
       for (j = 0, len = filenames.length; j < len; j++) {
         filename = filenames[j];
         if (!fs.existsSync(filename)) {

@@ -48,6 +48,8 @@ cfs.findArchive = (dir, comic) ->
   basename = path.join(dir, comic)
   if cfs.fileExists("#{basename}.cbr")
     return "#{comic}.cbr"
+  if cfs.fileExists("#{basename}.cbt")
+    return "#{comic}.cbt"
   if cfs.fileExists("#{basename}.cbz")
     return "#{comic}.cbz"
   return false
@@ -74,7 +76,7 @@ cfs.listDir = (dir) ->
 
 cfs.listImages = (dir) ->
   list = wrench.readdirSyncRecursive(dir)
-  images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg)$/i))
+  images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg|webp)$/i))
   return images.sort()
 
 cfs.gatherComics = (rootDir) ->

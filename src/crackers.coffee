@@ -31,8 +31,8 @@ class Crackers
 
     cfs.touchRoot @rootDir
 
-    # Unpack any cbr or cbz files that need unpacking in the update dir
-    filesToUnpack = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/\.cb[rz]$/))
+    # Unpack any cbr, cbt, or cbz files that need unpacking in the update dir
+    filesToUnpack = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/\.cb[rtz]$/))
     for unpackFile in filesToUnpack
       parsed = path.parse(unpackFile)
       unpackDir = cfs.join(parsed.dir, parsed.name)
@@ -111,7 +111,7 @@ class Crackers
 
   findArchives: (filenames) ->
     archives = []
-    cbrRegex = /\.cb[rz]$/i
+    cbrRegex = /\.cb[rtz]$/i
     for filename in filenames
       if not fs.existsSync(filename)
         log.warning "Ignoring nonexistent filename: #{filename}"

@@ -7,6 +7,7 @@ path = require 'path'
 sizeOf = require 'image-size'
 touch = require 'touch'
 which = require 'which'
+wrench = require 'wrench'
 
 class Unpacker
   constructor: (@archive, @dir) ->
@@ -36,6 +37,8 @@ class Unpacker
 
   detectFormat: ->
     @type = 'cbr'
+    if @archive.match(/cbt$/)
+      @type = 'cbt'
     if @archive.match(/cbz$/)
       @type = 'cbz'
     header = @readHeader()
@@ -58,10 +61,16 @@ class Unpacker
     if @type == 'cbr'
       cmd = 'unrar'
       args = ['x', @archive]
+    else if @type == 'cbt'
+      cmd = 'tar'
+      args = ['xf', @archive]
     else
       cmd = 'unzip'
       args = [@archive]
     exec(cmd, args, @tempDir)
+
+    # force all the permissions in the temp dir to rwx
+    wrench.chmodSyncRecursive(@tempDir, 0o0755);
 
     # Prepare images directory
     if fs.existsSync(@imagesDir)
@@ -144,7 +153,11 @@ class Unpacker
       # Add the image to the /images dir
       parsed = path.parse(image)
       finalImagePath = cfs.join(@imagesDir, parsed.base)
-      fs.renameSync(image, finalImagePath)
+      if image.match(/webp$/)
+        finalImagePath = finalImagePath.replace(/\.webp$/, '.png')
+        exec('dwebp', [image, '-o', finalImagePath], @tempDir)
+      else
+        fs.renameSync(image, finalImagePath)
       touch.sync(finalImagePath) # touch the image so that its mtime is unpack time
 
     @valid = true
