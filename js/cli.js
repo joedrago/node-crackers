@@ -123,9 +123,10 @@
       if (args.merge) {
         dst = args.merge;
       }
-      return crackers.merge({
+      return crackers.organize({
         filenames: args._,
         execute: args.execute,
+        template: args.template,
         dst: dst
       });
     }

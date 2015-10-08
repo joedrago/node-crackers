@@ -152,19 +152,12 @@
       return true;
     };
 
-    Crackers.prototype.findArchives = function(filenames, relativePaths) {
+    Crackers.prototype.findArchives = function(filenames) {
       var archives, cbrRegex, filename, fn, j, k, len, len1, list, rel, stat;
-      if (relativePaths == null) {
-        relativePaths = false;
-      }
       archives = [];
       cbrRegex = /\.cb[rtz]$/i;
       for (j = 0, len = filenames.length; j < len; j++) {
         filename = filenames[j];
-        if (relativePaths && !cfs.dirExists(filename)) {
-          log.warning("Ignoring non-directory: " + filename);
-          continue;
-        }
         if (!fs.existsSync(filename)) {
           log.warning("Ignoring nonexistent filename: " + filename);
           continue;
@@ -172,7 +165,10 @@
         stat = fs.statSync(filename);
         if (stat.isFile()) {
           if (filename.match(cbrRegex)) {
-            archives.push(filename);
+            archives.push({
+              abs: filename,
+              rel: null
+            });
           }
         } else if (stat.isDirectory()) {
           list = cfs.listDir(filename);
@@ -180,12 +176,11 @@
             fn = list[k];
             fn = path.resolve(filename, fn);
             if (fn.match(cbrRegex)) {
-              if (relativePaths) {
-                rel = path.relative(filename, fn);
-                archives.push([fn, rel]);
-              } else {
-                archives.push(fn);
-              }
+              rel = path.relative(filename, fn);
+              archives.push({
+                abs: fn,
+                rel: rel
+              });
             }
           }
         } else {
@@ -227,7 +222,11 @@
     };
 
     Crackers.prototype.organize = function(args) {
-      var archives, dst, dstDir, j, len, madeDir, mkdirCmd, mvCmd, parsed, processed, src, template;
+      var archive, archives, dst, dstDir, j, len, madeDir, mergeDst, mkdirCmd, mvCmd, parsed, processed, src, template;
+      mergeDst = null;
+      if (args.hasOwnProperty('dst')) {
+        mergeDst = args.dst;
+      }
       archives = this.findArchives(args.filenames);
       if (archives.length === 0) {
         log.warning("organize: Nothing to do!");
@@ -250,10 +249,24 @@
         mkdirCmd = "mkdir";
       }
       for (j = 0, len = archives.length; j < len; j++) {
-        src = archives[j];
-        parsed = path.parse(src);
-        processed = this.processTemplate(template, parsed.name);
-        dst = cfs.join(parsed.dir, processed) + parsed.ext;
+        archive = archives[j];
+        src = archive.abs;
+        if (mergeDst === null) {
+          parsed = path.parse(src);
+          processed = this.processTemplate(template, parsed.name);
+          if (parsed.dir.length === 0) {
+            parsed.dir = '.';
+          }
+          dst = cfs.join(parsed.dir, processed) + parsed.ext;
+        } else {
+          if (archive.rel === null) {
+            parsed = path.parse(src);
+            processed = this.processTemplate(template, parsed.name);
+            dst = cfs.join(mergeDst, processed) + parsed.ext;
+          } else {
+            dst = path.resolve(mergeDst, archive.rel);
+          }
+        }
         parsed = path.parse(dst);
         dstDir = parsed.dir;
         if (!madeDir[dstDir] && !cfs.dirExists(dstDir)) {
@@ -282,7 +295,7 @@
     };
 
     Crackers.prototype.cleanup = function(args) {
-      var archives, cmd, filename, j, len;
+      var archive, archives, cmd, filename, j, len;
       archives = this.findArchives(args.filenames);
       if (archives.length === 0) {
         log.warning("cleanup: Nothing to do!");
@@ -293,60 +306,13 @@
         cmd = "del";
       }
       for (j = 0, len = archives.length; j < len; j++) {
-        filename = archives[j];
+        archive = archives[j];
+        filename = archive.abs;
         if (args.execute) {
           console.log("Removing: " + filename);
           fs.unlinkSync(filename);
         } else {
           console.log(cmd + " \"" + filename + "\"");
-        }
-      }
-    };
-
-    Crackers.prototype.merge = function(args) {
-      var archives, dst, dstDir, j, len, madeDir, mergeDst, mkdirCmd, mvCmd, parsed, paths, src;
-      mergeDst = args.dst;
-      archives = this.findArchives(args.filenames, true);
-      if (archives.length === 0) {
-        log.warning("merge: Nothing to do!");
-        return;
-      }
-      madeDir = {};
-      mvCmd = "mv";
-      if (process.platform === 'win32') {
-        mvCmd = "rename";
-      }
-      mkdirCmd = "mkdir -p";
-      if (process.platform === 'win32') {
-        mkdirCmd = "mkdir";
-      }
-      for (j = 0, len = archives.length; j < len; j++) {
-        paths = archives[j];
-        src = paths[0];
-        dst = path.resolve(mergeDst, paths[1]);
-        parsed = path.parse(dst);
-        dstDir = parsed.dir;
-        if (!madeDir[dstDir] && !cfs.dirExists(dstDir)) {
-          madeDir[dstDir] = true;
-          if (args.execute) {
-            console.log(" Mkdir: \"" + dstDir + "\"");
-            wrench.mkdirSyncRecursive(dstDir);
-          } else {
-            console.log(mkdirCmd + " \"" + dstDir + "\"");
-          }
-        }
-        if (src === dst) {
-          if (args.execute) {
-            console.log("Skip  : \"" + src + "\"");
-          }
-        } else {
-          if (args.execute) {
-            console.log("Rename: \"" + src + "\"");
-            console.log("    to: \"" + dst + "\"");
-            fs.renameSync(src, dst);
-          } else {
-            console.log(mvCmd + " \"" + src + "\" \"" + dst + "\"");
-          }
         }
       }
     };

@@ -109,30 +109,30 @@ class Crackers
 
     return true
 
-  findArchives: (filenames, relativePaths = false) ->
+  findArchives: (filenames) ->
     archives = []
     cbrRegex = /\.cb[rtz]$/i
     for filename in filenames
-      if relativePaths and not cfs.dirExists(filename)
-        log.warning "Ignoring non-directory: #{filename}"
-        continue
       if not fs.existsSync(filename)
         log.warning "Ignoring nonexistent filename: #{filename}"
         continue
       stat = fs.statSync(filename)
       if stat.isFile()
         if filename.match(cbrRegex)
-          archives.push filename
+          archives.push {
+            abs: filename
+            rel: null
+          }
       else if stat.isDirectory()
         list = cfs.listDir(filename)
         for fn in list
           fn = path.resolve(filename, fn)
           if fn.match(cbrRegex)
-            if relativePaths
-              rel = path.relative(filename, fn)
-              archives.push [fn, rel]
-            else
-              archives.push fn
+            rel = path.relative(filename, fn)
+            archives.push {
+              abs: fn
+              rel: rel
+            }
       else
         log.warning "Ignoring unrecognized filename: #{filename}"
     return archives
@@ -164,6 +164,9 @@ class Crackers
     return output
 
   organize: (args) ->
+    mergeDst = null
+    if args.hasOwnProperty('dst')
+      mergeDst = args.dst
     archives = @findArchives(args.filenames)
     if archives.length == 0
       log.warning "organize: Nothing to do!"
@@ -181,11 +184,29 @@ class Crackers
     mvCmd = "rename" if process.platform == 'win32'
     mkdirCmd = "mkdir -p"
     mkdirCmd = "mkdir" if process.platform == 'win32'
-    for src in archives
-      parsed = path.parse(src)
-      # console.log parsed
-      processed = @processTemplate(template, parsed.name)
-      dst = cfs.join(parsed.dir, processed) + parsed.ext
+    for archive in archives
+      # src is always just the archive's absolute path.
+      src = archive.abs
+
+      # calculate dst, based on whether or not we're merging, and
+      # how we found it (via dir listing or directly referenced).
+      if mergeDst == null
+        # regular organize call. Organize in-place.
+        parsed = path.parse(src)
+        processed = @processTemplate(template, parsed.name)
+        if parsed.dir.length == 0
+          parsed.dir = '.'
+        dst = cfs.join(parsed.dir, processed) + parsed.ext
+      else
+        # merge call. Do template processing if a filename was directly
+        # referenced (indicated by the relative path being absent).
+        if archive.rel == null
+          parsed = path.parse(src)
+          processed = @processTemplate(template, parsed.name)
+          dst = cfs.join(mergeDst, processed) + parsed.ext
+        else
+          dst = path.resolve(mergeDst, archive.rel)
+
       parsed = path.parse(dst)
       dstDir = parsed.dir
       if not madeDir[dstDir] and not cfs.dirExists(dstDir)
@@ -215,49 +236,13 @@ class Crackers
 
     cmd = "rm"
     cmd = "del" if process.platform == 'win32'
-    for filename in archives
+    for archive in archives
+      filename = archive.abs
       if args.execute
         console.log "Removing: #{filename}"
         fs.unlinkSync(filename)
       else
         console.log "#{cmd} \"#{filename}\""
-    return
-
-  merge: (args) ->
-    mergeDst = args.dst
-    archives = @findArchives(args.filenames, true)
-    if archives.length == 0
-      log.warning "merge: Nothing to do!"
-      return
-
-    madeDir = {}
-    mvCmd = "mv"
-    mvCmd = "rename" if process.platform == 'win32'
-    mkdirCmd = "mkdir -p"
-    mkdirCmd = "mkdir" if process.platform == 'win32'
-    for paths in archives
-      src = paths[0]
-      dst = path.resolve(mergeDst, paths[1])
-
-      parsed = path.parse(dst)
-      dstDir = parsed.dir
-      if not madeDir[dstDir] and not cfs.dirExists(dstDir)
-        madeDir[dstDir] = true
-        if args.execute
-          console.log " Mkdir: \"#{dstDir}\""
-          wrench.mkdirSyncRecursive(dstDir)
-        else
-          console.log "#{mkdirCmd} \"#{dstDir}\""
-      if src == dst
-        if args.execute
-          console.log "Skip  : \"#{src}\""
-      else
-        if args.execute
-          console.log "Rename: \"#{src}\""
-          console.log "    to: \"#{dst}\""
-          fs.renameSync(src, dst)
-        else
-          console.log "#{mvCmd} \"#{src}\" \"#{dst}\""
     return
 
 module.exports = Crackers

@@ -102,9 +102,10 @@ main = ->
     dst = '.'
     if args.merge
       dst = args.merge
-    crackers.merge {
+    crackers.organize {
       filenames: args._
       execute: args.execute
+      template: args.template
       dst: dst
     }
 
