@@ -109,10 +109,13 @@ class Crackers
 
     return true
 
-  findArchives: (filenames) ->
+  findArchives: (filenames, relativePaths = false) ->
     archives = []
     cbrRegex = /\.cb[rtz]$/i
     for filename in filenames
+      if relativePaths and not cfs.dirExists(filename)
+        log.warning "Ignoring non-directory: #{filename}"
+        continue
       if not fs.existsSync(filename)
         log.warning "Ignoring nonexistent filename: #{filename}"
         continue
@@ -125,7 +128,11 @@ class Crackers
         for fn in list
           fn = path.resolve(filename, fn)
           if fn.match(cbrRegex)
-            archives.push fn
+            if relativePaths
+              rel = path.relative(filename, fn)
+              archives.push [fn, rel]
+            else
+              archives.push fn
       else
         log.warning "Ignoring unrecognized filename: #{filename}"
     return archives
@@ -214,6 +221,43 @@ class Crackers
         fs.unlinkSync(filename)
       else
         console.log "#{cmd} \"#{filename}\""
+    return
+
+  merge: (args) ->
+    mergeDst = args.dst
+    archives = @findArchives(args.filenames, true)
+    if archives.length == 0
+      log.warning "merge: Nothing to do!"
+      return
+
+    madeDir = {}
+    mvCmd = "mv"
+    mvCmd = "rename" if process.platform == 'win32'
+    mkdirCmd = "mkdir -p"
+    mkdirCmd = "mkdir" if process.platform == 'win32'
+    for paths in archives
+      src = paths[0]
+      dst = path.resolve(mergeDst, paths[1])
+
+      parsed = path.parse(dst)
+      dstDir = parsed.dir
+      if not madeDir[dstDir] and not cfs.dirExists(dstDir)
+        madeDir[dstDir] = true
+        if args.execute
+          console.log " Mkdir: \"#{dstDir}\""
+          wrench.mkdirSyncRecursive(dstDir)
+        else
+          console.log "#{mkdirCmd} \"#{dstDir}\""
+      if src == dst
+        if args.execute
+          console.log "Skip  : \"#{src}\""
+      else
+        if args.execute
+          console.log "Rename: \"#{src}\""
+          console.log "    to: \"#{dst}\""
+          fs.renameSync(src, dst)
+        else
+          console.log "#{mvCmd} \"#{src}\" \"#{dst}\""
     return
 
 module.exports = Crackers

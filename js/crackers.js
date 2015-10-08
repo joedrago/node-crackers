@@ -152,12 +152,19 @@
       return true;
     };
 
-    Crackers.prototype.findArchives = function(filenames) {
-      var archives, cbrRegex, filename, fn, j, k, len, len1, list, stat;
+    Crackers.prototype.findArchives = function(filenames, relativePaths) {
+      var archives, cbrRegex, filename, fn, j, k, len, len1, list, rel, stat;
+      if (relativePaths == null) {
+        relativePaths = false;
+      }
       archives = [];
       cbrRegex = /\.cb[rtz]$/i;
       for (j = 0, len = filenames.length; j < len; j++) {
         filename = filenames[j];
+        if (relativePaths && !cfs.dirExists(filename)) {
+          log.warning("Ignoring non-directory: " + filename);
+          continue;
+        }
         if (!fs.existsSync(filename)) {
           log.warning("Ignoring nonexistent filename: " + filename);
           continue;
@@ -173,7 +180,12 @@
             fn = list[k];
             fn = path.resolve(filename, fn);
             if (fn.match(cbrRegex)) {
-              archives.push(fn);
+              if (relativePaths) {
+                rel = path.relative(filename, fn);
+                archives.push([fn, rel]);
+              } else {
+                archives.push(fn);
+              }
             }
           }
         } else {
@@ -287,6 +299,54 @@
           fs.unlinkSync(filename);
         } else {
           console.log(cmd + " \"" + filename + "\"");
+        }
+      }
+    };
+
+    Crackers.prototype.merge = function(args) {
+      var archives, dst, dstDir, j, len, madeDir, mergeDst, mkdirCmd, mvCmd, parsed, paths, src;
+      mergeDst = args.dst;
+      archives = this.findArchives(args.filenames, true);
+      if (archives.length === 0) {
+        log.warning("merge: Nothing to do!");
+        return;
+      }
+      madeDir = {};
+      mvCmd = "mv";
+      if (process.platform === 'win32') {
+        mvCmd = "rename";
+      }
+      mkdirCmd = "mkdir -p";
+      if (process.platform === 'win32') {
+        mkdirCmd = "mkdir";
+      }
+      for (j = 0, len = archives.length; j < len; j++) {
+        paths = archives[j];
+        src = paths[0];
+        dst = path.resolve(mergeDst, paths[1]);
+        parsed = path.parse(dst);
+        dstDir = parsed.dir;
+        if (!madeDir[dstDir] && !cfs.dirExists(dstDir)) {
+          madeDir[dstDir] = true;
+          if (args.execute) {
+            console.log(" Mkdir: \"" + dstDir + "\"");
+            wrench.mkdirSyncRecursive(dstDir);
+          } else {
+            console.log(mkdirCmd + " \"" + dstDir + "\"");
+          }
+        }
+        if (src === dst) {
+          if (args.execute) {
+            console.log("Skip  : \"" + src + "\"");
+          }
+        } else {
+          if (args.execute) {
+            console.log("Rename: \"" + src + "\"");
+            console.log("    to: \"" + dst + "\"");
+            fs.renameSync(src, dst);
+          } else {
+            console.log(mvCmd + " \"" + src + "\" \"" + dst + "\"");
+          }
         }
       }
     };

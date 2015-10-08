@@ -13,6 +13,7 @@
     log.syntax("        crackers [-v] [-c] [-u]   update   PATH           (aliases: create, generate, gen)");
     log.syntax("        crackers [-v] [-x] [-t T] organize PATH [PATH...] (aliases: rename, mv)");
     log.syntax("        crackers [-v] [-x]        cleanup  PATH [PATH...] (aliases: remove, rm, del)");
+    log.syntax("        crackers [-v] [-x] [-t T] merge    PATH [PATH...]");
     log.syntax("");
     log.syntax("Global options:");
     log.syntax("        -h,--help         This help output");
@@ -26,22 +27,26 @@
     log.syntax("Organize options:");
     log.syntax("        -t,--template T   Use template T when renaming. Default: {name}/{issue.3}");
     log.syntax("");
-    log.syntax("Organize / Cleanup options:");
+    log.syntax("Merge options:");
+    log.syntax("        -m,--merge DIR    merge destination (defaults to current directory)");
+    log.syntax("");
+    log.syntax("Organize / Cleanup / Merge options:");
     log.syntax("        -x,--execute      Perform rename/remove (default is to simply list actions)");
     log.syntax("");
     return process.exit(1);
   };
 
   main = function() {
-    var args, crackers, directoryName, mode, modeInput;
+    var args, crackers, directoryName, dst, mode, modeInput;
     args = require('minimist')(process.argv.slice(2), {
       boolean: ['h', 'v', 'c', 'u', 'x'],
-      string: ['t'],
+      string: ['t', 'm'],
       alias: {
         help: 'h',
         verbose: 'v',
         cover: 'c',
         download: 'd',
+        merge: 'm',
         template: 't',
         unpack: 'u',
         execute: 'x'
@@ -67,6 +72,8 @@
         case 'rm':
         case 'del':
           return 'cleanup';
+        case 'merge':
+          return 'merge';
         default:
           log.syntax("crackers' first ordered argument must be a command.");
           return syntax();
@@ -106,6 +113,20 @@
       return crackers.cleanup({
         filenames: args._,
         execute: args.execute
+      });
+    } else if (mode === 'merge') {
+      if (args._.length === 0) {
+        log.syntax("merge requires at least one path.");
+        syntax();
+      }
+      dst = '.';
+      if (args.merge) {
+        dst = args.merge;
+      }
+      return crackers.merge({
+        filenames: args._,
+        execute: args.execute,
+        dst: dst
       });
     }
   };
