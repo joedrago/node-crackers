@@ -87,6 +87,9 @@ class IndexGenerator
     @title = @path
     if @title.length == 0
       @title = cfs.getRootTitle(@rootDir)
+    else
+      pieces = @title.split(path.sep)
+      @title = pieces.join(" | ")
 
   generateUpdateList: (updates, limit = 0) ->
     text = ""

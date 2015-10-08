@@ -120,6 +120,7 @@
 
   IndexGenerator = (function() {
     function IndexGenerator(rootDir, dir, force, download) {
+      var pieces;
       this.rootDir = rootDir;
       this.dir = dir;
       this.force = force;
@@ -136,6 +137,9 @@
       this.title = this.path;
       if (this.title.length === 0) {
         this.title = cfs.getRootTitle(this.rootDir);
+      } else {
+        pieces = this.title.split(path.sep);
+        this.title = pieces.join(" | ");
       }
     }
 
