@@ -15,6 +15,7 @@ commandPaths =
 if process.platform == 'win32'
   commandPaths.composite = path.resolve(__dirname, "../wbin/composite.exe")
   commandPaths.convert = path.resolve(__dirname, "../wbin/convert.exe")
+  commandPaths.dwebp = path.resolve(__dirname, "../wbin/dwebp.exe")
   commandPaths.tar = path.resolve(__dirname, "../wbin/tar.exe")
   commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe")
   commandPaths.unzip = path.resolve(__dirname, "../wbin/unzip.exe")
