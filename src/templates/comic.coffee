@@ -157,7 +157,7 @@ autoPrev = ->
     when Auto.None
       autoStateOnShowEnd = Auto.BottomRight
       fotorama = $('.fotorama').data('fotorama')
-      fotorama.setOptions({ transition: 'crossfade' })
+      # fotorama.setOptions({ transition: 'crossfade' })
       fotorama.show('<')
     when Auto.TopLeft
       endZoom()
@@ -172,7 +172,7 @@ autoNext = ->
       zoomToCorner(1, 1)
     when Auto.BottomRight
       fotorama = $('.fotorama').data('fotorama')
-      fotorama.setOptions({ transition: 'crossfade' })
+      # fotorama.setOptions({ transition: 'crossfade' })
       fotorama.show('>')
 
 # ---------------------------------------------------------------------------------------
@@ -211,14 +211,14 @@ $(document).keydown (event) ->
     when 90
       autoState = Auto.None
       fotorama = $('.fotorama').data('fotorama')
-      fotorama.setOptions({ transition: 'crossfade' })
+      # fotorama.setOptions({ transition: 'crossfade' })
       fotorama.show('<')
 
     # X
     when 88
       autoState = Auto.None
       fotorama = $('.fotorama').data('fotorama')
-      fotorama.setOptions({ transition: 'crossfade' })
+      # fotorama.setOptions({ transition: 'crossfade' })
       fotorama.show('>')
 
     # -----------------------------------------
@@ -304,7 +304,7 @@ fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
     when Auto.BottomRight
       zoomToCorner(1, 1)
   autoStateOnShowEnd = Auto.None
-  fotorama.setOptions({ transition: 'slide' })
+  # fotorama.setOptions({ transition: 'slide' })
 fotorama.fotorama()
 
 if isMobile.any
