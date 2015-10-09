@@ -16,7 +16,7 @@
 
   altZoom = getOptBool('altzoom');
 
-  preloadImagesDefault = !isMobile.any;
+  preloadImagesDefault = true;
 
   preloadImages = getOptBool('preload', preloadImagesDefault);
 
