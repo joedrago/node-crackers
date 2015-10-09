@@ -174,6 +174,9 @@ comicImages.pop()
       case Auto.None:
         autoStateOnShowEnd = Auto.BottomRight;
         fotorama = $('.fotorama').data('fotorama');
+        fotorama.setOptions({
+          transition: 'crossfade'
+        });
         return fotorama.show('<');
       case Auto.TopLeft:
         return endZoom();
@@ -191,6 +194,9 @@ comicImages.pop()
         return zoomToCorner(1, 1);
       case Auto.BottomRight:
         fotorama = $('.fotorama').data('fotorama');
+        fotorama.setOptions({
+          transition: 'crossfade'
+        });
         return fotorama.show('>');
     }
   };
@@ -222,11 +228,17 @@ comicImages.pop()
       case 90:
         autoState = Auto.None;
         fotorama = $('.fotorama').data('fotorama');
+        fotorama.setOptions({
+          transition: 'crossfade'
+        });
         fotorama.show('<');
         break;
       case 88:
         autoState = Auto.None;
         fotorama = $('.fotorama').data('fotorama');
+        fotorama.setOptions({
+          transition: 'crossfade'
+        });
         fotorama.show('>');
         break;
       case 81:
@@ -301,7 +313,10 @@ comicImages.pop()
       case Auto.BottomRight:
         zoomToCorner(1, 1);
     }
-    return autoStateOnShowEnd = Auto.None;
+    autoStateOnShowEnd = Auto.None;
+    return fotorama.setOptions({
+      transition: 'slide'
+    });
   });
 
   fotorama.fotorama();
