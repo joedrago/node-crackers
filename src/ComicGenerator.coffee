@@ -16,8 +16,8 @@ class ComicGenerator
     @relativeRoot = '.' if @relativeRoot.length == 0
 
     @rootDir = @rootDir.replace("#{path.sep}$", "")
-    tmp = @dir.substr(@rootDir.length + 1)
-    pieces = tmp.split(path.sep)
+    @relativeDir = @dir.substr(@rootDir.length + 1)
+    pieces = @relativeDir.split(path.sep)
     @title = pieces.join(" | ")
 
   generate: ->
@@ -37,6 +37,7 @@ class ComicGenerator
       jsList += template('image_js', { url: url })
     outputText = template('comic_html', {
       generator: 'comic'
+      dir: @relativeDir
       root: @relativeRoot
       title: @title
       list: listText

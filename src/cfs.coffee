@@ -4,6 +4,7 @@ constants = require './constants'
 fs = require 'fs'
 path = require 'path'
 log = require './log'
+touch = require 'touch'
 wrench = require 'wrench'
 
 cfs = {}
@@ -43,6 +44,12 @@ cfs.fileHasBytes = (file) ->
   if stats.isFile()
     return (stats.size > 0)
   return false
+
+cfs.ensureFileExists = (file) ->
+  if fs.existsSync(file)
+    return
+  touch.sync(file)
+  return
 
 cfs.findArchive = (dir, comic) ->
   basename = path.join(dir, comic)

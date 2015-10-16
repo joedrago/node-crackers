@@ -196,3 +196,16 @@
       height: 100%;
       width: 0%;
     }
+
+    .progressbar {
+      display: block;
+      background:#333333;
+      width: #inject{coverwidth}px;
+      height: 10px;
+    }
+
+    .progressbarinner {
+      background-color: #669966;
+      height: 100%;
+      width: 0%;
+    }

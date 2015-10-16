@@ -6,6 +6,7 @@ path = require 'path'
 template = require './template'
 
 CoverGenerator = require './CoverGenerator'
+ManifestGenerator = require './ManifestGenerator'
 UpdatesGenerator = require './UpdatesGenerator'
 
 class IndexGenerator
@@ -49,6 +50,8 @@ class IndexGenerator
         break if remaining <= 0
     return text
 
+  ensureFileExists: (filename) ->
+
   generate: ->
     mdList = cfs.gatherMetadata(@dir)
     if mdList.length == 0
@@ -63,13 +66,17 @@ class IndexGenerator
 
     listText = ""
     totalCount = 0
-    if @isRoot and (mdList.length > 0)
+    if @isRoot
+      cfs.ensureFileExists(cfs.join(@rootDir, "local.js"))
+      cfs.ensureFileExists(cfs.join(@rootDir, "local.comic.js"))
+      cfs.ensureFileExists(cfs.join(@rootDir, "local.index.js"))
+      manifestGenerator = new ManifestGenerator(@rootDir)
+      manifestGenerator.generate()
       updates = new UpdatesGenerator(@rootDir).getUpdates()
       ueText = @generateUpdateList(updates)
       ueTerseText = @generateUpdateList(updates, constants.MAX_TERSE_UPDATES)
       updatesText = template('updates_html', { title: @title, updates: ueText })
       fs.writeFileSync @updatesFilename, updatesText
-
       listText += template('ie_sort_html', {
         title: @title
         updates: ueTerseText
@@ -88,6 +95,7 @@ class IndexGenerator
       recentcover = recentcover.replace("#", "%23")
       metadata.recentcover = recentcover
       metadata.archive = cfs.findArchive(@dir, metadata.path)
+      metadata.dir = path.join(@dir.substr(@rootDir.length + 1), metadata.path)
       ieTemplate = switch metadata.type
         when 'comic'
           metadata.id = "#{@path}/#{metadata.path}"
@@ -104,6 +112,7 @@ class IndexGenerator
 
     outputText = template('index_html', {
       generator: 'index'
+      dir: @path
       root: @relativeRoot
       title: @title
       list: listText

@@ -26,6 +26,7 @@ sorts = [
       return 0
   }
 ]
+window.sorts = sorts
 
 window.nextsort = (event) ->
   event.preventDefault() if event?

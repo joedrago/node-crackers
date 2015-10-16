@@ -2,6 +2,7 @@ module.exports = constants =
   DEFAULT_TITLE: "Crackers"
   ROOT_FILENAME: "root.crackers"
   META_FILENAME: 'meta.crackers'
+  MANIFEST_FILENAME: 'manifest.crackers'
   INDEX_FILENAME: 'index.html'
   COVER_FILENAME: 'cover.png'
   RECENT_COVER_FILENAME: 'recentcover.png'

@@ -45,6 +45,8 @@
     }
   ];
 
+  window.sorts = sorts;
+
   window.nextsort = function(event) {
     var divs;
     if (event != null) {

@@ -2,17 +2,25 @@
 (function() {
   $(function() {
     var generator, loadLocal, root;
-    loadLocal = function(path) {
+    loadLocal = function(path, cb) {
       var element;
+      console.log("loading JS: " + path);
       element = document.createElement("script");
       element.src = path;
-      return document.body.appendChild(element);
+      document.body.appendChild(element);
+      return element.onload = element.onreadystatechange = function() {
+        console.log("JS loaded: " + path);
+        if (cb) {
+          return cb();
+        }
+      };
     };
     generator = "#inject{generator}";
     root = "#inject{root}";
     if (generator && root) {
-      loadLocal(root + "/local.js");
-      return loadLocal(root + "/local." + generator + ".js");
+      return loadLocal(root + "/local.js", function() {
+        return loadLocal(root + "/local." + generator + ".js");
+      });
     }
   });
 

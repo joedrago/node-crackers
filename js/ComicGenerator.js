@@ -18,7 +18,7 @@
 
   ComicGenerator = (function() {
     function ComicGenerator(rootDir, dir, prevDir, nextDir, force) {
-      var pieces, tmp;
+      var pieces;
       this.rootDir = rootDir;
       this.dir = dir;
       this.prevDir = prevDir;
@@ -32,8 +32,8 @@
         this.relativeRoot = '.';
       }
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
-      tmp = this.dir.substr(this.rootDir.length + 1);
-      pieces = tmp.split(path.sep);
+      this.relativeDir = this.dir.substr(this.rootDir.length + 1);
+      pieces = this.relativeDir.split(path.sep);
       this.title = pieces.join(" | ");
     }
 
@@ -62,6 +62,7 @@
       }
       outputText = template('comic_html', {
         generator: 'comic',
+        dir: this.relativeDir,
         root: this.relativeRoot,
         title: this.title,
         list: listText,

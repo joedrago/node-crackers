@@ -297,6 +297,9 @@ comicImages.pop()
   });
 
   fotorama.on('fotorama:showend', function(e, fotorama, extra) {
+    if (window.hasOwnProperty('onPage')) {
+      window.onPage(fotorama.activeIndex + 1);
+    }
     switch (autoStateOnShowEnd) {
       case Auto.BottomRight:
         zoomToCorner(1, 1);

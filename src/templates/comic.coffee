@@ -300,6 +300,8 @@ fotorama = $('.fotorama')
 fotorama.on 'fotorama:show fotorama:showend', (e, fotorama, extra) ->
   endZoom()
 fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
+  if window.hasOwnProperty('onPage')
+    window.onPage(fotorama.activeIndex+1)
   switch autoStateOnShowEnd
     when Auto.BottomRight
       zoomToCorner(1, 1)
