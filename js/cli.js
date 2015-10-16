@@ -2,7 +2,7 @@
 (function() {
   var Crackers, exec, log, main, syntax;
 
-  Crackers = require('./crackers');
+  Crackers = require('./Crackers');
 
   exec = require('./exec');
 

@@ -1,4 +1,4 @@
-Crackers = require './crackers'
+Crackers = require './Crackers'
 exec = require './exec'
 log = require './log'
 

@@ -1,5 +1,4 @@
 cfs = require './cfs'
-fs = require 'fs'
 moment = require 'moment'
 path = require 'path'
 
@@ -18,7 +17,7 @@ sortByTimestampDescending = (a, b) ->
   return -1 if a.timestamp > b.timestamp
   return  0
 
-class Updates
+class UpdatesGenerator
   constructor: (@rootDir) ->
     @comics = cfs.gatherComics(@rootDir)
     @comics.sort(sortByTimestampDescending)
@@ -86,4 +85,4 @@ class Updates
   getUpdates: ->
     return @updates
 
-module.exports = Updates
+module.exports = UpdatesGenerator

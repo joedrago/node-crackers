@@ -1,79 +1,12 @@
 cfs = require './cfs'
 constants = require './constants'
-exec = require './exec'
 fs = require 'fs'
 log = require './log'
 path = require 'path'
 template = require './template'
-Updates = require './updates'
 
-class CoverGenerator
-  constructor: (@rootDir, @dir, @images, @force) ->
-
-  generateImage: (src, dst) ->
-    if @force.cover or cfs.newer(src, dst)
-      log.verbose "Generating thumbnail: #{src} -> #{dst}"
-      exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", src, dst], @dir)
-
-  generate: ->
-    if @images.length > 0
-      @generateImage(path.resolve(@dir, @images[0]), cfs.join(@dir, constants.COVER_FILENAME))
-      @generateImage(path.resolve(@dir, @images[@images.length - 1]), cfs.join(@dir, constants.RECENT_COVER_FILENAME))
-
-class ComicGenerator
-  constructor: (@rootDir, @dir, @prevDir, @nextDir, @force) ->
-    @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
-    @imagesDir = cfs.join(@dir, constants.IMAGES_DIR)
-    @images = cfs.listImages(@imagesDir)
-    @relativeRoot = path.relative(@dir, @rootDir)
-    @relativeRoot = '.' if @relativeRoot.length == 0
-
-    @rootDir = @rootDir.replace("#{path.sep}$", "")
-    tmp = @dir.substr(@rootDir.length + 1)
-    pieces = tmp.split(path.sep)
-    @title = pieces.join(" | ")
-
-  generate: ->
-    if @images.length == 0
-      log.error "No images in '#{@dir}', removing index"
-      fs.unlinkSync(@indexFilename)
-      cfs.removeMetadata(@dir)
-      return false
-
-    listText = ""
-    jsList = ""
-    for image in @images
-      parsed = path.parse(image)
-      url = "#{constants.IMAGES_DIR}/#{parsed.base}"
-      url = url.replace("#", "%23")
-      listText += template('image_html', { url: url })
-      jsList += template('image_js', { url: url })
-    outputText = template('comic_html', {
-      generator: 'comic'
-      root: @relativeRoot
-      title: @title
-      list: listText
-      jslist: jsList
-      prev: @prevDir
-      next: @nextDir
-    })
-
-    coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
-    coverGenerator.generate()
-
-    cfs.writeMetadata @dir, {
-      type:  'comic'
-      title: @title
-      pages: @images.length
-      count: 1
-      cover: constants.COVER_FILENAME
-      recentcover: constants.RECENT_COVER_FILENAME
-      timestamp: cfs.dirTime(@imagesDir)
-    }
-    fs.writeFileSync @indexFilename, outputText
-    log.verbose "Wrote #{@indexFilename}"
-    log.progress "Generated comic: #{@title} (#{@images.length} pages, next: '#{@nextDir}')"
-    return true
+CoverGenerator = require './CoverGenerator'
+UpdatesGenerator = require './UpdatesGenerator'
 
 class IndexGenerator
   constructor: (@rootDir, @dir, @force, @download) ->
@@ -131,7 +64,7 @@ class IndexGenerator
     listText = ""
     totalCount = 0
     if @isRoot and (mdList.length > 0)
-      updates = new Updates(@rootDir).getUpdates()
+      updates = new UpdatesGenerator(@rootDir).getUpdates()
       ueText = @generateUpdateList(updates)
       ueTerseText = @generateUpdateList(updates, constants.MAX_TERSE_UPDATES)
       updatesText = template('updates_html', { title: @title, updates: ueText })
@@ -190,17 +123,4 @@ class IndexGenerator
     log.verbose "Wrote #{@indexFilename}"
     log.progress "Generated index: #{@title} (#{totalCount} comics)"
 
-class MobileGenerator
-  constructor: (@rootDir) ->
-    @mobileFilename = cfs.join(@rootDir, constants.MOBILE_FILENAME)
-
-  generate: ->
-    outputText = template('mobile_html', { title: cfs.getRootTitle(@rootDir) })
-    fs.writeFileSync @mobileFilename, outputText
-    log.progress "Generated mobile page (#{constants.MOBILE_FILENAME})"
-
-module.exports =
-  CoverGenerator:  CoverGenerator
-  ComicGenerator:  ComicGenerator
-  IndexGenerator:  IndexGenerator
-  MobileGenerator: MobileGenerator
+module.exports = IndexGenerator

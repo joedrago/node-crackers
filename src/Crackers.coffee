@@ -3,10 +3,12 @@ constants = require './constants'
 fs = require 'fs'
 log = require './log'
 path = require 'path'
-touch = require 'touch'
 wrench = require 'wrench'
-{ComicGenerator, IndexGenerator, MobileGenerator} = require './generators'
-Unpacker = require './unpacker'
+
+ComicGenerator = require './ComicGenerator'
+IndexGenerator = require './IndexGenerator'
+MobileGenerator = require './MobileGenerator'
+Unpacker = require './Unpacker'
 
 class Crackers
   constructor: ->
