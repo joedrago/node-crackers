@@ -13,10 +13,16 @@ class ManifestGenerator
 
     children = {}
     issues = {}
+    flat = []
     for comic in comics
       metadata = cfs.readMetadata(comic.dir)
       parsed = path.parse(comic.relativeDir)
       indexDir = parsed.dir
+
+      flat.push {
+        dir: comic.relativeDir
+        pages: metadata.pages
+      }
 
       dir = comic.relativeDir
       atLeaf = true
@@ -61,6 +67,7 @@ class ManifestGenerator
     manifest = 
       issues: issues
       children: children
+      flat: flat
     fs.writeFileSync @manifestFilename, JSON.stringify(manifest, null, 2)
 
 module.exports = ManifestGenerator

@@ -70,6 +70,13 @@
     window.sort((currentSort + 1) % sorts.length);
   };
 
+  window.resort = function(event) {
+    if (event != null) {
+      event.preventDefault();
+    }
+    window.sort(currentSort);
+  };
+
   window.toggleRecentCover = function(event) {
     var attrName, name;
     if (event != null) {

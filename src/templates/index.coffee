@@ -46,6 +46,11 @@ window.nextsort = (event) ->
   window.sort((currentSort + 1) % sorts.length)
   return
 
+window.resort = (event) ->
+  event.preventDefault() if event?
+  window.sort(currentSort)
+  return
+
 window.toggleRecentCover = (event) ->
   event.preventDefault() if event?
   attrName = 'data-cover'
