@@ -70,6 +70,7 @@ class IndexGenerator
       cfs.ensureFileExists(cfs.join(@rootDir, "local.js"))
       cfs.ensureFileExists(cfs.join(@rootDir, "local.comic.js"))
       cfs.ensureFileExists(cfs.join(@rootDir, "local.index.js"))
+      cfs.ensureFileExists(cfs.join(@rootDir, "local.css"))
       manifestGenerator = new ManifestGenerator(@rootDir)
       manifestGenerator.generate()
       updates = new UpdatesGenerator(@rootDir).getUpdates()

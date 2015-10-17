@@ -117,6 +117,7 @@
         cfs.ensureFileExists(cfs.join(this.rootDir, "local.js"));
         cfs.ensureFileExists(cfs.join(this.rootDir, "local.comic.js"));
         cfs.ensureFileExists(cfs.join(this.rootDir, "local.index.js"));
+        cfs.ensureFileExists(cfs.join(this.rootDir, "local.css"));
         manifestGenerator = new ManifestGenerator(this.rootDir);
         manifestGenerator.generate();
         updates = new UpdatesGenerator(this.rootDir).getUpdates();

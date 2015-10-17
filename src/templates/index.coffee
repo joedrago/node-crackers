@@ -9,8 +9,8 @@ sorts = [
   {
     name: 'Alphabetical'
     func: (a, b) ->
-      ca = $(a).attr('data-title')
-      cb = $(b).attr('data-title')
+      ca = $(a).data('title')
+      cb = $(b).data('title')
       return -1 if ca < cb
       return  1 if ca > cb
       return 0
@@ -19,8 +19,8 @@ sorts = [
   {
     name: 'Recent'
     func: (a, b) ->
-      ca = parseInt($(a).attr('data-timestamp'))
-      cb = parseInt($(b).attr('data-timestamp'))
+      ca = parseInt($(a).data('timestamp'))
+      cb = parseInt($(b).data('timestamp'))
       return  1 if ca < cb
       return -1 if ca > cb
       return 0
@@ -28,13 +28,22 @@ sorts = [
 ]
 window.sorts = sorts
 
-window.nextsort = (event) ->
-  event.preventDefault() if event?
-  currentSort = (currentSort + 1) % sorts.length
+window.sort = (how) ->
+  currentSort = how
+  $('.sortowned').remove()
+  if(sorts[currentSort].pre)
+    sorts[currentSort].pre()
   divs = $('.sorted')
   divs.sort(sorts[currentSort].func)
+  if(sorts[currentSort].post)
+    sorts[currentSort].post()
   $('#entries').append(divs)
   $('#sortorder').text(sorts[currentSort].name)
+  return
+
+window.nextsort = (event) ->
+  event.preventDefault() if event?
+  window.sort((currentSort + 1) % sorts.length)
   return
 
 window.toggleRecentCover = (event) ->

@@ -18,8 +18,8 @@
       name: 'Alphabetical',
       func: function(a, b) {
         var ca, cb;
-        ca = $(a).attr('data-title');
-        cb = $(b).attr('data-title');
+        ca = $(a).data('title');
+        cb = $(b).data('title');
         if (ca < cb) {
           return -1;
         }
@@ -32,8 +32,8 @@
       name: 'Recent',
       func: function(a, b) {
         var ca, cb;
-        ca = parseInt($(a).attr('data-timestamp'));
-        cb = parseInt($(b).attr('data-timestamp'));
+        ca = parseInt($(a).data('timestamp'));
+        cb = parseInt($(b).data('timestamp'));
         if (ca < cb) {
           return 1;
         }
@@ -47,16 +47,27 @@
 
   window.sorts = sorts;
 
-  window.nextsort = function(event) {
+  window.sort = function(how) {
     var divs;
+    currentSort = how;
+    $('.sortowned').remove();
+    if (sorts[currentSort].pre) {
+      sorts[currentSort].pre();
+    }
+    divs = $('.sorted');
+    divs.sort(sorts[currentSort].func);
+    if (sorts[currentSort].post) {
+      sorts[currentSort].post();
+    }
+    $('#entries').append(divs);
+    $('#sortorder').text(sorts[currentSort].name);
+  };
+
+  window.nextsort = function(event) {
     if (event != null) {
       event.preventDefault();
     }
-    currentSort = (currentSort + 1) % sorts.length;
-    divs = $('.sorted');
-    divs.sort(sorts[currentSort].func);
-    $('#entries').append(divs);
-    $('#sortorder').text(sorts[currentSort].name);
+    window.sort((currentSort + 1) % sorts.length);
   };
 
   window.toggleRecentCover = function(event) {
