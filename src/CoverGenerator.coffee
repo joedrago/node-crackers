@@ -1,5 +1,6 @@
 cfs = require './cfs'
 constants = require './constants'
+exec = require './exec'
 log = require './log'
 path = require 'path'
 
@@ -9,6 +10,7 @@ class CoverGenerator
   generateImage: (src, dst) ->
     if @force.cover or cfs.newer(src, dst)
       log.verbose "Generating thumbnail: #{src} -> #{dst}"
+      exec('convert', ['-resize', "#{constants.COVER_WIDTH}x", src, dst], @dir)
 
   generate: ->
     if @images.length > 0

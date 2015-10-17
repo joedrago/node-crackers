@@ -4,7 +4,6 @@ constants = require './constants'
 exec = require './exec'
 log = require './log'
 path = require 'path'
-sizeOf = require 'image-size'
 touch = require 'touch'
 which = require 'which'
 wrench = require 'wrench'
@@ -94,9 +93,15 @@ class Unpacker
     validDimsCount = 0
     skipImage = {}
     for image in images
-      try
-        dimensions = sizeOf(image)
-      catch
+      identifyData = exec('identify', ['-format', '%w %h', image])
+      pieces = identifyData.replace(/\n/, '').split(/ /)
+      if pieces.length != 2
+        skipImage[image] = true
+        continue
+      dimensions =
+        width: parseInt(pieces[0])
+        height: parseInt(pieces[1])
+      if (dimensions.width < 1) or (dimensions.height < 1)
         skipImage[image] = true
         continue
       dimensionMap[image] = dimensions

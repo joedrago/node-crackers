@@ -15,6 +15,7 @@
   commandPaths = {
     composite: null,
     convert: null,
+    identify: null,
     dwebp: null,
     tar: null,
     unrar: null,
@@ -24,6 +25,7 @@
   if (process.platform === 'win32') {
     commandPaths.composite = path.resolve(__dirname, "../wbin/composite.exe");
     commandPaths.convert = path.resolve(__dirname, "../wbin/convert.exe");
+    commandPaths.identify = path.resolve(__dirname, "../wbin/identify.exe");
     commandPaths.dwebp = path.resolve(__dirname, "../wbin/dwebp.exe");
     commandPaths.tar = path.resolve(__dirname, "../wbin/tar.exe");
     commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe");
@@ -55,17 +57,17 @@
   log.verbose("commandPaths: " + (JSON.stringify(commandPaths, null, 2)));
 
   module.exports = function(cmdName, args, workingDir) {
-    var commandPath;
+    var commandPath, results;
     commandPath = commandPaths[cmdName];
     if (!commandPath) {
       log.error("Attempting to run unknown external command '" + cmdName + "'");
       process.exit(1);
     }
     log.verbose("executing external command " + cmdName + " (" + commandPath + "), args [ " + args + " ], workingDir " + workingDir);
-    spawnSync(commandPath, args, {
-      cwd: workingDir,
-      stdio: 'ignore'
+    results = spawnSync(commandPath, args, {
+      cwd: workingDir
     });
+    return String(results.stdout);
   };
 
 }).call(this);
