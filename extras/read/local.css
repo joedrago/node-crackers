@@ -1,0 +1,34 @@
+.progressbar {
+  display: block;
+  background:#333333;
+  width: #inject{coverwidth}px;
+  height: 10px;
+  margin-bottom: 3px;
+}
+
+.progressbarinner {
+  background-color: #669966;
+  height: 100%;
+  width: 0%;
+}
+
+.interestsection {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 1.2em;
+    font-family: monospace;
+    border-top: 1px dashed #333333;
+    color: #ffffaa;
+    padding-top: 10px;
+}
+
+.actiontext {
+    font-size: 0.7em;
+}
+
+.actions {
+    font-size: 0.7em;
+    cursor: pointer;
+}
