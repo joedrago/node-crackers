@@ -30,6 +30,7 @@ class ReadState
     var $user;
 
     // DB Info
+    var $ignoredList;
     var $progressTable;
 
     // Manifest info
@@ -83,17 +84,28 @@ class ReadState
 
         $dir = null;
         $page = null;
+        $ignored = array();
+        $this->ignoredList = array();
+        $this->progressTable = array();
+
+        $stmt = $conn->prepare("select dir from ignored where user=?");
+        $stmt->bind_param('s', $this->user);
+        $stmt->bind_result($dir);
+        $stmt->execute();
+        while($stmt->fetch()) {
+            array_push($this->ignoredList, $dir);
+        }
+        $stmt->close();
+
         $stmt = $conn->prepare("select dir,page from progress where user=?");
         $stmt->bind_param('s', $this->user);
         $stmt->bind_result($dir, $page);
         $stmt->execute();
-
-        $this->progressTable = array();
         while($stmt->fetch()) {
             $this->progressTable[$dir] = $page;
         }
-
         $stmt->close();
+
         $conn->close();
     }
 
@@ -144,7 +156,45 @@ class ReadState
         global $DB_HOST, $DB_USER, $DB_PASS, $DB_NAME;
         // $this->response["actions"] = json_encode($this->actions);
 
-        if(array_key_exists("mark", $this->actions) || array_key_exists("unmark", $this->actions)) {
+        if(array_key_exists("ignore", $this->actions)) {
+            // Trying to toggle ignore
+
+            $currentlyIgnored = false;
+            $ignoreDir = $this->actions['ignore'];
+            $outputDir = "";
+
+            $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
+            if($conn->connect_error) {
+                fatalError("Connection failed: " + $conn->connect_error);
+            }
+            $stmt = $conn->prepare("select dir from ignored where user=? and dir=?");
+            $stmt->bind_param('ss', $this->user, $ignoreDir);
+            $stmt->bind_result($outputDir);
+            if($stmt->execute()) {
+                $stmt->fetch();
+            }
+            if($ignoreDir == $outputDir) {
+                $currentlyIgnored = true;
+            }
+            $this->response['ignored'] = $currentlyIgnored;
+            // $this->response['stmt'] = $stmt->error;
+            $stmt->close();
+
+            if($currentlyIgnored) {
+                $stmt = $conn->prepare("delete from ignored where user=? and dir=?");
+                $stmt->bind_param('ss', $this->user, $ignoreDir);
+                $stmt->execute();
+                // $this->response['stmt'] = $stmt->error;
+                $stmt->close();
+            } else {
+                $stmt = $conn->prepare("insert into ignored (user, dir) VALUES (?, ?)");
+                $stmt->bind_param('ss', $this->user, $ignoreDir);
+                $stmt->execute();
+                // $this->response['stmt'] = $stmt->error;
+                $stmt->close();
+            }
+            $conn->close();
+        } else if(array_key_exists("mark", $this->actions) || array_key_exists("unmark", $this->actions)) {
             // Trying to mark as read/unread.
 
             $mark = true;
@@ -235,6 +285,12 @@ class ReadState
             foreach($children as $e)
             {
                 $perc = $this->readPercent($e);
+                foreach($this->ignoredList as $ignored) {
+                    if(strpos($e['dir'], $ignored) === 0) {
+                        $perc = -1;
+                        break;
+                    }
+                }
                 $this->response["read"][$e["dir"]] = array(
                     "progress" => $perc,
                 );
