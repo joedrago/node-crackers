@@ -97,6 +97,11 @@
     return $('#togglerecent').text(name);
   };
 
+  window.onLocalLoaded = function() {
+    console.log("onLocalLoaded (default)");
+    return $('#splashscreen').hide();
+  };
+
   $(function() {
     return nextsort();
   });

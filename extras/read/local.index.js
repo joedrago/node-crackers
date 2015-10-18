@@ -22,11 +22,14 @@ window.sorts.push(
         var sawAvailable = false;
         var sawContinue = false;
         var sawFinished = false;
+        var sawIgnored = false;
         $(".sorted").each(function() {
             var t = $(this);
             var p = t.data("progress");
             if(p == 100) {
                 sawFinished = true;
+            } else if(p == -1) {
+                sawIgnored = true;
             } else if(p == 0) {
                 sawAvailable = true;
             } else {
@@ -42,6 +45,9 @@ window.sorts.push(
         if(sawFinished) {
             createSection("Finished", 100);
         }
+        if(sawIgnored) {
+            createSection("Ignored", -1);
+        }
     },
     func: function (a, b) {
       ca = parseInt($(a).data('progress'));
@@ -55,6 +61,12 @@ window.sorts.push(
     }
   }
 );
+
+window.markignore = function(dir) {
+    window.readRequest({ ignore: dir }, function() {
+        window.resort();
+    });
+}
 
 window.markread = function(dir) {
     if(!confirm("Are you sure you want to mark all of '"+dir+"' as read?")) {
@@ -74,8 +86,19 @@ window.markunread = function(dir) {
     });
 }
 
+var oldOnLocalLoaded = window.onLocalLoaded;
+window.onLocalLoaded = function() {
+    console.log("waiting for read progress to load...");
+}
+
 // Query the current read state.
 window.readRequest({}, function() {
+    // Find out what path we are.
+    var dir = "";
+    $('body').each(function() {
+        dir = $(this).data('dir');
+    });
+
     if(dir === "") {
         window.sort(window.sorts.length - 1);
     }
@@ -92,13 +115,23 @@ window.readRequest({}, function() {
                 window.markread(d);
             });
             t.append(elem);
-            var elem = $("<span class=\"actiontext\"> / </span>");
+            elem = $("<span class=\"actiontext\"> / </span>");
             t.append(elem);
             elem = $("<a class=\"actions\">Unread</a>");
             elem.click(function(event) {
                 window.markunread(d);
             });
             t.append(elem);
+            elem = $("<span class=\"actiontext\"> / </span>");
+            t.append(elem);
+            elem = $("<a class=\"actions\">Ignore</a>");
+            elem.click(function(event) {
+                window.markignore(d);
+            });
+            t.append(elem);
         }
     });
+    if(oldOnLocalLoaded) {
+            oldOnLocalLoaded();
+    }
 });

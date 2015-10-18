@@ -13,9 +13,24 @@
 #include{style_css}
 
     html, body {
-      color: #aaaaaa;
-      background-color: #111111;
+        color: #aaaaaa;
+        background-color: #111111;
     }
+
+    #splashscreen {
+        height: 100%;
+        width: 100%;
+        z-index: 99;
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        background-color: #000000;
+        padding: 20px;
+        font-size: 2em;
+        font-family: monospace;
+        text-align: center;
+    }
+
   </style>
 
   <link rel="stylesheet" type="text/css" href="#inject{root}/local.css">
@@ -23,6 +38,10 @@
 </head>
 
 <body data-dir="#inject{dir}">
+
+  <div id="splashscreen">
+    Loading...
+  </div>
 
   <!-- Yeah, that's right. I use center. Deal with it. -->
   <center>

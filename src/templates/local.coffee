@@ -12,5 +12,7 @@ $(->
   root = "#inject{root}"
   if generator and root
     loadLocal "#{root}/local.js", ->
-      loadLocal("#{root}/local.#{generator}.js")
+      loadLocal "#{root}/local.#{generator}.js", ->
+        if window.onLocalLoaded
+          window.onLocalLoaded()
 )

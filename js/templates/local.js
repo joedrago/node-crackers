@@ -19,7 +19,11 @@
     root = "#inject{root}";
     if (generator && root) {
       return loadLocal(root + "/local.js", function() {
-        return loadLocal(root + "/local." + generator + ".js");
+        return loadLocal(root + "/local." + generator + ".js", function() {
+          if (window.onLocalLoaded) {
+            return window.onLocalLoaded();
+          }
+        });
       });
     }
   });

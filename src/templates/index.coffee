@@ -64,6 +64,10 @@ window.toggleRecentCover = (event) ->
     $(this).attr('src', cover)
   $('#togglerecent').text(name)
 
+window.onLocalLoaded = ->
+  console.log "onLocalLoaded (default)"
+  $('#splashscreen').hide();
+
 $(->
   nextsort()
 )
