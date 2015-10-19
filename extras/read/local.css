@@ -41,6 +41,9 @@
     cursor: pointer;
     font-size: 0.6em;
     color: #555555;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 a.menuitem {
