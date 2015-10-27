@@ -8,7 +8,7 @@ function readRequest(req, cb)
         dir = $(this).data('dir');
     });
 
-    // $.post("/read.php?p=" + dir, JSON.stringify(req), onReadResponse, 'json');
+    // $.post("/local.php?p=" + dir, JSON.stringify(req), onReadResponse, 'json');
     function onReadResponse(data) {
         if(data.hasOwnProperty("error")) {
             console.log("readRequest error:", data);
@@ -48,7 +48,7 @@ function readRequest(req, cb)
     }
     $.ajax({
         type: "POST",
-        url: "/read.php?p=" + dir,
+        url: "/local.php?p=" + dir,
         data: JSON.stringify(req),
         success: onReadResponse,
         error: onReadError,
