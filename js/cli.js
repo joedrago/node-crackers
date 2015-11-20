@@ -13,7 +13,7 @@
     log.syntax("        crackers [-v] [-c] [-u]          update   PATH           (aliases: create, generate, gen)");
     log.syntax("        crackers [-v] [-x] [-t T] [-s N] organize PATH [PATH...] (aliases: rename, mv)");
     log.syntax("        crackers [-v] [-x]               cleanup  PATH [PATH...] (aliases: remove, rm, del)");
-    log.syntax("        crackers [-v] [-x] [-t T]        merge    PATH [PATH...]");
+    log.syntax("        crackers [-v] [-x] [-t T] [-s N] merge    PATH [PATH...]");
     log.syntax("");
     log.syntax("Global options:");
     log.syntax("        -h,--help         This help output");

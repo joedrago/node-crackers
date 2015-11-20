@@ -156,8 +156,6 @@ class Crackers
     else
       return name
 
-    console.log keys
-
     output = template
     output = output.replace /\{([^\}]+)\}/g, (match, key) ->
       replacement = keys[key] ? ""
@@ -183,7 +181,6 @@ class Crackers
       return
 
     skip = args.skip ? 0
-    console.log "skip #{skip}"
 
     template = args.template
     if not template

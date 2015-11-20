@@ -215,7 +215,6 @@
       } else {
         return name;
       }
-      console.log(keys);
       output = template;
       output = output.replace(/\{([^\}]+)\}/g, function(match, key) {
         var pieces, places, ref, ref1, replacement;
@@ -248,7 +247,6 @@
         return;
       }
       skip = (ref = args.skip) != null ? ref : 0;
-      console.log("skip " + skip);
       template = args.template;
       if (!template) {
         template = "{name}/{issue.3}";
