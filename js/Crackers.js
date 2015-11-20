@@ -192,10 +192,22 @@
       return archives;
     };
 
-    Crackers.prototype.processTemplate = function(template, name) {
-      var keys, match, output;
+    Crackers.prototype.processTemplate = function(template, name, skipCount) {
+      var issueRegex, keys, match, output;
       keys = {};
-      match = name.match(/^(\D*)(\d+)/);
+      issueRegex = (function() {
+        switch (skipCount) {
+          case 3:
+            return /^(\D*\d+\D+\d+\D+\d+\D+)(\d+)/;
+          case 2:
+            return /^(\D*\d+\D+\d+\D+)(\d+)/;
+          case 1:
+            return /^(\D*\d+\D+)(\d+)/;
+          default:
+            return /^(\D*)(\d+)/;
+        }
+      })();
+      match = name.match(issueRegex);
       if (match) {
         keys.name = match[1];
         keys.name = keys.name.replace(/[\. ]+$/, '');
@@ -203,6 +215,7 @@
       } else {
         return name;
       }
+      console.log(keys);
       output = template;
       output = output.replace(/\{([^\}]+)\}/g, function(match, key) {
         var pieces, places, ref, ref1, replacement;
@@ -224,7 +237,7 @@
     };
 
     Crackers.prototype.organize = function(args) {
-      var archive, archives, dst, dstDir, j, len, madeDir, mergeDst, mkdirCmd, mvCmd, parsed, processed, src, template;
+      var archive, archives, dst, dstDir, j, len, madeDir, mergeDst, mkdirCmd, mvCmd, parsed, processed, ref, skip, src, template;
       mergeDst = null;
       if (args.hasOwnProperty('dst')) {
         mergeDst = args.dst;
@@ -234,6 +247,8 @@
         log.warning("organize: Nothing to do!");
         return;
       }
+      skip = (ref = args.skip) != null ? ref : 0;
+      console.log("skip " + skip);
       template = args.template;
       if (!template) {
         template = "{name}/{issue.3}";
@@ -255,7 +270,7 @@
         src = archive.abs;
         if (mergeDst === null) {
           parsed = path.parse(src);
-          processed = this.processTemplate(template, parsed.name);
+          processed = this.processTemplate(template, parsed.name, skip);
           if (parsed.dir.length === 0) {
             parsed.dir = '.';
           }
@@ -263,7 +278,7 @@
         } else {
           if (archive.rel === null) {
             parsed = path.parse(src);
-            processed = this.processTemplate(template, parsed.name);
+            processed = this.processTemplate(template, parsed.name, skip);
             dst = cfs.join(mergeDst, processed) + parsed.ext;
           } else {
             dst = path.resolve(mergeDst, archive.rel);

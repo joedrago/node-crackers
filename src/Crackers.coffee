@@ -139,16 +139,24 @@ class Crackers
         log.warning "Ignoring unrecognized filename: #{filename}"
     return archives
 
-  processTemplate: (template, name) ->
+  processTemplate: (template, name, skipCount) ->
     keys = {}
 
-    match = name.match(/^(\D*)(\d+)/)
+    issueRegex = switch skipCount
+      when 3 then /^(\D*\d+\D+\d+\D+\d+\D+)(\d+)/
+      when 2 then /^(\D*\d+\D+\d+\D+)(\d+)/
+      when 1 then /^(\D*\d+\D+)(\d+)/
+      else        /^(\D*)(\d+)/
+
+    match = name.match(issueRegex)
     if match
       keys.name = match[1]
       keys.name = keys.name.replace(/[\. ]+$/, '')
       keys.issue = match[2]
     else
       return name
+
+    console.log keys
 
     output = template
     output = output.replace /\{([^\}]+)\}/g, (match, key) ->
@@ -174,6 +182,9 @@ class Crackers
       log.warning "organize: Nothing to do!"
       return
 
+    skip = args.skip ? 0
+    console.log "skip #{skip}"
+
     template = args.template
     if not template
       template = "{name}/{issue.3}"
@@ -195,7 +206,7 @@ class Crackers
       if mergeDst == null
         # regular organize call. Organize in-place.
         parsed = path.parse(src)
-        processed = @processTemplate(template, parsed.name)
+        processed = @processTemplate(template, parsed.name, skip)
         if parsed.dir.length == 0
           parsed.dir = '.'
         dst = cfs.join(parsed.dir, processed) + parsed.ext
@@ -204,7 +215,7 @@ class Crackers
         # referenced (indicated by the relative path being absent).
         if archive.rel == null
           parsed = path.parse(src)
-          processed = @processTemplate(template, parsed.name)
+          processed = @processTemplate(template, parsed.name, skip)
           dst = cfs.join(mergeDst, processed) + parsed.ext
         else
           dst = path.resolve(mergeDst, archive.rel)

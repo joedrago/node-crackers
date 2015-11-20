@@ -4,10 +4,10 @@ log = require './log'
 
 syntax = ->
   log.syntax "Syntax: crackers [-h]"
-  log.syntax "        crackers [-v] [-c] [-u]   update   PATH           (aliases: create, generate, gen)"
-  log.syntax "        crackers [-v] [-x] [-t T] organize PATH [PATH...] (aliases: rename, mv)"
-  log.syntax "        crackers [-v] [-x]        cleanup  PATH [PATH...] (aliases: remove, rm, del)"
-  log.syntax "        crackers [-v] [-x] [-t T] merge    PATH [PATH...]"
+  log.syntax "        crackers [-v] [-c] [-u]          update   PATH           (aliases: create, generate, gen)"
+  log.syntax "        crackers [-v] [-x] [-t T] [-s N] organize PATH [PATH...] (aliases: rename, mv)"
+  log.syntax "        crackers [-v] [-x]               cleanup  PATH [PATH...] (aliases: remove, rm, del)"
+  log.syntax "        crackers [-v] [-x] [-t T]        merge    PATH [PATH...]"
   log.syntax ""
   log.syntax "Global options:"
   log.syntax "        -h,--help         This help output"
@@ -19,6 +19,7 @@ syntax = ->
   log.syntax "        -u,--unpack       Force reunpack of cbr/cbt/cbz files"
   log.syntax ""
   log.syntax "Organize options:"
+  log.syntax "        -s,--skip N       Skip N sets of digits when looking for the issue (default: 0)"
   log.syntax "        -t,--template T   Use template T when renaming. Default: {name}/{issue.3}"
   log.syntax ""
   log.syntax "Merge options:"
@@ -32,13 +33,14 @@ syntax = ->
 main = ->
   args = require('minimist')(process.argv.slice(2), {
     boolean: ['h', 'v', 'c', 'u', 'x']
-    string: ['t','m']
+    string: ['t','m','s']
     alias:
       help: 'h'
       verbose: 'v'
       cover: 'c'
       download: 'd'
       merge: 'm'
+      skip: 's'
       template: 't'
       unpack: 'u'
       execute: 'x'
@@ -83,6 +85,7 @@ main = ->
     crackers.organize {
       filenames: args._
       execute: args.execute
+      skip: parseInt(args.skip)
       template: args.template
     }
 
@@ -106,6 +109,7 @@ main = ->
       filenames: args._
       execute: args.execute
       template: args.template
+      skip: parseInt(args.skip)
       dst: dst
     }
 
