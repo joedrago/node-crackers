@@ -47,8 +47,8 @@ updateZoomPos = (t) ->
   zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1)
   zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1)
   if altZoom
-    zoomX = Math.round(zoomX)
-    zoomY = Math.round(zoomY)
+    zoomX = Math.min(1, Math.floor(zoomX * 3) / 2)
+    zoomY = Math.min(1, Math.floor(zoomY * 3) / 2)
 
 updateZoom = ->
   w = 0
