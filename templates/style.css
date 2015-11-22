@@ -67,20 +67,20 @@
       display: block;
       position:absolute;
       z-index:100;
-      left: 20vw;
-      right: 20vw;
+      left: 30vw;
+      right: 30vw;
       bottom: 0;
-      height: 60vw;
+      height: 40vw;
       opacity: 0;
       border: 1px solid black;
     }
 
     .altzoomcross {
       border: 1px dashed black;
-      width: 50%;
-      height: 50%;
-      margin-left: 25%;
-      margin-top: 25%;
+      width: 33%;
+      height: 33%;
+      margin-left: 33%;
+      margin-top: 33%;
       pointer-events: none;
       position: relative;
     }
