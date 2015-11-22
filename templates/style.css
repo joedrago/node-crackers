@@ -74,6 +74,16 @@
       opacity: 0;
       border: 1px solid black;
     }
+
+    .altzoomcross {
+      border: 1px dashed black;
+      width: 50%;
+      height: 50%;
+      margin-left: 25%;
+      margin-top: 25%;
+      pointer-events: none;
+      position: relative;
+    }
 /*
     .altzoomcross {
       background: black;

@@ -52,11 +52,19 @@ comicImages.pop()
   };
 
   updateZoomPos = function(t) {
+    var zX, zY;
     zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1);
     zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1);
     if (altZoom) {
-      zoomX = Math.min(1, Math.floor(zoomX * 3) / 2);
-      return zoomY = Math.min(1, Math.floor(zoomY * 3) / 2);
+      zX = Math.round(zoomX * 2) / 2;
+      zY = Math.round(zoomY * 2) / 2;
+      if ((zX === 0.5) && (zY === 0.5)) {
+        zoomX = Math.max(0, zoomX - (1 / 4)) * 2;
+        return zoomY = Math.max(0, zoomY - (1 / 4)) * 2;
+      } else {
+        zoomX = zX;
+        return zoomY = zY;
+      }
     }
   };
 
