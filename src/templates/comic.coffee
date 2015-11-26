@@ -46,7 +46,7 @@ Number.prototype.clamp = (min, max) ->
 updateZoomPos = (t) ->
   zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1)
   zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1)
-  if altZoom
+  if 1 # altZoom
     zX = Math.min(1, Math.floor(zoomX * 3) / 2)
     zY = Math.min(1, Math.floor(zoomY * 3) / 2)
     #zX = Math.round(zoomX * 2) / 2
@@ -109,12 +109,12 @@ endZoom = ->
   autoState = Auto.None
 
 fadeIn = ->
-  if altZoom
+  if 1 #altZoom
     # console.log("fade in")
     $('#zoombox').finish().fadeTo(100, 0.5)
 
 fadeOut = ->
-  if altZoom
+  if 1 #altZoom
     # console.log("fade out")
     $('#zoombox').delay(250).fadeTo(250, 0)
 
@@ -318,15 +318,15 @@ fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
 fotorama.fotorama()
 
 if isMobile.any
+  posClass = "zoomboxpos"
   if altZoom
-    $("body").append "<div id=\"zoombox\" class=\"altzoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>"
-    $("#zoombox").append "<div class=\"altzoomcross\"</div>"
-  else
-    $("body").append "<div id=\"zoombox\" class=\"box zoombox\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>"
-    if isMobile.tablet
-      # Calm down a little bit on the zoombox size/position.
-      $('#zoombox').css "width",  "10vw"
-      $('#zoombox').css "height", "10vh"
+    posClass = "zoomboxaltpos"
+  $("body").append "<div id=\"zoombox\" class=\"zoombox #{posClass}\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>"
+  $("#zoombox").append "<div class=\"zoomcross\"</div>"
+  if not altZoom and isMobile.tablet
+    # Calm down a little bit on the zoombox size/position.
+    $('#zoombox').css "width",  "20vw"
+    $('#zoombox').css "height", "20vw"
   fadeOut()
 
   $("body").append "<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\"></div>"

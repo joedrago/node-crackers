@@ -57,25 +57,28 @@
     }
 
     .zoombox {
-      right: 3vw;
-      bottom: 3vw;
-      width: 12vw;
-      height: 12vh;
-    }
-
-    .altzoombox {
       display: block;
       position:absolute;
       z-index:100;
-      left: 30vw;
-      right: 30vw;
-      bottom: 0;
-      height: 40vw;
       opacity: 0;
       border: 1px solid black;
     }
 
-    .altzoomcross {
+    .zoomboxpos {
+      right: 0vw;
+      bottom: 0vw;
+      width: 40vw;
+      height: 40vw;
+    }
+
+    .zoomboxaltpos {
+      left: 30vw;
+      right: 30vw;
+      bottom: 0;
+      height: 40vw;
+    }
+
+    .zoomcross {
       border: 1px dashed black;
       width: 33%;
       height: 33%;
@@ -84,29 +87,7 @@
       pointer-events: none;
       position: relative;
     }
-/*
-    .altzoomcross {
-      background: black;
-      width: 1px;
 
-      height: 100%;
-      position: relative;
-      margin-left: 50%;
-      pointer-events: none;
-    }
-
-    .altzoomcross:after {
-      background: black;
-      height: 1px;
-
-      content: "";
-      left: -30vw;
-      top: 30vw;
-      width: 60vw;
-      position: absolute;
-      pointer-events: none;
-    }
-*/
     .entry {
       display:inline-block;
       text-align: center;
