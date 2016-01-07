@@ -247,19 +247,35 @@ class Crackers
 
   cleanup: (args) ->
     archives = @findArchives(args.filenames)
-    if archives.length == 0
-      log.warning "cleanup: Nothing to do!"
-      return
+    archivedCount = 0
+    processedCount = 0
 
     cmd = "rm"
     cmd = "del" if process.platform == 'win32'
     for archive in archives
       filename = archive.abs
+
+      parsed = path.parse(filename)
+      rootDir = cfs.findParentContainingFilename(filename, constants.ROOT_FILENAME)
+      if not rootDir
+        log.warning "Skipping #{filename}, not in a crackers root"
+        continue
+      archivesDir = cfs.join(rootDir, constants.ARCHIVES_DIR)
+      if cfs.insideDir(filename, archivesDir)
+        archivedCount += 1
+        log.verbose "Skipping archived comic: #{filename}"
+        continue
+
       if args.execute
         console.log "Removing: #{filename}"
         fs.unlinkSync(filename)
       else
         console.log "#{cmd} \"#{filename}\""
+      processedCount += 1
+
+    if processedCount == 0
+      log.warning "cleanup: Nothing to do! (skipped #{archivedCount} archived comics)"
+      return
     return
 
   archiveComic: (comicDir, archiveFilename) ->
