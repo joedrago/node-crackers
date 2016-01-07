@@ -27,7 +27,7 @@ cfs.dirExists = (dir) ->
 cfs.dirTime = (dir) ->
   dirStats = fs.statSync(dir)
   return 0 if not dirStats?
-  return Math.floor(dirStats.birthtime.getTime() / 1000)
+  return Math.floor(dirStats.mtime.getTime() / 1000)
 
 cfs.fileExists = (file) ->
   if not fs.existsSync(file)
@@ -50,6 +50,11 @@ cfs.ensureFileExists = (file) ->
     return
   touch.sync(file)
   return
+
+cfs.insideDir = (filename, dir) ->
+  if filename.indexOf(dir) == 0
+    return true
+  return false
 
 cfs.findArchive = (dir, comic) ->
   basename = path.join(dir, comic)
@@ -86,10 +91,13 @@ cfs.listImages = (dir) ->
   images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg|webp)$/i))
   return images.sort()
 
-cfs.gatherComics = (rootDir) ->
+cfs.gatherComics = (subDir, rootDir) ->
+  subDir = subDir.replace("#{path.sep}$", "")
+  if not rootDir?
+    rootDir = subDir
   rootDir = rootDir.replace("#{path.sep}$", "")
-  list = wrench.readdirSyncRecursive(rootDir)
-  comicDirs = (path.resolve(rootDir, file).replace(/\/images$/, "") for file in list when file.match(/images$/i))
+  list = wrench.readdirSyncRecursive(subDir)
+  comicDirs = (path.resolve(subDir, file).replace(/\/images$/, "") for file in list when file.match(/images$/i))
   comics = []
   for dir in comicDirs
     relativeDir = dir.substr(rootDir.length + 1)

@@ -13,6 +13,7 @@
     MOBILE_FILENAME: 'mobile.html',
     UPDATES_FILENAME: 'updates.html',
     IMAGES_DIR: 'images',
+    ARCHIVES_DIR: 'archives',
     TEMP_UNPACK_DIR: 'unpackTmp',
     COVER_WIDTH: 150,
     SPAM_SIZE_TOLERANCE: 0.25,

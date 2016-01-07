@@ -1,5 +1,6 @@
 cfs = require './cfs'
 constants = require './constants'
+exec = require './exec'
 fs = require 'fs'
 log = require './log'
 path = require 'path'
@@ -24,18 +25,24 @@ class Crackers
     @updateDir = path.resolve('.', args.dir)
     if not cfs.dirExists(@updateDir)
       return @error("'#{@updateDir}' is not an existing directory.")
-    log.verbose "updateDir: #{@updateDir}"
+    log.verbose "updateDir  : #{@updateDir}"
     @rootDir = cfs.findParentContainingFilename(@updateDir, constants.ROOT_FILENAME)
     if not @rootDir
       @rootDir = @updateDir
       log.warning "crackers root not found (#{constants.ROOT_FILENAME} not detected in parents)."
-    log.verbose "rootDir  : #{@rootDir}"
+    log.verbose "rootDir    : #{@rootDir}"
+    @archivesDir = path.join(@rootDir, constants.ARCHIVES_DIR)
+    log.verbose "archivesDir: #{@archivesDir}"
 
     cfs.touchRoot @rootDir
+    cfs.prepareDir(@archivesDir)
 
     # Unpack any cbr, cbt, or cbz files that need unpacking in the update dir
     filesToUnpack = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/\.cb[rtz]$/))
     for unpackFile in filesToUnpack
+      if cfs.insideDir(unpackFile, @archivesDir)
+        log.verbose "Skipping archive #{unpackFile} ..."
+        continue
       parsed = path.parse(unpackFile)
       unpackDir = cfs.join(parsed.dir, parsed.name)
       log.verbose "Processing #{unpackFile} ..."
@@ -253,6 +260,35 @@ class Crackers
         fs.unlinkSync(filename)
       else
         console.log "#{cmd} \"#{filename}\""
+    return
+
+  archiveComic: (comicDir, archiveFilename) ->
+    if cfs.fileExists(archiveFilename)
+      fs.unlinkSync(archiveFilename)
+    args = ['-r0', archiveFilename, 'images']
+    exec('zip', args, comicDir)
+
+  archive: (args) ->
+    for filename in args.filenames
+      rootDir = cfs.findParentContainingFilename(filename, constants.ROOT_FILENAME)
+      if not rootDir
+        log.warning "Skipping #{filename}, not in a crackers root"
+        continue
+      comics = cfs.gatherComics(filename, rootDir)
+      for comic in comics
+        archiveFilename = cfs.join(rootDir, constants.ARCHIVES_DIR, "#{comic.relativeDir}.cbz")
+        parsed = path.parse archiveFilename
+        archiveDir = parsed.dir
+        wrench.mkdirSyncRecursive(archiveDir)
+        if not cfs.prepareDir(archiveDir)
+          continue
+        if args.force or cfs.newer(comic.dir, archiveFilename)
+          log.progress "[pack] #{comic.dir} -> #{archiveFilename}"
+          @archiveComic(comic.dir, archiveFilename)
+        else
+          log.progress "[skip] #{comic.dir} -> #{archiveFilename}"
+          continue
+
     return
 
 module.exports = Crackers

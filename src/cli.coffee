@@ -8,6 +8,7 @@ syntax = ->
   log.syntax "        crackers [-v] [-x] [-t T] [-s N] organize PATH [PATH...] (aliases: rename, mv)"
   log.syntax "        crackers [-v] [-x]               cleanup  PATH [PATH...] (aliases: remove, rm, del)"
   log.syntax "        crackers [-v] [-x] [-t T] [-s N] merge    PATH [PATH...]"
+  log.syntax "        crackers [-v]                    archive  PATH [PATH...]"
   log.syntax ""
   log.syntax "Global options:"
   log.syntax "        -h,--help         This help output"
@@ -28,17 +29,21 @@ syntax = ->
   log.syntax "Organize / Cleanup / Merge options:"
   log.syntax "        -x,--execute      Perform rename/remove (default is to simply list actions)"
   log.syntax ""
+  log.syntax "Archive options:"
+  log.syntax "        -f,--force        Force re-archive"
+  log.syntax ""
   process.exit(1)
 
 main = ->
   args = require('minimist')(process.argv.slice(2), {
-    boolean: ['h', 'v', 'c', 'u', 'x']
+    boolean: ['h', 'v', 'c', 'u', 'x', 'f']
     string: ['t','m','s']
     alias:
       help: 'h'
       verbose: 'v'
       cover: 'c'
       download: 'd'
+      force: 'f'
       merge: 'm'
       skip: 's'
       template: 't'
@@ -58,6 +63,8 @@ main = ->
       'cleanup'
     when 'merge'
       'merge'
+    when 'archive'
+      'archive'
     else
       log.syntax "crackers' first ordered argument must be a command."
       syntax()
@@ -111,6 +118,15 @@ main = ->
       template: args.template
       skip: parseInt(args.skip)
       dst: dst
+    }
+
+  else if mode == 'archive'
+    if args._.length == 0
+      log.syntax "archive requires at least one path inside of a crackers root."
+      syntax()
+    crackers.archive {
+      filenames: args._
+      force: args.force
     }
 
 module.exports =

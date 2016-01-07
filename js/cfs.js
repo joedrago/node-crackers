@@ -43,7 +43,7 @@
     if (dirStats == null) {
       return 0;
     }
-    return Math.floor(dirStats.birthtime.getTime() / 1000);
+    return Math.floor(dirStats.mtime.getTime() / 1000);
   };
 
   cfs.fileExists = function(file) {
@@ -75,6 +75,13 @@
       return;
     }
     touch.sync(file);
+  };
+
+  cfs.insideDir = function(filename, dir) {
+    if (filename.indexOf(dir) === 0) {
+      return true;
+    }
+    return false;
   };
 
   cfs.findArchive = function(dir, comic) {
@@ -133,17 +140,21 @@
     return images.sort();
   };
 
-  cfs.gatherComics = function(rootDir) {
+  cfs.gatherComics = function(subDir, rootDir) {
     var comicDirs, comics, dir, file, i, len, list, metadata, relativeDir;
+    subDir = subDir.replace(path.sep + "$", "");
+    if (rootDir == null) {
+      rootDir = subDir;
+    }
     rootDir = rootDir.replace(path.sep + "$", "");
-    list = wrench.readdirSyncRecursive(rootDir);
+    list = wrench.readdirSyncRecursive(subDir);
     comicDirs = (function() {
       var i, len, results;
       results = [];
       for (i = 0, len = list.length; i < len; i++) {
         file = list[i];
         if (file.match(/images$/i)) {
-          results.push(path.resolve(rootDir, file).replace(/\/images$/, ""));
+          results.push(path.resolve(subDir, file).replace(/\/images$/, ""));
         }
       }
       return results;

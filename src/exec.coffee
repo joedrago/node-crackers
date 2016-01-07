@@ -12,6 +12,7 @@ commandPaths =
   tar: null
   unrar: null
   unzip: null
+  zip: null
 
 if process.platform == 'win32'
   commandPaths.composite = path.resolve(__dirname, "../wbin/composite.exe")
@@ -21,6 +22,7 @@ if process.platform == 'win32'
   commandPaths.tar = path.resolve(__dirname, "../wbin/tar.exe")
   commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe")
   commandPaths.unzip = path.resolve(__dirname, "../wbin/unzip.exe")
+  commandPaths.zip = path.resolve(__dirname, "../wbin/zip.exe")
 else
   for name of commandPaths
     try
