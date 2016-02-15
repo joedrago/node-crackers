@@ -8,8 +8,8 @@ zoomScale = zoomScales[zoomScaleIndex]
 zoomX = 0
 zoomY = 0
 altZoom = getOptBool 'altzoom'
-preloadImagesDefault = true
-preloadImages = getOptBool('preload', preloadImagesDefault)
+preloadImageCountDefault = 3
+preloadImageCount = getOptInt('preload', preloadImageCountDefault)
 spaceHeld = false
 spaceMovedZoom = false
 helpShowing = false
@@ -302,11 +302,66 @@ $(document).mousemove (event) ->
     spaceMovedZoom = true
 
 # ---------------------------------------------------------------------------------------
+# Preload
+
+$("body").append "<div style=\"display:none\" id=\"preloadbar\"><div id=\"preloadbarinner\"></div></div>"
+
+loadedImages = {}
+kickPreloader = (pageIndex) ->
+  console.log "kickPreloader #{pageIndex}"
+  if preloadImageCount > 0
+    imagesToPreload = comicImages.slice(pageIndex, pageIndex + preloadImageCount)
+    if imagesToPreload.length > 0
+      console.log "preloading ", imagesToPreload
+      $('#preloadbarinner').width("0%")
+
+      # reset loaded images
+      nextLoadIndex = 0
+      loadedImages = {}
+
+      loadNextImage = ->
+        loop
+          if nextLoadIndex >= imagesToPreload.length
+            console.log "Preload: complete."
+            $('#preloadbarinner').width("100%")
+            $('#preloadbar').fadeOut(500)
+            return
+
+          percentage = Math.floor(100 * (nextLoadIndex+1) / imagesToPreload.length)
+          $('#preloadbarinner').width("#{percentage}%")
+          $('#preloadbar').show()
+
+          imageUrl = imagesToPreload[nextLoadIndex]
+          if loadedImages[imageUrl]
+            nextLoadIndex += 1
+            continue
+
+          imgUrl = imagesToPreload[nextLoadIndex]
+          console.log "Preload: loading #{imgUrl}"
+          img = new Image()
+          img.onload = ->
+            loadNextImage()
+          img.onerror = ->
+            nextLoadIndex = 0
+            if loadedImages.hasOwnProperty(imgUrl)
+              delete loadedImages[imgUrl]
+            console.log "Preload: retrying #{imgUrl}"
+            loadNextImage()
+          loadedImages[imgUrl] = img
+          img.src = imgUrl
+          nextLoadIndex += 1
+          return
+
+      loadNextImage()
+
+# ---------------------------------------------------------------------------------------
 # Setup
 
 fotorama = $('.fotorama')
 fotorama.on 'fotorama:show fotorama:showend', (e, fotorama, extra) ->
   endZoom()
+fotorama.on 'fotorama:show', (e, fotorama, extra) ->
+  kickPreloader(fotorama.activeIndex)
 fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
   if window.hasOwnProperty('onPage')
     window.onPage(fotorama.activeIndex+1)
@@ -337,33 +392,5 @@ if isMobile.any
     $("body").append "<a class=\"box nextbox\" href=\""+nextUrl+"\"></a>"
 
   $("body").append "<a class=\"box indexbox\" href=\"../\"></a>"
-
-
-# Image preloading code
-console.log "preloading images: #{preloadImages}"
-if preloadImages
-  $("body").append "<div id=\"preloadbar\"><div id=\"preloadbarinner\"></div></div>"
-  loadedImages = {}
-  nextLoadIndex = 0
-  loadNextImage = ->
-    percentage = Math.floor(100 * (nextLoadIndex+1) / comicImages.length)
-    $('#preloadbarinner').width("#{percentage}%")
-    if nextLoadIndex < comicImages.length
-      img = new Image()
-      img.onload = ->
-        loadNextImage()
-      img.onerror = ->
-        nextLoadIndex -= 1
-        console.log "retrying #{comicImages[nextLoadIndex]}"
-        loadNextImage()
-      loadedImages[comicImages[nextLoadIndex]] = img
-      console.log "Preloading #{comicImages[nextLoadIndex]}"
-      img.src = comicImages[nextLoadIndex]
-      nextLoadIndex += 1
-    else
-      console.log "Preloading complete."
-      $('#preloadbar').fadeOut(2500)
-
-  loadNextImage()
 
 # ---------------------------------------------------------------------------------------

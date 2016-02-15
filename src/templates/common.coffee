@@ -21,3 +21,11 @@ window.getOptBool = (name, defaultValue = false) ->
     else
       false
 
+window.getOptInt = (name, defaultValue = 0) ->
+  v = getOpt(name)
+  switch v
+    when ""
+      defaultValue 
+    else
+      parseInt(v)
+

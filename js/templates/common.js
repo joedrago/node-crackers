@@ -39,4 +39,18 @@
     }
   };
 
+  window.getOptInt = function(name, defaultValue) {
+    var v;
+    if (defaultValue == null) {
+      defaultValue = 0;
+    }
+    v = getOpt(name);
+    switch (v) {
+      case "":
+        return defaultValue;
+      default:
+        return parseInt(v);
+    }
+  };
+
 }).call(this);
