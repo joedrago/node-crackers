@@ -20,8 +20,8 @@ nextUrl = "#inject{next}"
 `
 var comicImages = [
 #inject{jslist}
-null]
-comicImages.pop()
+null];
+comicImages.pop();
 `
 
 # ---------------------------------------------------------------------------------------
@@ -357,40 +357,141 @@ kickPreloader = (pageIndex) ->
 # ---------------------------------------------------------------------------------------
 # Setup
 
-fotorama = $('.fotorama')
-fotorama.on 'fotorama:show fotorama:showend', (e, fotorama, extra) ->
-  endZoom()
-fotorama.on 'fotorama:show', (e, fotorama, extra) ->
-  kickPreloader(fotorama.activeIndex)
-fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
-  if window.hasOwnProperty('onPage')
-    window.onPage(fotorama.activeIndex+1)
-  switch autoStateOnShowEnd
-    when Auto.BottomRight
-      zoomToCorner(1, 1)
-  autoStateOnShowEnd = Auto.None
-  # fotorama.setOptions({ transition: 'slide' })
-fotorama.fotorama()
+class Comic
+  constructor: (@startIndex = 0) ->
+    @currentIndex = @startIndex
+    @zoomed = false
 
-if isMobile.any
-  posClass = "zoomboxpos"
-  if altZoom
-    posClass = "zoomboxaltpos"
-  $("body").append "<div id=\"zoombox\" class=\"zoombox #{posClass}\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>"
-  $("#zoombox").append "<div class=\"zoomcross\"</div>"
-  if not altZoom and isMobile.tablet
-    # Calm down a little bit on the zoombox size/position.
-    $('#zoombox').css "width",  "20vw"
-    $('#zoombox').css "height", "20vw"
-  fadeOut()
+    @view =
+      w: 0
+      h: 0
+    @updateView()
 
-  $("body").append "<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\"></div>"
+    @currentImage = new Image
+    $(@currentImage).css({ 'pointer-events': 'none'})
+    $('#view').append(@currentImage)
+    @hammer = new Hammer(document.getElementById('view'), {})
+    @hammer.on 'doubletap', (ev) =>
+      console.log 'doubletap'
+      @zoomed = !@zoomed
+      @update(true)
 
-  if prevUrl
-    $("body").append "<a class=\"box prevbox\" href=\""+prevUrl+"\"></a>"
-  if nextUrl
-    $("body").append "<a class=\"box nextbox\" href=\""+nextUrl+"\"></a>"
+    @goto(@startIndex)
 
-  $("body").append "<a class=\"box indexbox\" href=\"../\"></a>"
+  goto: (index) ->
+    @currentIndex = index
+    if @currentIndex >= comicImages.length
+      @currentIndex = comicImages.length - 1
+    if @currentIndex < 0
+      @currentIndex = 0
+    @currentImage.onload = =>
+      @imageWidth = @currentImage.width
+      @imageHeight = @currentImage.height
+      @update()
+    @currentImage.onerror = =>
+      @goto(index)
+    @currentImage.src = ''
+    @currentImage.src = comicImages[@currentIndex]
+
+  updateView: ->
+    comic = this
+    $("#view").each ->
+      comic.view.w = this.clientWidth
+      comic.view.h = this.clientHeight
+
+  calcUnzoomedPos: ->
+    if (@view.w == 0) or (@view.h == 0)
+      return null
+
+    iw = @imageWidth
+    ih = @imageHeight
+    if (iw == 0) or (ih == 0)
+      return null
+
+    imageAspectRatio = iw / ih
+    viewAspectRatio = @view.w / @view.h
+
+    pos = { x:0, y:0, w:0, h:0 }
+    if imageAspectRatio < viewAspectRatio
+      pos.w = Math.floor(@view.h * imageAspectRatio)
+      pos.h = @view.h
+      pos.x = (@view.w - pos.w) >> 1
+    else
+      pos.w = @view.w
+      pos.h = Math.floor(@view.w / imageAspectRatio)
+
+    return pos
+
+  calcImagePos: ->
+    pos = @calcUnzoomedPos()
+    return pos
+
+  updateImage: (animate = false) ->
+    pos = @calcImagePos()
+    if pos == null
+      console.log "no image data yet"
+      return
+
+    console.log "setting pos to ", pos
+    $(@currentImage).css {
+      position: 'absolute'
+      left: pos.x
+      top: pos.y
+      width: pos.w
+      height: pos.h
+    }
+
+    scale = 1
+    if @zoomed
+      scale *= 2
+    console.log "scale #{scale}"
+      
+    $(@currentImage).css {
+      "transform-origin": "50% 50%"
+      "transform": "scale(#{scale})"
+    }
+
+  update: (animate = false) ->
+    @updateView()
+    @updateImage(animate)
+
+
+window.comic = new Comic()
+
+#fotorama = $('.fotorama')
+#fotorama.on 'fotorama:show fotorama:showend', (e, fotorama, extra) ->
+#  endZoom()
+#fotorama.on 'fotorama:show', (e, fotorama, extra) ->
+#  kickPreloader(fotorama.activeIndex)
+#fotorama.on 'fotorama:showend', (e, fotorama, extra) ->
+#  if window.hasOwnProperty('onPage')
+#    window.onPage(fotorama.activeIndex+1)
+#  switch autoStateOnShowEnd
+#    when Auto.BottomRight
+#      zoomToCorner(1, 1)
+#  autoStateOnShowEnd = Auto.None
+#  # fotorama.setOptions({ transition: 'slide' })
+#fotorama.fotorama()
+#
+#if isMobile.any
+#  posClass = "zoomboxpos"
+#  if altZoom
+#    posClass = "zoomboxaltpos"
+#  $("body").append "<div id=\"zoombox\" class=\"zoombox #{posClass}\" ontouchmove=\"touchMove(event)\" ontouchstart=\"touchStart(event)\" ontouchend=\"touchEnd(event)\"></div>"
+#  $("#zoombox").append "<div class=\"zoomcross\"</div>"
+#  if not altZoom and isMobile.tablet
+#    # Calm down a little bit on the zoombox size/position.
+#    $('#zoombox').css "width",  "20vw"
+#    $('#zoombox').css "height", "20vw"
+#  fadeOut()
+#
+#  $("body").append "<div class=\"box scalebox\" ontouchstart=\"nextScale(event)\"></div>"
+#
+#  if prevUrl
+#    $("body").append "<a class=\"box prevbox\" href=\""+prevUrl+"\"></a>"
+#  if nextUrl
+#    $("body").append "<a class=\"box nextbox\" href=\""+nextUrl+"\"></a>"
+#
+#  $("body").append "<a class=\"box indexbox\" href=\"../\"></a>"
 
 # ---------------------------------------------------------------------------------------
