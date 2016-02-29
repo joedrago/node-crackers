@@ -15,7 +15,7 @@ window.getOpt = (name) ->
 window.getOptBool = (name, defaultValue = false) ->
   switch getOpt(name)
     when ""
-      defaultValue 
+      defaultValue
     when "1", "true", "on", "yes"
       true
     else
@@ -25,7 +25,7 @@ window.getOptInt = (name, defaultValue = 0) ->
   v = getOpt(name)
   switch v
     when ""
-      defaultValue 
+      defaultValue
     else
       parseInt(v)
 

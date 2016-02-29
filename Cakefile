@@ -11,13 +11,13 @@ if process.platform == 'win32'
 buildUI = (callback) ->
   # equal of command line $ "browserify --debug -t coffeeify ./src/main.coffee > bundle.js "
   b = browserify {
-    debug: true
+    # debug: true
     transform: coffeeify
   }
   b.add './src/ui/main.coffee'
   b.bundle (err, result) ->
     if not err
-      fs.writeFile "build/ui.js", result, (err) ->
+      fs.writeFile "build/templates/ui.js", result, (err) ->
         if not err
           util.log "UI compilation finished."
           callback?()
