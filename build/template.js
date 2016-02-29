@@ -41,7 +41,7 @@
 
   loadTemplateDir(__dirname + "/../templates");
 
-  loadTemplateDir(__dirname + "/../js/templates");
+  loadTemplateDir(__dirname + "/../build/templates");
 
   defaultReplacement = function(key) {
     var ref;

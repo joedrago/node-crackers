@@ -26,6 +26,8 @@
     "build": "cake build"
   },
   "devDependencies": {
+    "browserify": "^13.0.0",
+    "coffeeify": "^2.0.1",
     "coffee-script": "1.9.3"
   },
   "dependencies": {

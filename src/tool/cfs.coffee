@@ -97,7 +97,7 @@ cfs.gatherComics = (subDir, rootDir) ->
     rootDir = subDir
   rootDir = rootDir.replace("#{path.sep}$", "")
   list = wrench.readdirSyncRecursive(subDir)
-  comicDirs = (path.resolve(subDir, file).replace(/\/images$/, "") for file in list when file.match(/images$/i))
+  comicDirs = (path.resolve(subDir, file).replace(/[\/\\]images$/, "") for file in list when file.match(/images$/i))
   comics = []
   for dir in comicDirs
     relativeDir = dir.substr(rootDir.length + 1)

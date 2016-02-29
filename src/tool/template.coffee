@@ -25,7 +25,7 @@ loadTemplateDir = (templateDir) ->
     templates[name] = templateLines
 
 loadTemplateDir(__dirname + "/../templates")
-loadTemplateDir(__dirname + "/../js/templates")
+loadTemplateDir(__dirname + "/../build/templates")
 
 defaultReplacement = (key) ->
   return defaultReplacements[key] ? ""

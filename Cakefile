@@ -1,17 +1,42 @@
-util = require 'util'
+browserify = require 'browserify'
+coffeeify = require 'coffeeify'
+fs = require 'fs'
 {spawn} = require 'child_process'
+util = require 'util'
 
 coffeeName = 'coffee'
 if process.platform == 'win32'
   coffeeName += '.cmd'
 
-task 'build', 'build JS bundle', (options) ->
-  coffee = spawn coffeeName, ['-c', '-o', 'js', 'src']
+buildUI = (callback) ->
+  # equal of command line $ "browserify --debug -t coffeeify ./src/main.coffee > bundle.js "
+  b = browserify {
+    transform: coffeeify
+  }
+  b.add './src/ui/main.coffee'
+  b.transform coffeeify
+  b.bundle (err, result) ->
+    if not err
+      fs.writeFile "build/ui.js", result, (err) ->
+        if not err
+          console.log "browserify complete"
+          callback?()
+        else
+          console.error "browserify failed: " + err
+    else
+      console.error "failed " + err
+
+buildTool = (callback) ->
+  coffee = spawn coffeeName, ['-c', '-o', 'build', 'src/tool']
   coffee.stderr.on 'data', (data) ->
     process.stderr.write data.toString()
     process.exit(-1)
   coffee.stdout.on 'data', (data) ->
     print data.toString()
   coffee.on 'exit', (code) ->
-    util.log "Compilation finished."
+    util.log "Tool compilation finished."
     callback?() if code is 0
+
+task 'build', 'build JS bundle', (options) ->
+  buildTool ->
+    buildUI ->
