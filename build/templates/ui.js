@@ -19031,11 +19031,74 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":26}],159:[function(require,module,exports){
-var React, ReactDOM;
+var App, DOM, React, div, h1, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
 React = require('react');
 
-ReactDOM = require('react-dom');
+DOM = require('react-dom');
+
+ref = require('./tags'), div = ref.div, h1 = ref.h1;
+
+App = (function(superClass) {
+  extend(App, superClass);
+
+  App.defaultProps = {
+    start: 1
+  };
+
+  function App(props) {
+    App.__super__.constructor.call(this, props);
+    this.state = {
+      count: props.start
+    };
+    setInterval((function(_this) {
+      return function() {
+        return _this.setState({
+          count: _this.state.count + 1
+        });
+      };
+    })(this), 3000);
+  }
+
+  App.prototype.render = function() {
+    return div(null, "count: " + this.state.count);
+  };
+
+  return App;
+
+})(React.Component);
+
+module.exports = App;
 
 
-},{"react":158,"react-dom":2}]},{},[159]);
+},{"./tags":161,"react":158,"react-dom":2}],160:[function(require,module,exports){
+var App, DOM, React;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+App = require('./App');
+
+DOM.render(React.createElement(App), document.getElementById('appcontainer'));
+
+
+},{"./App":159,"react":158,"react-dom":2}],161:[function(require,module,exports){
+var E, React, elementName, i, len, ref;
+
+React = require('react');
+
+E = {};
+
+ref = ['div', 'h1'];
+for (i = 0, len = ref.length; i < len; i++) {
+  elementName = ref[i];
+  E[elementName] = React.createFactory(elementName);
+}
+
+module.exports = E;
+
+
+},{"react":158}]},{},[160]);

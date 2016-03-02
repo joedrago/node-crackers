@@ -13,6 +13,7 @@ buildUI = (callback) ->
   b = browserify {
     # debug: true
     transform: coffeeify
+    extensions: ['.coffee']
   }
   b.add './src/ui/main.coffee'
   b.bundle (err, result) ->
