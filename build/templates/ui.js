@@ -19031,7 +19031,7 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":26}],159:[function(require,module,exports){
-var App, DOM, React, div, h1, ref,
+var App, ComicView, DOM, React, div,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -19039,7 +19039,9 @@ React = require('react');
 
 DOM = require('react-dom');
 
-ref = require('./tags'), div = ref.div, h1 = ref.h1;
+ComicView = require('./ComicView');
+
+div = require('./tags').div;
 
 App = (function(superClass) {
   extend(App, superClass);
@@ -19063,7 +19065,9 @@ App = (function(superClass) {
   }
 
   App.prototype.render = function() {
-    return div(null, "count: " + this.state.count);
+    return React.createElement(ComicView, {
+      src: 'cover.png'
+    });
   };
 
   return App;
@@ -19073,7 +19077,49 @@ App = (function(superClass) {
 module.exports = App;
 
 
-},{"./tags":161,"react":158,"react-dom":2}],160:[function(require,module,exports){
+},{"./ComicView":160,"./tags":162,"react":158,"react-dom":2}],160:[function(require,module,exports){
+var ComicView, DOM, React, div, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+ref = require('./tags'), div = ref.div, img = ref.img;
+
+ComicView = (function(superClass) {
+  extend(ComicView, superClass);
+
+  ComicView.defaultProps = {
+    src: null
+  };
+
+  function ComicView(props) {
+    ComicView.__super__.constructor.call(this, props);
+    this.state = {
+      src: props.src
+    };
+  }
+
+  ComicView.prototype.render = function() {
+    if (this.state.src) {
+      return img({
+        src: this.state.src
+      });
+    } else {
+      return div(null, "Loading...");
+    }
+  };
+
+  return ComicView;
+
+})(React.Component);
+
+module.exports = ComicView;
+
+
+},{"./tags":162,"react":158,"react-dom":2}],161:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -19085,20 +19131,19 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":159,"react":158,"react-dom":2}],161:[function(require,module,exports){
-var E, React, elementName, i, len, ref;
+},{"./App":159,"react":158,"react-dom":2}],162:[function(require,module,exports){
+var React, elementName, i, len, tags;
 
 React = require('react');
 
-E = {};
+tags = ['div', 'img'];
 
-ref = ['div', 'h1'];
-for (i = 0, len = ref.length; i < len; i++) {
-  elementName = ref[i];
-  E[elementName] = React.createFactory(elementName);
+module.exports = {};
+
+for (i = 0, len = tags.length; i < len; i++) {
+  elementName = tags[i];
+  module.exports[elementName] = React.createFactory(elementName);
 }
 
-module.exports = E;
 
-
-},{"react":158}]},{},[160]);
+},{"react":158}]},{},[161]);

@@ -1,7 +1,7 @@
 React = require 'react'
 
-E = {}
-for elementName in ['div', 'h1']
-  E[elementName] = React.createFactory(elementName)
+tags = ['div', 'img']
 
-module.exports = E
+module.exports = {}
+for elementName in tags
+  module.exports[elementName] = React.createFactory(elementName)

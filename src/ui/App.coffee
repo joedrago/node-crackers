@@ -1,6 +1,7 @@
 React = require 'react'
 DOM = require 'react-dom'
-{div, h1} = require './tags'
+ComicView = require './ComicView'
+{div} = require './tags'
 
 class App extends React.Component
   @defaultProps:
@@ -16,6 +17,6 @@ class App extends React.Component
     , 3000)
 
   render: ->
-    div(null, "count: #{@state.count}")
+    React.createElement(ComicView, { src: 'cover.png' })
 
 module.exports = App
