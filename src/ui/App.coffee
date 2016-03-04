@@ -1,22 +1,24 @@
 React = require 'react'
 DOM = require 'react-dom'
-ComicView = require './ComicView'
+IndexView = require './IndexView'
 {div} = require './tags'
 
 class App extends React.Component
   @defaultProps:
-    start: 1
+    start: 0
 
   constructor: (props) ->
     super props
     @state =
-      count: props.start
+      manifest: null
 
-    setInterval(=>
-      @setState({ count: @state.count + 1 })
-    , 3000)
+    @loadManifest()
+
+  loadManifest: ->
+    $.getJSON 'manifest.crackers', null, (manifest, status) =>
+      @setState { manifest: manifest }
 
   render: ->
-    React.createElement(ComicView, { src: 'cover.png' })
+    React.createElement(IndexView, { manifest: @state.manifest })
 
 module.exports = App

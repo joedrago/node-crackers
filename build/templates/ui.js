@@ -19031,7 +19031,7 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":26}],159:[function(require,module,exports){
-var App, ComicView, DOM, React, div,
+var App, DOM, IndexView, React, div,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -19039,7 +19039,7 @@ React = require('react');
 
 DOM = require('react-dom');
 
-ComicView = require('./ComicView');
+IndexView = require('./IndexView');
 
 div = require('./tags').div;
 
@@ -19047,26 +19047,30 @@ App = (function(superClass) {
   extend(App, superClass);
 
   App.defaultProps = {
-    start: 1
+    start: 0
   };
 
   function App(props) {
     App.__super__.constructor.call(this, props);
     this.state = {
-      count: props.start
+      manifest: null
     };
-    setInterval((function(_this) {
-      return function() {
-        return _this.setState({
-          count: _this.state.count + 1
-        });
-      };
-    })(this), 3000);
+    this.loadManifest();
   }
 
+  App.prototype.loadManifest = function() {
+    return $.getJSON('manifest.crackers', null, (function(_this) {
+      return function(manifest, status) {
+        return _this.setState({
+          manifest: manifest
+        });
+      };
+    })(this));
+  };
+
   App.prototype.render = function() {
-    return React.createElement(ComicView, {
-      src: 'cover.png'
+    return React.createElement(IndexView, {
+      manifest: this.state.manifest
     });
   };
 
@@ -19077,8 +19081,8 @@ App = (function(superClass) {
 module.exports = App;
 
 
-},{"./ComicView":160,"./tags":162,"react":158,"react-dom":2}],160:[function(require,module,exports){
-var ComicView, DOM, React, div, img, ref,
+},{"./IndexView":160,"./tags":162,"react":158,"react-dom":2}],160:[function(require,module,exports){
+var DOM, IndexEntry, IndexView, React, div, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -19088,35 +19092,75 @@ DOM = require('react-dom');
 
 ref = require('./tags'), div = ref.div, img = ref.img;
 
-ComicView = (function(superClass) {
-  extend(ComicView, superClass);
+IndexEntry = (function(superClass) {
+  extend(IndexEntry, superClass);
 
-  ComicView.defaultProps = {
-    src: null
-  };
-
-  function ComicView(props) {
-    ComicView.__super__.constructor.call(this, props);
-    this.state = {
-      src: props.src
-    };
+  function IndexEntry(props) {
+    IndexEntry.__super__.constructor.call(this, props);
   }
 
-  ComicView.prototype.render = function() {
-    if (this.state.src) {
-      return img({
-        src: this.state.src
-      });
-    } else {
-      return div(null, "Loading...");
-    }
+  IndexEntry.prototype.style = {
+    display: 'inline-block',
+    width: '150px',
+    textAlign: 'center',
+    margin: '10px',
+    verticalAlign: 'top'
   };
 
-  return ComicView;
+  IndexEntry.prototype.render = function() {
+    var image, text;
+    text = this.props.data.dir;
+    if (this.props.data.pages) {
+      text += ", " + this.props.data.pages + " pages";
+    }
+    image = img({
+      src: this.props.data.dir + "/cover.png"
+    });
+    return div({
+      style: this.style
+    }, [image, text]);
+  };
+
+  return IndexEntry;
 
 })(React.Component);
 
-module.exports = ComicView;
+IndexView = (function(superClass) {
+  extend(IndexView, superClass);
+
+  IndexView.defaultProps = {
+    manifest: null
+  };
+
+  function IndexView(props) {
+    IndexView.__super__.constructor.call(this, props);
+    this.state = {
+      dir: ""
+    };
+  }
+
+  IndexView.prototype.render = function() {
+    var entries, entry, i, len, listing;
+    if (!this.props.manifest) {
+      return div(null, "Loading...");
+    }
+    listing = this.props.manifest.children[this.state.dir];
+    entries = [];
+    for (i = 0, len = listing.length; i < len; i++) {
+      entry = listing[i];
+      entries.push(React.createElement(IndexEntry, {
+        key: entry.dir,
+        data: entry
+      }));
+    }
+    return div(null, entries);
+  };
+
+  return IndexView;
+
+})(React.Component);
+
+module.exports = IndexView;
 
 
 },{"./tags":162,"react":158,"react-dom":2}],161:[function(require,module,exports){

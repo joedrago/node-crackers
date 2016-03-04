@@ -4,12 +4,12 @@ DOM = require 'react-dom'
 
 class ComicView extends React.Component
   @defaultProps:
-    src: null
+    dir: '.'
 
   constructor: (props) ->
     super props
     @state =
-      src: props.src
+      dir: props.dir
 
   render: ->
     if @state.src
