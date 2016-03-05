@@ -19082,7 +19082,7 @@ module.exports = App;
 
 
 },{"./IndexView":160,"./tags":162,"react":158,"react-dom":2}],160:[function(require,module,exports){
-var DOM, IndexEntry, IndexView, React, div, img, ref,
+var DOM, IndexEntry, IndexView, React, a, div, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -19090,7 +19090,7 @@ React = require('react');
 
 DOM = require('react-dom');
 
-ref = require('./tags'), div = ref.div, img = ref.img;
+ref = require('./tags'), a = ref.a, div = ref.div, img = ref.img, span = ref.span;
 
 IndexEntry = (function(superClass) {
   extend(IndexEntry, superClass);
@@ -19099,26 +19099,54 @@ IndexEntry = (function(superClass) {
     IndexEntry.__super__.constructor.call(this, props);
   }
 
-  IndexEntry.prototype.style = {
-    display: 'inline-block',
-    width: '150px',
-    textAlign: 'center',
-    margin: '10px',
-    verticalAlign: 'top'
-  };
-
   IndexEntry.prototype.render = function() {
-    var image, text;
-    text = this.props.data.dir;
-    if (this.props.data.pages) {
-      text += ", " + this.props.data.pages + " pages";
-    }
-    image = img({
-      src: this.props.data.dir + "/cover.png"
+    var cover, entry, link, subtitle, subtitleText, title;
+    cover = img({
+      key: 'cover',
+      src: this.props.info.dir + "/cover.png"
     });
-    return div({
-      style: this.style
-    }, [image, text]);
+    title = span({
+      key: 'title',
+      style: {
+        fontWeight: 900,
+        color: '#ffffff'
+      }
+    }, this.props.info.dir);
+    link = a({
+      key: 'link',
+      onClick: (function(_this) {
+        return function() {
+          return _this.props.click(_this.props.info);
+        };
+      })(this),
+      style: {
+        cursor: 'pointer'
+      }
+    }, [cover, title]);
+    switch (this.props.info.type) {
+      case 'issue':
+        subtitleText = "(" + this.props.info.pages + " pages)";
+        break;
+      case 'index':
+        subtitleText = "(" + this.props.info.count + " comics, Newest: " + this.props.info.recent + ")";
+    }
+    subtitle = div({
+      key: 'subtitle',
+      style: {
+        color: '#aaaaaa',
+        fontSize: '0.7em'
+      }
+    }, subtitleText);
+    entry = div({
+      style: {
+        display: 'inline-block',
+        width: '150px',
+        textAlign: 'center',
+        margin: '10px',
+        verticalAlign: 'top'
+      }
+    }, [link, subtitle]);
+    return entry;
   };
 
   return IndexEntry;
@@ -19139,21 +19167,50 @@ IndexView = (function(superClass) {
     };
   }
 
+  IndexView.prototype.click = function(info) {
+    if (info.type === 'index') {
+      return this.setState({
+        dir: info.dir
+      });
+    } else {
+      return this.setState({
+        dir: ""
+      });
+    }
+  };
+
   IndexView.prototype.render = function() {
-    var entries, entry, i, len, listing;
+    var entries, entry, entryElement, i, len, listing, view;
     if (!this.props.manifest) {
-      return div(null, "Loading...");
+      return div({
+        style: {
+          backgroundColor: '#110000'
+        }
+      }, "Loading...");
     }
     listing = this.props.manifest.children[this.state.dir];
     entries = [];
     for (i = 0, len = listing.length; i < len; i++) {
       entry = listing[i];
-      entries.push(React.createElement(IndexEntry, {
+      entryElement = React.createElement(IndexEntry, {
         key: entry.dir,
-        data: entry
-      }));
+        info: entry,
+        click: (function(_this) {
+          return function(info) {
+            return _this.click(info);
+          };
+        })(this)
+      });
+      entries.push(entryElement);
     }
-    return div(null, entries);
+    view = div({
+      style: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#111111'
+      }
+    }, entries);
+    return view;
   };
 
   return IndexView;
@@ -19180,7 +19237,7 @@ var React, elementName, i, len, tags;
 
 React = require('react');
 
-tags = ['div', 'img'];
+tags = ['a', 'div', 'img', 'span'];
 
 module.exports = {};
 

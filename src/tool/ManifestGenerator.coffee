@@ -37,11 +37,16 @@ class ManifestGenerator
             type: 'issue'
             dir: comic.relativeDir
             pages: metadata.pages
+            timestamp: comic.timestamp
           }
         else
+          indexMetadata = cfs.readMetadata(path.join(@rootDir, dir))
           children[indexDir][dir] = {
             type: 'index'
             dir: dir
+            recent: indexMetadata.recent
+            count: indexMetadata.count
+            timestamp: indexMetadata.timestamp
           }
         atLeaf = false
 
@@ -64,7 +69,7 @@ class ManifestGenerator
       newchildren[indexDir] = list
     children = newchildren
 
-    manifest = 
+    manifest =
       issues: issues
       children: children
       flat: flat

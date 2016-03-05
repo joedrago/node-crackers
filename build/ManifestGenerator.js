@@ -19,7 +19,7 @@
     }
 
     ManifestGenerator.prototype.generate = function() {
-      var atLeaf, children, comic, comics, dir, flat, i, indexDir, indexlist, issues, j, k, keys, len, len1, list, manifest, metadata, newchildren, parsed, ref;
+      var atLeaf, children, comic, comics, dir, flat, i, indexDir, indexMetadata, indexlist, issues, j, k, keys, len, len1, list, manifest, metadata, newchildren, parsed, ref;
       comics = cfs.gatherComics(this.rootDir);
       children = {};
       issues = {};
@@ -45,12 +45,17 @@
             children[indexDir][comic.relativeDir] = {
               type: 'issue',
               dir: comic.relativeDir,
-              pages: metadata.pages
+              pages: metadata.pages,
+              timestamp: comic.timestamp
             };
           } else {
+            indexMetadata = cfs.readMetadata(path.join(this.rootDir, dir));
             children[indexDir][dir] = {
               type: 'index',
-              dir: dir
+              dir: dir,
+              recent: indexMetadata.recent,
+              count: indexMetadata.count,
+              timestamp: indexMetadata.timestamp
             };
           }
           atLeaf = false;
