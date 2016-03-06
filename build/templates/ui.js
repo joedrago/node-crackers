@@ -19111,7 +19111,7 @@ IndexEntry = (function(superClass) {
         fontWeight: 900,
         color: '#ffffff'
       }
-    }, this.props.info.dir);
+    }, this.props.info.dir.replace(/\//g, " | "));
     link = a({
       key: 'link',
       onClick: (function(_this) {
@@ -19161,22 +19161,25 @@ IndexView = (function(superClass) {
   };
 
   function IndexView(props) {
+    var ref1;
     IndexView.__super__.constructor.call(this, props);
     this.state = {
-      dir: ""
+      dir: (ref1 = window.location.hash.replace(/^#!?/, "")) != null ? ref1 : ""
     };
   }
 
   IndexView.prototype.click = function(info) {
+    var dir;
     if (info.type === 'index') {
-      return this.setState({
-        dir: info.dir
-      });
+      dir = info.dir;
+      window.location.hash = '#!' + dir;
     } else {
-      return this.setState({
-        dir: ""
-      });
+      dir = "";
+      window.location.hash = '';
     }
+    return this.setState({
+      dir: dir
+    });
   };
 
   IndexView.prototype.render = function() {
@@ -19189,6 +19192,10 @@ IndexView = (function(superClass) {
       }, "Loading...");
     }
     listing = this.props.manifest.children[this.state.dir];
+    if (!listing) {
+      console.log("can't find dir " + this.state.dir + ", going back to index");
+      listing = this.props.manifest.children[""];
+    }
     entries = [];
     for (i = 0, len = listing.length; i < len; i++) {
       entry = listing[i];
@@ -19207,7 +19214,8 @@ IndexView = (function(superClass) {
       style: {
         width: '100%',
         height: '100%',
-        backgroundColor: '#111111'
+        backgroundColor: '#111111',
+        textAlign: 'center'
       }
     }, entries);
     return view;

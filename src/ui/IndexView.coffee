@@ -17,7 +17,7 @@ class IndexEntry extends React.Component
       style:
         fontWeight: 900
         color: '#ffffff'
-    }, @props.info.dir
+    }, @props.info.dir.replace(/\//g, " | ")
 
     link = a {
       key: 'link'
@@ -62,13 +62,16 @@ class IndexView extends React.Component
   constructor: (props) ->
     super props
     @state =
-      dir: ""
+      dir: window.location.hash.replace(/^#!?/, "") ? ""
 
   click: (info) ->
     if info.type == 'index'
-      @setState { dir: info.dir }
+      dir = info.dir
+      window.location.hash = '#!' + dir
     else
-      @setState { dir: "" }
+      dir = ""
+      window.location.hash = ''
+    @setState { dir: dir }
 
   render: ->
     if not @props.manifest
@@ -78,6 +81,9 @@ class IndexView extends React.Component
       }, "Loading..."
 
     listing = @props.manifest.children[@state.dir]
+    if not listing
+      console.log "can't find dir #{@state.dir}, going back to index"
+      listing = @props.manifest.children[""]
 
     entries = []
     for entry in listing
@@ -93,6 +99,7 @@ class IndexView extends React.Component
         width: '100%'
         height: '100%'
         backgroundColor: '#111111'
+        textAlign: 'center'
     }, entries
 
     return view
