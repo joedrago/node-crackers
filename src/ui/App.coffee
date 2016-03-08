@@ -7,6 +7,10 @@ IndexView = require './IndexView'
 injectTapEventPlugin = require "react-tap-event-plugin"
 injectTapEventPlugin()
 
+DarkTheme = require 'material-ui/lib/styles/baseThemes/darkBaseTheme'
+getMuiTheme = require 'material-ui/lib/styles/getMuiTheme'
+
+AppBar = require 'material-ui/lib/app-bar'
 # FlatButton = require 'material-ui/lib/flat-button'
 FontIcon = require 'material-ui/lib/font-icon'
 IconButton = require 'material-ui/lib/icon-button'
@@ -21,6 +25,13 @@ ToolbarTitle = require 'material-ui/lib/toolbar/toolbar-title'
 class App extends React.Component
   @defaultProps:
     start: 0
+  @childContextTypes:
+    muiTheme: React.PropTypes.object
+
+  getChildContext: ->
+    return {
+      muiTheme: getMuiTheme(DarkTheme)
+    }
 
   constructor: (props) ->
     super props
@@ -65,19 +76,10 @@ class App extends React.Component
         }
       ]
 
-      # Top toolbar
-      el Toolbar, { key: 'toolbar' }, [
-        el ToolbarGroup, { firstChild: true, float: 'left' }, [
-          el IconButton, {
-            iconClassName:"material-icons"
-            onMouseUp: => @setState { navOpen: !@state.navOpen }
-          }, 'menu'
-        ]
-
-        el ToolbarGroup, { float: 'right' }, [
-          el ToolbarTitle, { text: "GD Comics" }
-        ]
-      ]
+      el AppBar, {
+        title: "GD Comics"
+        onLeftIconButtonTouchTap: => @setState { navOpen: !@state.navOpen }
+      }
 
       view
     ]
