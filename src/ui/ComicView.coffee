@@ -12,11 +12,6 @@ class ComicView extends React.Component
       dir: props.dir
 
   render: ->
-    if @state.src
-      img {
-        src: @state.src
-      }
-    else
-      div(null, "Loading...")
+    div(null, "Loading...")
 
 module.exports = ComicView
