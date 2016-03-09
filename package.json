@@ -30,8 +30,11 @@
     "coffee-script": "1.9.3",
     "coffeeify": "^2.0.1",
     "material-ui": "^0.14.4",
+    "pubsub-js": "^1.5.3",
     "react": "^0.14.7",
+    "react-dimensions": "^1.0.2",
     "react-dom": "^0.14.7",
+    "react-loader": "^2.0.0",
     "react-tap-event-plugin": "^0.2.2"
   },
   "dependencies": {

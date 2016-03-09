@@ -57,36 +57,20 @@ class IndexEntry extends React.Component
 
 class IndexView extends React.Component
   @defaultProps:
-    manifest: null
+    dir: null
+    list: []
+    onChangeDir: -> console.log "IndexView.onChangeDir: Ignored"
 
   constructor: (props) ->
     super props
-    @state =
-      dir: window.location.hash.replace(/^#!?/, "") ? ""
 
   click: (info) ->
-    if info.type == 'index'
-      dir = info.dir
-      window.location.hash = '#!' + dir
-    else
-      dir = ""
-      window.location.hash = ''
-    @setState { dir: dir }
+    if @props.onChangeDir
+      @props.onChangeDir(info.dir)
 
   render: ->
-    if not @props.manifest
-      return div {
-        style:
-          backgroundColor: '#110000'
-      }, "Loading..."
-
-    listing = @props.manifest.children[@state.dir]
-    if not listing
-      console.log "can't find dir #{@state.dir}, going back to index"
-      listing = @props.manifest.children[""]
-
     entries = []
-    for entry in listing
+    for entry in @props.list
       entryElement = React.createElement IndexEntry, {
         key: entry.dir
         info: entry

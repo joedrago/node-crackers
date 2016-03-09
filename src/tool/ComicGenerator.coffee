@@ -29,10 +29,12 @@ class ComicGenerator
 
     listText = ""
     jsList = ""
+    imageUrls = []
     for image in @images
       parsed = path.parse(image)
       url = "#{constants.IMAGES_DIR}/#{parsed.base}"
       url = url.replace("#", "%23")
+      imageUrls.push "#{@relativeDir}/#{url}"
       listText += template('image_html', { url: url })
       jsList += template('image_js', { url: url })
     outputText = template('comic_html', {
@@ -57,6 +59,7 @@ class ComicGenerator
       cover: constants.COVER_FILENAME
       recentcover: constants.RECENT_COVER_FILENAME
       timestamp: cfs.dirTime(@imagesDir)
+      images: imageUrls
     }
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"

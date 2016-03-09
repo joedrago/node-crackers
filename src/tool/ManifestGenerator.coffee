@@ -34,7 +34,7 @@ class ManifestGenerator
           children[indexDir] = {}
         if atLeaf
           children[indexDir][comic.relativeDir] = {
-            type: 'issue'
+            type: 'comic'
             dir: comic.relativeDir
             pages: metadata.pages
             timestamp: comic.timestamp

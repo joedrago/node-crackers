@@ -139,7 +139,8 @@ class LRUCache
       entry.value = value
     else
       oldvalue = @put(key, value)
-      if (oldvalue) oldvalue = oldvalue.value
+      if oldvalue
+        oldvalue = oldvalue.value
     return oldvalue
 
   # Remove entry <key> from cache and return its value. Returns undefined if not
@@ -169,7 +170,6 @@ class LRUCache
 
     @size -= 1
     return entry.value
-  }
 
   # Removes all entries
   removeAll: ->
@@ -195,7 +195,7 @@ class LRUCache
     if context == true
       desc = true
       context = undefined
-    else if typeof context !== 'object'
+    else if typeof context != 'object'
       context = this
 
     if desc
