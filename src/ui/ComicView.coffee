@@ -5,6 +5,7 @@ Loader = require 'react-loader'
 PubSub = require 'pubsub-js'
 
 # Local requires
+ImageCache = require './ImageCache'
 {div, el, img} = require './tags'
 
 class ComicView extends React.Component
@@ -17,7 +18,7 @@ class ComicView extends React.Component
       index: 0
       loaded: false
       error: false
-    @image = null
+    @imageCache = new ImageCache()
 
     @setIndex(0, true)
 
@@ -30,6 +31,7 @@ class ComicView extends React.Component
     console.log "ComicView componentWillUnmount"
     PubSub.unsubscribe @keySubscription
     @keySubscription = null
+    @imageCache.flush()
 
   onKeyPress: (event) ->
     if event.keyCode == 37 # left
@@ -48,16 +50,18 @@ class ComicView extends React.Component
         loaded: false
         error: false
       }
-    @image = new Image()
-    @image.onload = =>
-      @setState {
-        loaded: true
-        imageWidth: @image.width
-        imageHeight: @image.height
-      }
-    @image.onerror = =>
-      @setState { error: true }
-    @image.src = @props.metadata.images[@state.index]
+
+    @imageCache.load @props.metadata.images[@state.index], (info) =>
+      # is this a notification about the image we're currently trying to display?
+      if info.url == @props.metadata.images[@state.index]
+        if info.error
+          @setState { error: true }
+        else
+          @setState {
+            loaded: true
+            imageWidth: info.width
+            imageHeight: info.height
+          }
 
   calcImageRect: ->
     viewAspectRatio = @props.width / @props.height
@@ -87,7 +91,7 @@ class ComicView extends React.Component
       }
     if not @state.loaded
       return el Loader, {
-        color: '#aaffaa'
+        color: '#222222'
       }
 
     # return div {

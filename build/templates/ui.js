@@ -36198,8 +36198,8 @@ App = (function(superClass) {
 module.exports = Dimensions()(App);
 
 
-},{"./ComicView":289,"./IndexView":290,"./LRUCache":291,"./LoadingView":292,"./tags":294,"material-ui/lib/app-bar":2,"material-ui/lib/flat-button":8,"material-ui/lib/font-icon":9,"material-ui/lib/icon-button":10,"material-ui/lib/left-nav":11,"material-ui/lib/menus/menu-item":19,"material-ui/lib/raised-button":29,"material-ui/lib/styles/baseThemes/darkBaseTheme":35,"material-ui/lib/styles/getMuiTheme":38,"material-ui/lib/toolbar/toolbar":56,"material-ui/lib/toolbar/toolbar-group":53,"material-ui/lib/toolbar/toolbar-separator":54,"material-ui/lib/toolbar/toolbar-title":55,"pubsub-js":116,"react":287,"react-dimensions":117,"react-dom":118,"react-tap-event-plugin":125}],289:[function(require,module,exports){
-var ComicView, DOM, Loader, PubSub, React, div, el, img, ref,
+},{"./ComicView":289,"./IndexView":291,"./LRUCache":292,"./LoadingView":293,"./tags":295,"material-ui/lib/app-bar":2,"material-ui/lib/flat-button":8,"material-ui/lib/font-icon":9,"material-ui/lib/icon-button":10,"material-ui/lib/left-nav":11,"material-ui/lib/menus/menu-item":19,"material-ui/lib/raised-button":29,"material-ui/lib/styles/baseThemes/darkBaseTheme":35,"material-ui/lib/styles/getMuiTheme":38,"material-ui/lib/toolbar/toolbar":56,"material-ui/lib/toolbar/toolbar-group":53,"material-ui/lib/toolbar/toolbar-separator":54,"material-ui/lib/toolbar/toolbar-title":55,"pubsub-js":116,"react":287,"react-dimensions":117,"react-dom":118,"react-tap-event-plugin":125}],289:[function(require,module,exports){
+var ComicView, DOM, ImageCache, Loader, PubSub, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -36210,6 +36210,8 @@ DOM = require('react-dom');
 Loader = require('react-loader');
 
 PubSub = require('pubsub-js');
+
+ImageCache = require('./ImageCache');
 
 ref = require('./tags'), div = ref.div, el = ref.el, img = ref.img;
 
@@ -36227,7 +36229,7 @@ ComicView = (function(superClass) {
       loaded: false,
       error: false
     };
-    this.image = null;
+    this.imageCache = new ImageCache();
     this.setIndex(0, true);
   }
 
@@ -36243,7 +36245,8 @@ ComicView = (function(superClass) {
   ComicView.prototype.componentWillUnmount = function() {
     console.log("ComicView componentWillUnmount");
     PubSub.unsubscribe(this.keySubscription);
-    return this.keySubscription = null;
+    this.keySubscription = null;
+    return this.imageCache.flush();
   };
 
   ComicView.prototype.onKeyPress = function(event) {
@@ -36268,24 +36271,23 @@ ComicView = (function(superClass) {
         error: false
       });
     }
-    this.image = new Image();
-    this.image.onload = (function(_this) {
-      return function() {
-        return _this.setState({
-          loaded: true,
-          imageWidth: _this.image.width,
-          imageHeight: _this.image.height
-        });
+    return this.imageCache.load(this.props.metadata.images[this.state.index], (function(_this) {
+      return function(info) {
+        if (info.url === _this.props.metadata.images[_this.state.index]) {
+          if (info.error) {
+            return _this.setState({
+              error: true
+            });
+          } else {
+            return _this.setState({
+              loaded: true,
+              imageWidth: info.width,
+              imageHeight: info.height
+            });
+          }
+        }
       };
-    })(this);
-    this.image.onerror = (function(_this) {
-      return function() {
-        return _this.setState({
-          error: true
-        });
-      };
-    })(this);
-    return this.image.src = this.props.metadata.images[this.state.index];
+    })(this));
   };
 
   ComicView.prototype.calcImageRect = function() {
@@ -36321,7 +36323,7 @@ ComicView = (function(superClass) {
     }
     if (!this.state.loaded) {
       return el(Loader, {
-        color: '#aaffaa'
+        color: '#222222'
       });
     }
     rect = this.calcImageRect();
@@ -36344,7 +36346,97 @@ ComicView = (function(superClass) {
 module.exports = ComicView;
 
 
-},{"./tags":294,"pubsub-js":116,"react":287,"react-dom":118,"react-loader":119}],290:[function(require,module,exports){
+},{"./ImageCache":290,"./tags":295,"pubsub-js":116,"react":287,"react-dom":118,"react-loader":119}],290:[function(require,module,exports){
+var ImageCache, LRUCache;
+
+LRUCache = require('./LRUCache');
+
+ImageCache = (function() {
+  function ImageCache(size) {
+    this.size = size != null ? size : 10;
+    this.cache = new LRUCache(this.size);
+    this.MAX_RETRIES = 3;
+  }
+
+  ImageCache.prototype.notify = function(entry) {
+    var cb, i, info, len, ref;
+    info = {
+      url: entry.url,
+      loaded: entry.loaded,
+      error: entry.error,
+      width: entry.width,
+      height: entry.height
+    };
+    ref = entry.callbacks;
+    for (i = 0, len = ref.length; i < len; i++) {
+      cb = ref[i];
+      setTimeout(function() {
+        return cb(info);
+      }, 0);
+    }
+    entry.callbacks = [];
+  };
+
+  ImageCache.prototype.flush = function() {
+    return this.cache.removeAll();
+  };
+
+  ImageCache.prototype.load = function(url, cb) {
+    var entry, image;
+    entry = this.cache.get(url);
+    if (entry && (entry.loaded || entry.error)) {
+      console.log("ImageCache.load(" + url + ") existing entry", this.cache.toArray());
+      entry.callbacks.push(cb);
+      this.notify(entry);
+      return;
+    }
+    image = new Image();
+    entry = {
+      url: url,
+      image: image,
+      callbacks: [cb],
+      loaded: false,
+      error: false,
+      errorCount: 0,
+      width: 0,
+      height: 0
+    };
+    this.cache.put(url, entry);
+    console.log("ImageCache.load(" + url + ") new entry", this.cache.toArray());
+    image.onload = (function(_this) {
+      return function() {
+        entry.loaded = true;
+        entry.error = false;
+        entry.width = entry.image.width;
+        entry.height = entry.image.height;
+        return _this.notify(entry);
+      };
+    })(this);
+    image.onerror = (function(_this) {
+      return function() {
+        var cacheBreakerUrl;
+        entry.loaded = false;
+        entry.errorCount += 1;
+        if (entry.errorCount < _this.MAX_RETRIES) {
+          cacheBreakerUrl = entry.url + '?' + +(new Date);
+          return entry.image.src = cacheBreakerUrl;
+        } else {
+          entry.error = true;
+          return _this.notify(entry);
+        }
+      };
+    })(this);
+    return image.src = url;
+  };
+
+  return ImageCache;
+
+})();
+
+module.exports = ImageCache;
+
+
+},{"./LRUCache":292}],291:[function(require,module,exports){
 var DOM, IndexEntry, IndexView, React, a, div, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -36472,7 +36564,7 @@ IndexView = (function(superClass) {
 module.exports = IndexView;
 
 
-},{"./tags":294,"react":287,"react-dom":118}],291:[function(require,module,exports){
+},{"./tags":295,"react":287,"react-dom":118}],292:[function(require,module,exports){
 var LRUCache;
 
 LRUCache = (function() {
@@ -36647,6 +36739,20 @@ LRUCache = (function() {
     return s;
   };
 
+  LRUCache.prototype.toArray = function() {
+    var entry, s;
+    s = [];
+    entry = this.head;
+    while (entry) {
+      s.push({
+        key: entry.key,
+        value: entry.value
+      });
+      entry = entry.newer;
+    }
+    return s;
+  };
+
   LRUCache.prototype.toString = function() {
     var entry, s;
     s = '';
@@ -36668,7 +36774,7 @@ LRUCache = (function() {
 module.exports = LRUCache;
 
 
-},{}],292:[function(require,module,exports){
+},{}],293:[function(require,module,exports){
 var DOM, Loader, LoadingView, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -36708,7 +36814,7 @@ LoadingView = (function(superClass) {
 module.exports = LoadingView;
 
 
-},{"./tags":294,"react":287,"react-dom":118,"react-loader":119}],293:[function(require,module,exports){
+},{"./tags":295,"react":287,"react-dom":118,"react-loader":119}],294:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -36720,7 +36826,7 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":288,"react":287,"react-dom":118}],294:[function(require,module,exports){
+},{"./App":288,"react":287,"react-dom":118}],295:[function(require,module,exports){
 var React, elementName, i, len, tags;
 
 React = require('react');
@@ -36737,4 +36843,4 @@ for (i = 0, len = tags.length; i < len; i++) {
 module.exports.el = React.createElement;
 
 
-},{"react":287}]},{},[293]);
+},{"react":287}]},{},[294]);

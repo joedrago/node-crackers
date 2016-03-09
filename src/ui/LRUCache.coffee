@@ -218,6 +218,15 @@ class LRUCache
       entry = entry.newer
     return s
 
+  # Returns array representation
+  toArray: ->
+    s = []
+    entry = @head
+    while entry
+      s.push({ key:entry.key, value:entry.value })
+      entry = entry.newer
+    return s
+
   # Returns a String representation
   toString: ->
     s = ''
