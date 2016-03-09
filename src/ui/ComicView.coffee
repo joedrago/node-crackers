@@ -19,6 +19,7 @@ class ComicView extends React.Component
       loaded: false
       error: false
     @imageCache = new ImageCache()
+    @preloadImageCount = 3
 
     @setIndex(0, true)
 
@@ -50,6 +51,10 @@ class ComicView extends React.Component
         loaded: false
         error: false
       }
+
+    imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)
+    for image in imagesToPreload
+      @imageCache.load image
 
     @imageCache.load @props.metadata.images[@state.index], (info) =>
       # is this a notification about the image we're currently trying to display?

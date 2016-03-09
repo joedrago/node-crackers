@@ -36230,6 +36230,7 @@ ComicView = (function(superClass) {
       error: false
     };
     this.imageCache = new ImageCache();
+    this.preloadImageCount = 3;
     this.setIndex(0, true);
   }
 
@@ -36258,6 +36259,7 @@ ComicView = (function(superClass) {
   };
 
   ComicView.prototype.setIndex = function(index, initial) {
+    var i, image, imagesToPreload, len;
     if (index >= this.props.metadata.pages) {
       index = this.props.metadata.pages - 1;
     }
@@ -36270,6 +36272,11 @@ ComicView = (function(superClass) {
         loaded: false,
         error: false
       });
+    }
+    imagesToPreload = this.props.metadata.images.slice(this.state.index + 1, this.state.index + 1 + this.preloadImageCount);
+    for (i = 0, len = imagesToPreload.length; i < len; i++) {
+      image = imagesToPreload[i];
+      this.imageCache.load(image);
     }
     return this.imageCache.load(this.props.metadata.images[this.state.index], (function(_this) {
       return function(info) {
@@ -36370,9 +36377,11 @@ ImageCache = (function() {
     ref = entry.callbacks;
     for (i = 0, len = ref.length; i < len; i++) {
       cb = ref[i];
-      setTimeout(function() {
-        return cb(info);
-      }, 0);
+      if (cb) {
+        setTimeout(function() {
+          return cb(info);
+        }, 0);
+      }
     }
     entry.callbacks = [];
   };
@@ -36385,7 +36394,6 @@ ImageCache = (function() {
     var entry, image;
     entry = this.cache.get(url);
     if (entry && (entry.loaded || entry.error)) {
-      console.log("ImageCache.load(" + url + ") existing entry", this.cache.toArray());
       entry.callbacks.push(cb);
       this.notify(entry);
       return;
@@ -36402,7 +36410,6 @@ ImageCache = (function() {
       height: 0
     };
     this.cache.put(url, entry);
-    console.log("ImageCache.load(" + url + ") new entry", this.cache.toArray());
     image.onload = (function(_this) {
       return function() {
         entry.loaded = true;

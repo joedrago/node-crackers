@@ -13,10 +13,11 @@ class ImageCache
       width: entry.width
       height: entry.height
     for cb in entry.callbacks
-      setTimeout ->
-        # console.log "ImageCache.notify", info
-        cb(info)
-      , 0
+      if cb
+        setTimeout ->
+          # console.log "ImageCache.notify", info
+          cb(info)
+        , 0
     entry.callbacks = []
     return
 
@@ -47,14 +48,14 @@ class ImageCache
     # console.log "ImageCache.load(#{url}) new entry", @cache.toArray()
 
     image.onload = =>
-      # console.log "ImageCache image.onload"
+      # console.log "ImageCache image.onload(#{entry.url})"
       entry.loaded = true
       entry.error = false
       entry.width = entry.image.width
       entry.height = entry.image.height
       @notify(entry)
     image.onerror = =>
-      # console.log "ImageCache image.onerror"
+      # console.log "ImageCache image.onerror(#{entry.url})"
       entry.loaded = false
       entry.errorCount += 1
       if entry.errorCount < @MAX_RETRIES
