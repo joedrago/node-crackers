@@ -36114,37 +36114,26 @@ App = (function(superClass) {
   };
 
   App.prototype.render = function() {
-    var view;
-    view = null;
-    if (this.state.manifest && (this.state.view === 'comics')) {
-      if (this.state.indexList) {
-        console.log("choosing IndexView");
-        view = el(IndexView, {
-          key: 'indexview',
-          list: this.state.manifest.children[this.state.dir],
-          onChangeDir: (function(_this) {
-            return function(dir) {
-              return _this.changeDir(dir);
-            };
-          })(this)
-        });
-      } else if (this.state.comicMetadata) {
-        console.log("choosing ComicView");
-        view = el(ComicView, {
-          metadata: this.state.comicMetadata,
-          width: this.props.containerWidth,
-          height: this.props.containerHeight
-        });
-      }
-    }
-    if (view === null) {
-      console.log("choosing LoadingView");
-      view = el(LoadingView);
-    }
-    return div({
-      id: 'outerdiv'
-    }, [
-      el(LeftNav, {
+    var elements, view;
+    elements = [
+      el(IconButton, {
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          zIndex: 1
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return _this.setState({
+              navOpen: !_this.state.navOpen
+            });
+          };
+        })(this)
+      }, 'keyboard_arrow_right'), el(LeftNav, {
         docked: false,
         open: this.state.navOpen,
         onRequestChange: (function(_this) {
@@ -36182,8 +36171,38 @@ App = (function(superClass) {
             className: 'material-icons'
           }, 'search')
         })
-      ]), view
-    ]);
+      ])
+    ];
+    view = null;
+    if (this.state.manifest && (this.state.view === 'comics')) {
+      if (this.state.indexList) {
+        console.log("choosing IndexView");
+        view = el(IndexView, {
+          key: 'indexview',
+          list: this.state.manifest.children[this.state.dir],
+          onChangeDir: (function(_this) {
+            return function(dir) {
+              return _this.changeDir(dir);
+            };
+          })(this)
+        });
+      } else if (this.state.comicMetadata) {
+        console.log("choosing ComicView");
+        view = el(ComicView, {
+          metadata: this.state.comicMetadata,
+          width: this.props.containerWidth,
+          height: this.props.containerHeight
+        });
+      }
+    }
+    if (view === null) {
+      console.log("choosing LoadingView");
+      view = el(LoadingView);
+    }
+    elements.push(view);
+    return div({
+      id: 'outerdiv'
+    }, elements);
   };
 
   return App;
@@ -36322,7 +36341,7 @@ ComicView = (function(superClass) {
         index: index,
         loaded: false,
         error: false,
-        imageFling: 0
+        imageSwipeX: 0
       });
     }
     this.auto = Auto.None;
@@ -36351,7 +36370,7 @@ ComicView = (function(superClass) {
               imageWidth: imageSize.width,
               imageHeight: imageSize.height,
               imageScale: 1,
-              imageFling: 0
+              imageSwipeX: 0
             });
           }
         }
@@ -36388,7 +36407,7 @@ ComicView = (function(superClass) {
       imageWidth: width,
       imageHeight: height,
       imageScale: scale,
-      imageFling: 0
+      imageSwipeX: 0
     });
   };
 
@@ -36466,19 +36485,19 @@ ComicView = (function(superClass) {
 
   ComicView.prototype.onNoTouches = function() {
     var direction, newState;
-    if (this.state.imageFling !== 0) {
+    if (this.state.imageSwipeX !== 0) {
       newState = {
-        imageFling: 0
+        imageSwipeX: 0
       };
       if (this.state.loaded) {
-        if (Math.abs(this.state.imageFling) > (this.state.imageWidth / 5)) {
-          direction = Math.sign(this.state.imageFling);
+        if (Math.abs(this.state.imageSwipeX) > (this.props.width / 6)) {
+          direction = Math.sign(this.state.imageSwipeX);
           this.setIndex(this.state.index - direction);
           return;
         }
       }
       return this.setState({
-        imageFling: 0
+        imageSwipeX: 0
       });
     }
   };
@@ -36490,7 +36509,7 @@ ComicView = (function(superClass) {
     }
     if (this.state.imageScale === 1) {
       this.setState({
-        imageFling: this.state.imageFling + dx
+        imageSwipeX: this.state.imageSwipeX + dx
       });
       return;
     }

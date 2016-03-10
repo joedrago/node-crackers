@@ -96,7 +96,7 @@ class ComicView extends React.Component
         index: index
         loaded: false
         error: false
-        imageFling: 0
+        imageSwipeX: 0
       }
     @auto = Auto.None
 
@@ -121,7 +121,7 @@ class ComicView extends React.Component
             imageWidth: imageSize.width
             imageHeight: imageSize.height
             imageScale: 1
-            imageFling: 0
+            imageSwipeX: 0
           }
 
   moveImage: (x, y, width, height, scale) ->
@@ -153,7 +153,7 @@ class ComicView extends React.Component
       imageWidth: width
       imageHeight: height
       imageScale: scale
-      imageFling: 0
+      imageSwipeX: 0
     }
 
   autoPrev: ->
@@ -214,23 +214,23 @@ class ComicView extends React.Component
     # console.log "onClick #{x} #{y}"
 
   onNoTouches: ->
-    if @state.imageFling != 0
+    if @state.imageSwipeX != 0
       newState = {
-        imageFling: 0
+        imageSwipeX: 0
       }
       if @state.loaded
-        if Math.abs(@state.imageFling) > (@state.imageWidth / 5)
-          direction = Math.sign(@state.imageFling)
+        if Math.abs(@state.imageSwipeX) > (@props.width / 6)
+          direction = Math.sign(@state.imageSwipeX)
           @setIndex(@state.index - direction)
           return
-      @setState { imageFling: 0 }
+      @setState { imageSwipeX: 0 }
 
   onDrag: (dx, dy) ->
     # console.log "onDrag #{dx} #{dy}"
     if not @state.loaded
       return
     if @state.imageScale == 1
-      @setState { imageFling: @state.imageFling + dx }
+      @setState { imageSwipeX: @state.imageSwipeX + dx }
       return
     newX = @state.imageX + dx
     newY = @state.imageY + dy

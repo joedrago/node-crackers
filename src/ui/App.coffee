@@ -101,30 +101,20 @@ class App extends React.Component
     PubSub.publish('key', event)
 
   render: ->
-    view = null
-    if @state.manifest and (@state.view == 'comics')
-      if @state.indexList
-        console.log "choosing IndexView"
-        view = el IndexView, {
-          key: 'indexview'
-          list: @state.manifest.children[@state.dir]
-          onChangeDir: (dir) => @changeDir(dir)
-        }
-      else if @state.comicMetadata
-        console.log "choosing ComicView"
-        view = el ComicView, {
-          metadata: @state.comicMetadata
-          width: @props.containerWidth
-          height: @props.containerHeight
-        }
-
-    if view == null
-      console.log "choosing LoadingView"
-      view = el LoadingView
-
-    return div {
-        id: 'outerdiv'
-      }, [
+    elements = [
+      # Corner icon
+      el IconButton, {
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'absolute'
+            left: 0
+            top: 0
+            zIndex: 1
+          onTouchTap: =>
+            @setState { navOpen: !@state.navOpen }
+        }, 'keyboard_arrow_right'
 
       # Left navigation panel
       el LeftNav, {
@@ -149,14 +139,30 @@ class App extends React.Component
           leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
         }
       ]
-
-      # el AppBar, {
-      #   title: "GD Comics"
-      #   onLeftIconButtonTouchTap: => @setState { navOpen: !@state.navOpen }
-      #   onTitleTouchTap: => @changeDir('')
-      # }
-
-      view
     ]
+
+    view = null
+    if @state.manifest and (@state.view == 'comics')
+      if @state.indexList
+        console.log "choosing IndexView"
+        view = el IndexView, {
+          key: 'indexview'
+          list: @state.manifest.children[@state.dir]
+          onChangeDir: (dir) => @changeDir(dir)
+        }
+      else if @state.comicMetadata
+        console.log "choosing ComicView"
+        view = el ComicView, {
+          metadata: @state.comicMetadata
+          width: @props.containerWidth
+          height: @props.containerHeight
+        }
+
+    if view == null
+      console.log "choosing LoadingView"
+      view = el LoadingView
+
+    elements.push view
+    return div { id: 'outerdiv' }, elements
 
 module.exports = Dimensions()(App)
