@@ -4,7 +4,7 @@ DOM = require 'react-dom'
 {div, el, img} = require './tags'
 
 # # how many pixels can you drag before it is actually considered a drag
-ENGAGE_DRAG_DISTANCE = 30
+ENGAGE_DRAG_DISTANCE = 10
 
 class TouchDiv extends React.Component
   constructor: (props) ->
@@ -54,7 +54,7 @@ class TouchDiv extends React.Component
       @onTouchesMoved event.originalEvent.changedTouches
     $(node).on 'mousewheel', (event) =>
       event.preventDefault()
-      @props.listener.onZoom(event.clientX, event.clientY, event.deltaY)
+      @props.listener.onZoom(event.clientX, event.clientY, event.deltaY * event.deltaFactor / 4)
 
   componentWillUnmount: ->
     # console.log "TouchDiv componentWillUnmount"
@@ -173,8 +173,10 @@ class TouchDiv extends React.Component
         @props.listener.onZoom(@pinchX, @pinchY, deltaDistance)
 
   onTouchesEnded: (touches) ->
-    if @trackedTouches.length == 1 and not @dragging
-      @props.listener.onClick(touches[0].clientX, touches[0].clientY)
+    if @trackedTouches.length == 1
+      if not @dragging
+        @props.listener.onClick(touches[0].clientX, touches[0].clientY)
+      @props.listener.onNoTouches()
     for t in touches
       @removeTouch t.identifier, t.clientX, t.clientY
 

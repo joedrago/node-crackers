@@ -36269,7 +36269,8 @@ ComicView = (function(superClass) {
       this.setState({
         index: index,
         loaded: false,
-        error: false
+        error: false,
+        imageFling: 0
       });
     }
     imagesToPreload = this.props.metadata.images.slice(this.state.index + 1, this.state.index + 1 + this.preloadImageCount);
@@ -36296,7 +36297,8 @@ ComicView = (function(superClass) {
               imageY: imagePos.y,
               imageWidth: imageSize.width,
               imageHeight: imageSize.height,
-              imageScale: 1
+              imageScale: 1,
+              imageFling: 0
             });
           }
         }
@@ -36332,15 +36334,41 @@ ComicView = (function(superClass) {
       imageY: y,
       imageWidth: width,
       imageHeight: height,
-      imageScale: scale
+      imageScale: scale,
+      imageFling: 0
     });
   };
 
   ComicView.prototype.onClick = function(x, y) {};
 
+  ComicView.prototype.onNoTouches = function() {
+    var direction, newState;
+    if (this.state.imageFling !== 0) {
+      newState = {
+        imageFling: 0
+      };
+      if (this.state.loaded) {
+        if (Math.abs(this.state.imageFling) > (this.state.imageWidth / 5)) {
+          direction = Math.sign(this.state.imageFling);
+          this.setIndex(this.state.index - direction);
+          return;
+        }
+      }
+      return this.setState({
+        imageFling: 0
+      });
+    }
+  };
+
   ComicView.prototype.onDrag = function(dx, dy) {
     var newX, newY;
     if (!this.state.loaded) {
+      return;
+    }
+    if (this.state.imageScale === 1) {
+      this.setState({
+        imageFling: this.state.imageFling + dx
+      });
       return;
     }
     newX = this.state.imageX + dx;
@@ -36913,7 +36941,7 @@ DOM = require('react-dom');
 
 ref = require('./tags'), div = ref.div, el = ref.el, img = ref.img;
 
-ENGAGE_DRAG_DISTANCE = 30;
+ENGAGE_DRAG_DISTANCE = 10;
 
 TouchDiv = (function(superClass) {
   extend(TouchDiv, superClass);
@@ -36992,7 +37020,7 @@ TouchDiv = (function(superClass) {
     return $(node).on('mousewheel', (function(_this) {
       return function(event) {
         event.preventDefault();
-        return _this.props.listener.onZoom(event.clientX, event.clientY, event.deltaY);
+        return _this.props.listener.onZoom(event.clientX, event.clientY, event.deltaY * event.deltaFactor / 4);
       };
     })(this));
   };
@@ -37144,8 +37172,11 @@ TouchDiv = (function(superClass) {
 
   TouchDiv.prototype.onTouchesEnded = function(touches) {
     var j, len, results, t;
-    if (this.trackedTouches.length === 1 && !this.dragging) {
-      this.props.listener.onClick(touches[0].clientX, touches[0].clientY);
+    if (this.trackedTouches.length === 1) {
+      if (!this.dragging) {
+        this.props.listener.onClick(touches[0].clientX, touches[0].clientY);
+      }
+      this.props.listener.onNoTouches();
     }
     results = [];
     for (j = 0, len = touches.length; j < len; j++) {

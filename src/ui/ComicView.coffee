@@ -52,6 +52,7 @@ class ComicView extends React.Component
         index: index
         loaded: false
         error: false
+        imageFling: 0
       }
 
     imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)
@@ -75,6 +76,7 @@ class ComicView extends React.Component
             imageWidth: imageSize.width
             imageHeight: imageSize.height
             imageScale: 1
+            imageFling: 0
           }
 
   moveImage: (x, y, width, height, scale) ->
@@ -106,14 +108,30 @@ class ComicView extends React.Component
       imageWidth: width
       imageHeight: height
       imageScale: scale
+      imageFling: 0
     }
 
   onClick: (x, y) ->
     # console.log "onClick #{x} #{y}"
 
+  onNoTouches: ->
+    if @state.imageFling != 0
+      newState = {
+        imageFling: 0
+      }
+      if @state.loaded
+        if Math.abs(@state.imageFling) > (@state.imageWidth / 5)
+          direction = Math.sign(@state.imageFling)
+          @setIndex(@state.index - direction)
+          return
+      @setState { imageFling: 0 }
+
   onDrag: (dx, dy) ->
     # console.log "onDrag #{dx} #{dy}"
     if not @state.loaded
+      return
+    if @state.imageScale == 1
+      @setState { imageFling: @state.imageFling + dx }
       return
     newX = @state.imageX + dx
     newY = @state.imageY + dy
