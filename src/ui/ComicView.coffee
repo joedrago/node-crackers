@@ -9,6 +9,11 @@ ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
 {div, el, img} = require './tags'
 
+Auto =
+  None: 0
+  TopLeft: 1
+  BottomRight: 2
+
 class ComicView extends React.Component
   @defaultProps:
     metadata: null
@@ -22,6 +27,8 @@ class ComicView extends React.Component
       error: false
     @imageCache = new ImageCache()
     @preloadImageCount = 3
+    @auto = Auto.None
+    @autoScale = 1.5
 
     @setIndex(0, true)
 
@@ -37,10 +44,27 @@ class ComicView extends React.Component
     @imageCache.flush()
 
   onKeyPress: (event) ->
-    if event.keyCode == 37 # left
-      @setIndex @state.index-1
-    else if event.keyCode == 39 # right
-      @setIndex @state.index+1
+    console.log "onKeyPress #{event.keyCode}"
+    switch event.keyCode
+      when 49 # 1
+        @setScale(1.5)
+      when 50 # 2
+        @setScale(2)
+      when 51 # 3
+        @setScale(3)
+      when 52 # 4
+        @setScale(4)
+
+      when 37 # left
+        @setIndex @state.index-1
+      when 39 # right
+        @setIndex @state.index+1
+
+      when 68 # D
+        @autoPrev()
+      when 70 # F
+        @autoNext()
+    return
 
   setIndex: (index, initial) ->
     if index >= @props.metadata.pages
@@ -54,6 +78,7 @@ class ComicView extends React.Component
         error: false
         imageFling: 0
       }
+    @auto = Auto.None
 
     imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)
     for image in imagesToPreload
@@ -111,6 +136,47 @@ class ComicView extends React.Component
       imageFling: 0
     }
 
+  autoPrev: ->
+    imageScale = @state.imageScale
+    if imageScale == 1
+      imageScale = @autoScale
+    imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, imageScale)
+    switch @auto
+      when Auto.None
+        @setIndex @state.index-1
+        # TODO: zoom to bottom right and set @auto to Auto.BottomRight after loading previous index
+        # @moveImage(-imageSize.width, -imageSize.height, imageSize.width, imageSize.height, imageScale)
+      when Auto.TopLeft
+        @setScale(1, false)
+        @auto = Auto.None
+      when Auto.BottomRight
+        @moveImage(0, 0, imageSize.width, imageSize.height, imageScale)
+        @auto = Auto.TopLeft
+    return
+
+  autoNext: ->
+    imageScale = @state.imageScale
+    if imageScale == 1
+      imageScale = @autoScale
+    imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, imageScale)
+    switch @auto
+      when Auto.None
+        @moveImage(0, 0, imageSize.width, imageSize.height, imageScale)
+        @auto = Auto.TopLeft
+      when Auto.TopLeft
+        @moveImage(-imageSize.width, -imageSize.height, imageSize.width, imageSize.height, imageScale)
+        @auto = Auto.BottomRight
+      when Auto.BottomRight
+        @setIndex @state.index+1
+    return
+
+  setScale: (scale, setAutoScale = true) ->
+    imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, scale)
+    @moveImage(@state.imageX, @state.imageY, imageSize.width, imageSize.height, scale)
+    if setAutoScale
+      @autoScale = scale
+    return
+
   onClick: (x, y) ->
     # console.log "onClick #{x} #{y}"
 
@@ -144,6 +210,7 @@ class ComicView extends React.Component
     imageScale = @state.imageScale + (dist / 100)
     if imageScale < 1
       imageScale = 1
+      @auto = Auto.None
     if imageScale > @MAX_SCALE
       imageScale = @MAX_SCALE
 

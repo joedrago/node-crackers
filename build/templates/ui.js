@@ -36195,7 +36195,7 @@ module.exports = Dimensions()(App);
 
 
 },{"./ComicView":289,"./IndexView":291,"./LRUCache":292,"./LoadingView":293,"./tags":296,"material-ui/lib/app-bar":2,"material-ui/lib/flat-button":8,"material-ui/lib/font-icon":9,"material-ui/lib/icon-button":10,"material-ui/lib/left-nav":11,"material-ui/lib/menus/menu-item":19,"material-ui/lib/raised-button":29,"material-ui/lib/styles/baseThemes/darkBaseTheme":35,"material-ui/lib/styles/getMuiTheme":38,"material-ui/lib/toolbar/toolbar":56,"material-ui/lib/toolbar/toolbar-group":53,"material-ui/lib/toolbar/toolbar-separator":54,"material-ui/lib/toolbar/toolbar-title":55,"pubsub-js":116,"react":287,"react-dimensions":117,"react-dom":118,"react-tap-event-plugin":125}],289:[function(require,module,exports){
-var ComicView, DOM, ImageCache, Loader, PubSub, React, TouchDiv, div, el, img, ref,
+var Auto, ComicView, DOM, ImageCache, Loader, PubSub, React, TouchDiv, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -36212,6 +36212,12 @@ ImageCache = require('./ImageCache');
 TouchDiv = require('./TouchDiv');
 
 ref = require('./tags'), div = ref.div, el = ref.el, img = ref.img;
+
+Auto = {
+  None: 0,
+  TopLeft: 1,
+  BottomRight: 2
+};
 
 ComicView = (function(superClass) {
   extend(ComicView, superClass);
@@ -36230,6 +36236,8 @@ ComicView = (function(superClass) {
     };
     this.imageCache = new ImageCache();
     this.preloadImageCount = 3;
+    this.auto = Auto.None;
+    this.autoScale = 1.5;
     this.setIndex(0, true);
   }
 
@@ -36250,10 +36258,31 @@ ComicView = (function(superClass) {
   };
 
   ComicView.prototype.onKeyPress = function(event) {
-    if (event.keyCode === 37) {
-      return this.setIndex(this.state.index - 1);
-    } else if (event.keyCode === 39) {
-      return this.setIndex(this.state.index + 1);
+    console.log("onKeyPress " + event.keyCode);
+    switch (event.keyCode) {
+      case 49:
+        this.setScale(1.5);
+        break;
+      case 50:
+        this.setScale(2);
+        break;
+      case 51:
+        this.setScale(3);
+        break;
+      case 52:
+        this.setScale(4);
+        break;
+      case 37:
+        this.setIndex(this.state.index - 1);
+        break;
+      case 39:
+        this.setIndex(this.state.index + 1);
+        break;
+      case 68:
+        this.autoPrev();
+        break;
+      case 70:
+        this.autoNext();
     }
   };
 
@@ -36273,6 +36302,7 @@ ComicView = (function(superClass) {
         imageFling: 0
       });
     }
+    this.auto = Auto.None;
     imagesToPreload = this.props.metadata.images.slice(this.state.index + 1, this.state.index + 1 + this.preloadImageCount);
     for (i = 0, len = imagesToPreload.length; i < len; i++) {
       image = imagesToPreload[i];
@@ -36339,6 +36369,60 @@ ComicView = (function(superClass) {
     });
   };
 
+  ComicView.prototype.autoPrev = function() {
+    var imageScale, imageSize;
+    imageScale = this.state.imageScale;
+    if (imageScale === 1) {
+      imageScale = this.autoScale;
+    }
+    imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, imageScale);
+    switch (this.auto) {
+      case Auto.None:
+        this.setIndex(this.state.index - 1);
+        break;
+      case Auto.TopLeft:
+        this.setScale(1, false);
+        this.auto = Auto.None;
+        break;
+      case Auto.BottomRight:
+        this.moveImage(0, 0, imageSize.width, imageSize.height, imageScale);
+        this.auto = Auto.TopLeft;
+    }
+  };
+
+  ComicView.prototype.autoNext = function() {
+    var imageScale, imageSize;
+    imageScale = this.state.imageScale;
+    if (imageScale === 1) {
+      imageScale = this.autoScale;
+    }
+    imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, imageScale);
+    switch (this.auto) {
+      case Auto.None:
+        this.moveImage(0, 0, imageSize.width, imageSize.height, imageScale);
+        this.auto = Auto.TopLeft;
+        break;
+      case Auto.TopLeft:
+        this.moveImage(-imageSize.width, -imageSize.height, imageSize.width, imageSize.height, imageScale);
+        this.auto = Auto.BottomRight;
+        break;
+      case Auto.BottomRight:
+        this.setIndex(this.state.index + 1);
+    }
+  };
+
+  ComicView.prototype.setScale = function(scale, setAutoScale) {
+    var imageSize;
+    if (setAutoScale == null) {
+      setAutoScale = true;
+    }
+    imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, scale);
+    this.moveImage(this.state.imageX, this.state.imageY, imageSize.width, imageSize.height, scale);
+    if (setAutoScale) {
+      this.autoScale = scale;
+    }
+  };
+
   ComicView.prototype.onClick = function(x, y) {};
 
   ComicView.prototype.onNoTouches = function() {
@@ -36384,6 +36468,7 @@ ComicView = (function(superClass) {
     imageScale = this.state.imageScale + (dist / 100);
     if (imageScale < 1) {
       imageScale = 1;
+      this.auto = Auto.None;
     }
     if (imageScale > this.MAX_SCALE) {
       imageScale = this.MAX_SCALE;

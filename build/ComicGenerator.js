@@ -54,7 +54,7 @@
         parsed = path.parse(image);
         url = constants.IMAGES_DIR + "/" + parsed.base;
         url = url.replace("#", "%23");
-        imageUrls.push(this.relativeDir + "/" + url);
+        imageUrls.push((this.relativeDir + "/" + url).replace(/\\/g, "/"));
         listText += template('image_html', {
           url: url
         });

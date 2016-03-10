@@ -34,7 +34,7 @@ class ComicGenerator
       parsed = path.parse(image)
       url = "#{constants.IMAGES_DIR}/#{parsed.base}"
       url = url.replace("#", "%23")
-      imageUrls.push "#{@relativeDir}/#{url}"
+      imageUrls.push "#{@relativeDir}/#{url}".replace(/\\/g, "/")
       listText += template('image_html', { url: url })
       jsList += template('image_js', { url: url })
     outputText = template('comic_html', {
