@@ -95,7 +95,7 @@ class App extends React.Component
     }
 
   onKeyDown: (event) ->
-    console.log "App.onKeyDown"
+    # console.log "App.onKeyDown"
     if event.keyCode == 32
       @setState { navOpen: !@state.navOpen }
     PubSub.publish('key', event)

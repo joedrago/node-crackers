@@ -14,6 +14,12 @@ Auto =
   TopLeft: 1
   BottomRight: 2
 
+Corner =
+  TopLeft: 0
+  TopRight: 1
+  BottomRight: 2
+  BottomLeft: 3
+
 class ComicView extends React.Component
   @defaultProps:
     metadata: null
@@ -44,7 +50,7 @@ class ComicView extends React.Component
     @imageCache.flush()
 
   onKeyPress: (event) ->
-    console.log "onKeyPress #{event.keyCode}"
+    # console.log "onKeyPress #{event.keyCode}"
     switch event.keyCode
       when 49 # 1
         @setScale(1.5)
@@ -55,9 +61,23 @@ class ComicView extends React.Component
       when 52 # 4
         @setScale(4)
 
-      when 37 # left
+      when 81 # Q
+        @zoomToCorner(Corner.TopLeft)
+      when 87 # W
+        @zoomToCorner(Corner.TopRight)
+      when 65 # A
+        @zoomToCorner(Corner.BottomLeft)
+      when 83 # S
+        @zoomToCorner(Corner.BottomRight)
+
+      when 36 # Home
+        @setIndex 0
+      when 35 # End
+        @setIndex 1000000
+
+      when 37 # Left
         @setIndex @state.index-1
-      when 39 # right
+      when 39 # Right
         @setIndex @state.index+1
 
       when 68 # D
@@ -137,38 +157,51 @@ class ComicView extends React.Component
     }
 
   autoPrev: ->
-    imageScale = @state.imageScale
-    if imageScale == 1
-      imageScale = @autoScale
-    imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, imageScale)
     switch @auto
       when Auto.None
         @setIndex @state.index-1
         # TODO: zoom to bottom right and set @auto to Auto.BottomRight after loading previous index
-        # @moveImage(-imageSize.width, -imageSize.height, imageSize.width, imageSize.height, imageScale)
+        # @zoomToCorner(Corner.BottomRight)
       when Auto.TopLeft
         @setScale(1, false)
         @auto = Auto.None
       when Auto.BottomRight
-        @moveImage(0, 0, imageSize.width, imageSize.height, imageScale)
-        @auto = Auto.TopLeft
+        @zoomToCorner(Corner.TopLeft)
     return
 
   autoNext: ->
+    switch @auto
+      when Auto.None
+        @zoomToCorner(Corner.TopLeft)
+      when Auto.TopLeft
+        @zoomToCorner(Corner.BottomRight)
+      when Auto.BottomRight
+        @setIndex @state.index+1
+    return
+
+  zoomToCorner: (corner) ->
     imageScale = @state.imageScale
     if imageScale == 1
       imageScale = @autoScale
     imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, imageScale)
-    switch @auto
-      when Auto.None
-        @moveImage(0, 0, imageSize.width, imageSize.height, imageScale)
+    x = 0
+    y = 0
+    switch corner
+      when Corner.TopLeft
+        x = 0
+        y = 0
         @auto = Auto.TopLeft
-      when Auto.TopLeft
-        @moveImage(-imageSize.width, -imageSize.height, imageSize.width, imageSize.height, imageScale)
+      when Corner.TopRight
+        x = -imageSize.width
+        y = 0
+      when Corner.BottomRight
+        x = -imageSize.width
+        y = -imageSize.height
         @auto = Auto.BottomRight
-      when Auto.BottomRight
-        @setIndex @state.index+1
-    return
+      when Corner.BottomLeft
+        x = 0
+        y = -imageSize.height
+    @moveImage(x, y, imageSize.width, imageSize.height, imageScale)
 
   setScale: (scale, setAutoScale = true) ->
     imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, scale)

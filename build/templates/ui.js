@@ -36105,7 +36105,6 @@ App = (function(superClass) {
   };
 
   App.prototype.onKeyDown = function(event) {
-    console.log("App.onKeyDown");
     if (event.keyCode === 32) {
       this.setState({
         navOpen: !this.state.navOpen
@@ -36195,7 +36194,7 @@ module.exports = Dimensions()(App);
 
 
 },{"./ComicView":289,"./IndexView":291,"./LRUCache":292,"./LoadingView":293,"./tags":296,"material-ui/lib/app-bar":2,"material-ui/lib/flat-button":8,"material-ui/lib/font-icon":9,"material-ui/lib/icon-button":10,"material-ui/lib/left-nav":11,"material-ui/lib/menus/menu-item":19,"material-ui/lib/raised-button":29,"material-ui/lib/styles/baseThemes/darkBaseTheme":35,"material-ui/lib/styles/getMuiTheme":38,"material-ui/lib/toolbar/toolbar":56,"material-ui/lib/toolbar/toolbar-group":53,"material-ui/lib/toolbar/toolbar-separator":54,"material-ui/lib/toolbar/toolbar-title":55,"pubsub-js":116,"react":287,"react-dimensions":117,"react-dom":118,"react-tap-event-plugin":125}],289:[function(require,module,exports){
-var Auto, ComicView, DOM, ImageCache, Loader, PubSub, React, TouchDiv, div, el, img, ref,
+var Auto, ComicView, Corner, DOM, ImageCache, Loader, PubSub, React, TouchDiv, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -36217,6 +36216,13 @@ Auto = {
   None: 0,
   TopLeft: 1,
   BottomRight: 2
+};
+
+Corner = {
+  TopLeft: 0,
+  TopRight: 1,
+  BottomRight: 2,
+  BottomLeft: 3
 };
 
 ComicView = (function(superClass) {
@@ -36258,7 +36264,6 @@ ComicView = (function(superClass) {
   };
 
   ComicView.prototype.onKeyPress = function(event) {
-    console.log("onKeyPress " + event.keyCode);
     switch (event.keyCode) {
       case 49:
         this.setScale(1.5);
@@ -36271,6 +36276,24 @@ ComicView = (function(superClass) {
         break;
       case 52:
         this.setScale(4);
+        break;
+      case 81:
+        this.zoomToCorner(Corner.TopLeft);
+        break;
+      case 87:
+        this.zoomToCorner(Corner.TopRight);
+        break;
+      case 65:
+        this.zoomToCorner(Corner.BottomLeft);
+        break;
+      case 83:
+        this.zoomToCorner(Corner.BottomRight);
+        break;
+      case 36:
+        this.setIndex(0);
+        break;
+      case 35:
+        this.setIndex(1000000);
         break;
       case 37:
         this.setIndex(this.state.index - 1);
@@ -36370,12 +36393,6 @@ ComicView = (function(superClass) {
   };
 
   ComicView.prototype.autoPrev = function() {
-    var imageScale, imageSize;
-    imageScale = this.state.imageScale;
-    if (imageScale === 1) {
-      imageScale = this.autoScale;
-    }
-    imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, imageScale);
     switch (this.auto) {
       case Auto.None:
         this.setIndex(this.state.index - 1);
@@ -36385,30 +36402,52 @@ ComicView = (function(superClass) {
         this.auto = Auto.None;
         break;
       case Auto.BottomRight:
-        this.moveImage(0, 0, imageSize.width, imageSize.height, imageScale);
-        this.auto = Auto.TopLeft;
+        this.zoomToCorner(Corner.TopLeft);
     }
   };
 
   ComicView.prototype.autoNext = function() {
-    var imageScale, imageSize;
+    switch (this.auto) {
+      case Auto.None:
+        this.zoomToCorner(Corner.TopLeft);
+        break;
+      case Auto.TopLeft:
+        this.zoomToCorner(Corner.BottomRight);
+        break;
+      case Auto.BottomRight:
+        this.setIndex(this.state.index + 1);
+    }
+  };
+
+  ComicView.prototype.zoomToCorner = function(corner) {
+    var imageScale, imageSize, x, y;
     imageScale = this.state.imageScale;
     if (imageScale === 1) {
       imageScale = this.autoScale;
     }
     imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, imageScale);
-    switch (this.auto) {
-      case Auto.None:
-        this.moveImage(0, 0, imageSize.width, imageSize.height, imageScale);
+    x = 0;
+    y = 0;
+    switch (corner) {
+      case Corner.TopLeft:
+        x = 0;
+        y = 0;
         this.auto = Auto.TopLeft;
         break;
-      case Auto.TopLeft:
-        this.moveImage(-imageSize.width, -imageSize.height, imageSize.width, imageSize.height, imageScale);
+      case Corner.TopRight:
+        x = -imageSize.width;
+        y = 0;
+        break;
+      case Corner.BottomRight:
+        x = -imageSize.width;
+        y = -imageSize.height;
         this.auto = Auto.BottomRight;
         break;
-      case Auto.BottomRight:
-        this.setIndex(this.state.index + 1);
+      case Corner.BottomLeft:
+        x = 0;
+        y = -imageSize.height;
     }
+    return this.moveImage(x, y, imageSize.width, imageSize.height, imageScale);
   };
 
   ComicView.prototype.setScale = function(scale, setAutoScale) {
