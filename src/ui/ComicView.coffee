@@ -219,18 +219,20 @@ class ComicView extends React.Component
         imageSwipeX: 0
       }
       if @state.loaded
-        if Math.abs(@state.imageSwipeX) > (@props.width / 6)
+        if Math.abs(@state.imageSwipeX) > (@props.width / 8)
           direction = Math.sign(@state.imageSwipeX)
           @setIndex(@state.index - direction)
           return
       @setState { imageSwipeX: 0 }
 
-  onDrag: (dx, dy) ->
+  onDrag: (dx, dy, dragOriginX, dragOriginY) ->
     # console.log "onDrag #{dx} #{dy}"
     if not @state.loaded
       return
     if @state.imageScale == 1
-      @setState { imageSwipeX: @state.imageSwipeX + dx }
+      if dragOriginX > 50
+        # Don't interfere with opening the left panel
+        @setState { imageSwipeX: @state.imageSwipeX + dx }
       return
     newX = @state.imageX + dx
     newY = @state.imageY + dy

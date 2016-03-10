@@ -161,7 +161,7 @@ class TouchDiv extends React.Component
           dx = @trackedTouches[0].x - @dragX
           dy = @trackedTouches[0].y - @dragY
           #console.log "single drag: #{dx}, #{dy}"
-          @props.listener.onDrag(dx, dy)
+          @props.listener.onDrag(dx, dy, @dragX, @dragY)
         @setDragPoint()
 
     else if @trackedTouches.length >= 2

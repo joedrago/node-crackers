@@ -14,6 +14,7 @@ LRUCache = require './LRUCache'
 # Material UI components
 AppBar = require 'material-ui/lib/app-bar'
 FlatButton = require 'material-ui/lib/flat-button'
+Divider = require 'material-ui/lib/divider'
 FontIcon = require 'material-ui/lib/font-icon'
 IconButton = require 'material-ui/lib/icon-button'
 LeftNav = require 'material-ui/lib/left-nav'
@@ -115,31 +116,44 @@ class App extends React.Component
           onTouchTap: =>
             @setState { navOpen: !@state.navOpen }
         }, 'keyboard_arrow_right'
+    ]
 
       # Left navigation panel
-      el LeftNav, {
+    navMenuItems = [
+      el MenuItem, {
+        primaryText: "Home"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
+        onTouchTap: =>
+          @changeDir('')
+          @setState { navOpen: false }
+      }
+      el MenuItem, {
+        primaryText: "Updates"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
+        onTouchTap: =>
+      }
+      el MenuItem, {
+        primaryText: "Search"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
+      }
+    ]
+
+    if false
+      navMenuItems.push(el Divider)
+      navMenuItems.push(
+        el MenuItem, {
+          primaryText: "Next Issue in Series"
+          leftIcon: el FontIcon, { className: 'material-icons' }, 'skip_next'
+        }
+      )
+
+    elements.push(el LeftNav, {
         docked: false
         open: @state.navOpen
+        swipeAreaWidth: 50
         onRequestChange: (open) => @setState { navOpen: open }
-      }, [
-        el MenuItem, {
-          primaryText: "Home"
-          leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
-          onTouchTap: =>
-            @changeDir('')
-            @setState { navOpen: false }
-        }
-        el MenuItem, {
-          primaryText: "Updates"
-          leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
-          onTouchTap: =>
-        }
-        el MenuItem, {
-          primaryText: "Search"
-          leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
-        }
-      ]
-    ]
+      }, navMenuItems
+    )
 
     view = null
     if @state.manifest and (@state.view == 'comics')
