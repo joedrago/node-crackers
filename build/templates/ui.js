@@ -36194,8 +36194,8 @@ App = (function(superClass) {
 module.exports = Dimensions()(App);
 
 
-},{"./ComicView":289,"./IndexView":291,"./LRUCache":292,"./LoadingView":293,"./tags":295,"material-ui/lib/app-bar":2,"material-ui/lib/flat-button":8,"material-ui/lib/font-icon":9,"material-ui/lib/icon-button":10,"material-ui/lib/left-nav":11,"material-ui/lib/menus/menu-item":19,"material-ui/lib/raised-button":29,"material-ui/lib/styles/baseThemes/darkBaseTheme":35,"material-ui/lib/styles/getMuiTheme":38,"material-ui/lib/toolbar/toolbar":56,"material-ui/lib/toolbar/toolbar-group":53,"material-ui/lib/toolbar/toolbar-separator":54,"material-ui/lib/toolbar/toolbar-title":55,"pubsub-js":116,"react":287,"react-dimensions":117,"react-dom":118,"react-tap-event-plugin":125}],289:[function(require,module,exports){
-var ComicView, DOM, ImageCache, Loader, PubSub, React, div, el, img, ref,
+},{"./ComicView":289,"./IndexView":291,"./LRUCache":292,"./LoadingView":293,"./tags":296,"material-ui/lib/app-bar":2,"material-ui/lib/flat-button":8,"material-ui/lib/font-icon":9,"material-ui/lib/icon-button":10,"material-ui/lib/left-nav":11,"material-ui/lib/menus/menu-item":19,"material-ui/lib/raised-button":29,"material-ui/lib/styles/baseThemes/darkBaseTheme":35,"material-ui/lib/styles/getMuiTheme":38,"material-ui/lib/toolbar/toolbar":56,"material-ui/lib/toolbar/toolbar-group":53,"material-ui/lib/toolbar/toolbar-separator":54,"material-ui/lib/toolbar/toolbar-title":55,"pubsub-js":116,"react":287,"react-dimensions":117,"react-dom":118,"react-tap-event-plugin":125}],289:[function(require,module,exports){
+var ComicView, DOM, ImageCache, Loader, PubSub, React, TouchDiv, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -36209,6 +36209,8 @@ PubSub = require('pubsub-js');
 
 ImageCache = require('./ImageCache');
 
+TouchDiv = require('./TouchDiv');
+
 ref = require('./tags'), div = ref.div, el = ref.el, img = ref.img;
 
 ComicView = (function(superClass) {
@@ -36220,6 +36222,7 @@ ComicView = (function(superClass) {
 
   function ComicView(props) {
     ComicView.__super__.constructor.call(this, props);
+    this.MAX_SCALE = 3;
     this.state = {
       index: 0,
       loaded: false,
@@ -36276,16 +36279,24 @@ ComicView = (function(superClass) {
     }
     return this.imageCache.load(this.props.metadata.images[this.state.index], (function(_this) {
       return function(info) {
+        var imagePos, imageSize;
         if (info.url === _this.props.metadata.images[_this.state.index]) {
           if (info.error) {
             return _this.setState({
               error: true
             });
           } else {
+            imageSize = _this.calcImageSize(info.width, info.height, 1);
+            imagePos = _this.calcImageCenterPos(imageSize.width, imageSize.height);
             return _this.setState({
               loaded: true,
-              imageWidth: info.width,
-              imageHeight: info.height
+              originalImageWidth: info.width,
+              originalImageHeight: info.height,
+              imageX: imagePos.x,
+              imageY: imagePos.y,
+              imageWidth: imageSize.width,
+              imageHeight: imageSize.height,
+              imageScale: 1
             });
           }
         }
@@ -36293,32 +36304,100 @@ ComicView = (function(superClass) {
     })(this));
   };
 
-  ComicView.prototype.calcImageRect = function() {
-    var aspectCorrectHeight, aspectCorrectWidth, imageAspectRatio, rect, viewAspectRatio;
+  ComicView.prototype.moveImage = function(x, y, width, height, scale) {
+    var centerPos;
+    centerPos = this.calcImageCenterPos(width, height);
+    if (width < this.props.width) {
+      x = centerPos.x;
+    } else {
+      if (x > 0) {
+        x = 0;
+      }
+      if ((x + width) < this.props.width) {
+        x = this.props.width - width;
+      }
+    }
+    if (height < this.props.height) {
+      y = centerPos.y;
+    } else {
+      if (y > 0) {
+        y = 0;
+      }
+      if ((y + height) < this.props.height) {
+        y = this.props.height - height;
+      }
+    }
+    return this.setState({
+      imageX: x,
+      imageY: y,
+      imageWidth: width,
+      imageHeight: height,
+      imageScale: scale
+    });
+  };
+
+  ComicView.prototype.onClick = function(x, y) {};
+
+  ComicView.prototype.onDrag = function(dx, dy) {
+    var newX, newY;
+    if (!this.state.loaded) {
+      return;
+    }
+    newX = this.state.imageX + dx;
+    newY = this.state.imageY + dy;
+    return this.moveImage(newX, newY, this.state.imageWidth, this.state.imageHeight, this.state.imageScale);
+  };
+
+  ComicView.prototype.onZoom = function(x, y, dist) {
+    var imagePos, imageScale, imageSize, normalizedImagePosX, normalizedImagePosY;
+    if (!this.state.loaded) {
+      return;
+    }
+    imageScale = this.state.imageScale + (dist / 100);
+    if (imageScale < 1) {
+      imageScale = 1;
+    }
+    if (imageScale > this.MAX_SCALE) {
+      imageScale = this.MAX_SCALE;
+    }
+    normalizedImagePosX = (x - this.state.imageX) / this.state.imageWidth;
+    normalizedImagePosY = (y - this.state.imageY) / this.state.imageHeight;
+    imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, imageScale);
+    imagePos = {
+      x: x - (normalizedImagePosX * imageSize.width),
+      y: y - (normalizedImagePosY * imageSize.height)
+    };
+    return this.moveImage(imagePos.x, imagePos.y, imageSize.width, imageSize.height, imageScale);
+  };
+
+  ComicView.prototype.calcImageSize = function(imageWidth, imageHeight, imageScale) {
+    var imageAspectRatio, size, viewAspectRatio;
     viewAspectRatio = this.props.width / this.props.height;
-    imageAspectRatio = this.state.imageWidth / this.state.imageHeight;
+    imageAspectRatio = imageWidth / imageHeight;
     if (viewAspectRatio < imageAspectRatio) {
-      aspectCorrectHeight = this.props.width / imageAspectRatio;
-      rect = {
-        x: 0,
-        y: (this.props.height - aspectCorrectHeight) >> 1,
+      size = {
         width: this.props.width,
-        height: aspectCorrectHeight
+        height: this.props.width / imageAspectRatio
       };
     } else {
-      aspectCorrectWidth = this.props.height * imageAspectRatio;
-      rect = {
-        x: (this.props.width - aspectCorrectWidth) >> 1,
-        y: 0,
-        width: aspectCorrectWidth,
+      size = {
+        width: this.props.height * imageAspectRatio,
         height: this.props.height
       };
     }
-    return rect;
+    size.width *= imageScale;
+    size.height *= imageScale;
+    return size;
+  };
+
+  ComicView.prototype.calcImageCenterPos = function(imageWidth, imageHeight) {
+    return {
+      x: (this.props.width - imageWidth) >> 1,
+      y: (this.props.height - imageHeight) >> 1
+    };
   };
 
   ComicView.prototype.render = function() {
-    var rect;
     if (this.state.error) {
       return el(Loader, {
         color: '#ff0000'
@@ -36329,9 +36408,12 @@ ComicView = (function(superClass) {
         color: '#222222'
       });
     }
-    rect = this.calcImageRect();
-    return div({
+    return el(TouchDiv, {
+      listener: this,
+      width: this.props.width,
+      height: this.props.height,
       style: {
+        id: 'page',
         position: 'absolute',
         left: 0,
         top: 0,
@@ -36339,8 +36421,8 @@ ComicView = (function(superClass) {
         height: this.props.height,
         background: "url(\"" + this.props.metadata.images[this.state.index] + "\")",
         backgroundRepeat: 'no-repeat',
-        backgroundPosition: rect.x + "px " + rect.y + "px",
-        backgroundSize: rect.width + "px " + rect.height + "px"
+        backgroundPosition: this.state.imageX + "px " + this.state.imageY + "px",
+        backgroundSize: this.state.imageWidth + "px " + this.state.imageHeight + "px"
       }
     });
   };
@@ -36352,7 +36434,7 @@ ComicView = (function(superClass) {
 module.exports = ComicView;
 
 
-},{"./ImageCache":290,"./tags":295,"pubsub-js":116,"react":287,"react-dom":118,"react-loader":119}],290:[function(require,module,exports){
+},{"./ImageCache":290,"./TouchDiv":294,"./tags":296,"pubsub-js":116,"react":287,"react-dom":118,"react-loader":119}],290:[function(require,module,exports){
 var ImageCache, LRUCache;
 
 LRUCache = require('./LRUCache');
@@ -36570,7 +36652,7 @@ IndexView = (function(superClass) {
 module.exports = IndexView;
 
 
-},{"./tags":295,"react":287,"react-dom":118}],292:[function(require,module,exports){
+},{"./tags":296,"react":287,"react-dom":118}],292:[function(require,module,exports){
 var LRUCache;
 
 LRUCache = (function() {
@@ -36820,7 +36902,267 @@ LoadingView = (function(superClass) {
 module.exports = LoadingView;
 
 
-},{"./tags":295,"react":287,"react-dom":118,"react-loader":119}],294:[function(require,module,exports){
+},{"./tags":296,"react":287,"react-dom":118,"react-loader":119}],294:[function(require,module,exports){
+var DOM, ENGAGE_DRAG_DISTANCE, React, TouchDiv, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+ref = require('./tags'), div = ref.div, el = ref.el, img = ref.img;
+
+ENGAGE_DRAG_DISTANCE = 30;
+
+TouchDiv = (function(superClass) {
+  extend(TouchDiv, superClass);
+
+  function TouchDiv(props) {
+    TouchDiv.__super__.constructor.call(this, props);
+    this.MOUSE_ID = 100;
+    this.mouseDown = false;
+    this.trackedTouches = [];
+    this.dragX = 0;
+    this.dragY = 0;
+    this.dragging = false;
+  }
+
+  TouchDiv.prototype.componentDidMount = function() {
+    var node;
+    node = DOM.findDOMNode(this);
+    $(node).on('mousedown', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        _this.onTouchesBegan([
+          {
+            identifier: _this.MOUSE_ID,
+            clientX: event.clientX,
+            clientY: event.clientY
+          }
+        ]);
+        return _this.mouseDown = true;
+      };
+    })(this));
+    $(node).on('mouseup', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        _this.onTouchesEnded([
+          {
+            identifier: _this.MOUSE_ID,
+            clientX: event.clientX,
+            clientY: event.clientY
+          }
+        ]);
+        return _this.mouseDown = false;
+      };
+    })(this));
+    $(node).on('mousemove', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        if (_this.mouseDown) {
+          return _this.onTouchesMoved([
+            {
+              identifier: _this.MOUSE_ID,
+              clientX: event.clientX,
+              clientY: event.clientY
+            }
+          ]);
+        }
+      };
+    })(this));
+    $(node).on('touchstart', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        return _this.onTouchesBegan(event.originalEvent.changedTouches);
+      };
+    })(this));
+    $(node).on('touchend', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        return _this.onTouchesEnded(event.originalEvent.changedTouches);
+      };
+    })(this));
+    $(node).on('touchmove', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        return _this.onTouchesMoved(event.originalEvent.changedTouches);
+      };
+    })(this));
+    return $(node).on('mousewheel', (function(_this) {
+      return function(event) {
+        event.preventDefault();
+        return _this.props.listener.onZoom(event.clientX, event.clientY, event.deltaY);
+      };
+    })(this));
+  };
+
+  TouchDiv.prototype.componentWillUnmount = function() {
+    var node;
+    node = DOM.findDOMNode(this);
+    $(node).off('mousedown');
+    $(node).off('mouseup');
+    $(node).off('mousemove');
+    $(node).off('touchstart');
+    $(node).off('touchend');
+    $(node).off('touchmove');
+    return $(node).off('mousewheel');
+  };
+
+  TouchDiv.prototype.render = function() {
+    return div({
+      style: this.props.style
+    });
+  };
+
+  TouchDiv.prototype.calcDistance = function(x1, y1, x2, y2) {
+    var dx, dy;
+    dx = x2 - x1;
+    dy = y2 - y1;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  TouchDiv.prototype.setDragPoint = function() {
+    this.dragX = this.trackedTouches[0].x;
+    return this.dragY = this.trackedTouches[0].y;
+  };
+
+  TouchDiv.prototype.calcPinchAnchor = function() {
+    if (this.trackedTouches.length >= 2) {
+      this.pinchX = Math.floor((this.trackedTouches[0].x + this.trackedTouches[1].x) / 2);
+      return this.pinchY = Math.floor((this.trackedTouches[0].y + this.trackedTouches[1].y) / 2);
+    }
+  };
+
+  TouchDiv.prototype.addTouch = function(id, x, y) {
+    var j, len, ref1, t;
+    ref1 = this.trackedTouches;
+    for (j = 0, len = ref1.length; j < len; j++) {
+      t = ref1[j];
+      if (t.id === id) {
+        return;
+      }
+    }
+    this.trackedTouches.push({
+      id: id,
+      x: x,
+      y: y
+    });
+    if (this.trackedTouches.length === 1) {
+      this.setDragPoint();
+    }
+    if (this.trackedTouches.length === 2) {
+      return this.calcPinchAnchor();
+    }
+  };
+
+  TouchDiv.prototype.removeTouch = function(id, x, y) {
+    var i, index, j, ref1;
+    index = -1;
+    for (i = j = 0, ref1 = this.trackedTouches.length; 0 <= ref1 ? j < ref1 : j > ref1; i = 0 <= ref1 ? ++j : --j) {
+      if (this.trackedTouches[i].id === id) {
+        index = i;
+        break;
+      }
+    }
+    if (index !== -1) {
+      this.trackedTouches.splice(index, 1);
+      if (this.trackedTouches.length === 1) {
+        this.setDragPoint();
+      }
+      if (index < 2) {
+        return this.calcPinchAnchor();
+      }
+    }
+  };
+
+  TouchDiv.prototype.updateTouch = function(id, x, y) {
+    var i, index, j, ref1;
+    index = -1;
+    for (i = j = 0, ref1 = this.trackedTouches.length; 0 <= ref1 ? j < ref1 : j > ref1; i = 0 <= ref1 ? ++j : --j) {
+      if (this.trackedTouches[i].id === id) {
+        index = i;
+        break;
+      }
+    }
+    if (index !== -1) {
+      this.trackedTouches[index].x = x;
+      return this.trackedTouches[index].y = y;
+    }
+  };
+
+  TouchDiv.prototype.onTouchesBegan = function(touches) {
+    var id, j, len, t, x, y;
+    if (this.trackedTouches.length === 0) {
+      this.dragging = false;
+    }
+    for (j = 0, len = touches.length; j < len; j++) {
+      t = touches[j];
+      id = t.identifier;
+      x = t.clientX;
+      y = t.clientY;
+      this.addTouch(id, x, y);
+    }
+    if (this.trackedTouches.length > 1) {
+      return this.dragging = true;
+    }
+  };
+
+  TouchDiv.prototype.onTouchesMoved = function(touches) {
+    var currDistance, deltaDistance, dragDistance, dx, dy, j, len, prevDistance, prevX, prevY, t;
+    prevDistance = 0;
+    if (this.trackedTouches.length >= 2) {
+      prevDistance = this.calcDistance(this.trackedTouches[0].x, this.trackedTouches[0].y, this.trackedTouches[1].x, this.trackedTouches[1].y);
+    }
+    if (this.trackedTouches.length === 1) {
+      prevX = this.trackedTouches[0].x;
+      prevY = this.trackedTouches[0].y;
+    }
+    for (j = 0, len = touches.length; j < len; j++) {
+      t = touches[j];
+      this.updateTouch(t.identifier, t.clientX, t.clientY);
+    }
+    if (this.trackedTouches.length === 1) {
+      dragDistance = this.calcDistance(this.dragX, this.dragY, this.trackedTouches[0].x, this.trackedTouches[0].y);
+      if (this.dragging || (dragDistance > ENGAGE_DRAG_DISTANCE)) {
+        this.dragging = true;
+        if (dragDistance > 0.5) {
+          dx = this.trackedTouches[0].x - this.dragX;
+          dy = this.trackedTouches[0].y - this.dragY;
+          this.props.listener.onDrag(dx, dy);
+        }
+        return this.setDragPoint();
+      }
+    } else if (this.trackedTouches.length >= 2) {
+      currDistance = this.calcDistance(this.trackedTouches[0].x, this.trackedTouches[0].y, this.trackedTouches[1].x, this.trackedTouches[1].y);
+      deltaDistance = currDistance - prevDistance;
+      if (deltaDistance !== 0) {
+        return this.props.listener.onZoom(this.pinchX, this.pinchY, deltaDistance);
+      }
+    }
+  };
+
+  TouchDiv.prototype.onTouchesEnded = function(touches) {
+    var j, len, results, t;
+    if (this.trackedTouches.length === 1 && !this.dragging) {
+      this.props.listener.onClick(touches[0].clientX, touches[0].clientY);
+    }
+    results = [];
+    for (j = 0, len = touches.length; j < len; j++) {
+      t = touches[j];
+      results.push(this.removeTouch(t.identifier, t.clientX, t.clientY));
+    }
+    return results;
+  };
+
+  return TouchDiv;
+
+})(React.Component);
+
+module.exports = TouchDiv;
+
+
+},{"./tags":296,"react":287,"react-dom":118}],295:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -36832,7 +37174,7 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":288,"react":287,"react-dom":118}],295:[function(require,module,exports){
+},{"./App":288,"react":287,"react-dom":118}],296:[function(require,module,exports){
 var React, elementName, i, len, tags;
 
 React = require('react');
@@ -36849,4 +37191,4 @@ for (i = 0, len = tags.length; i < len; i++) {
 module.exports.el = React.createElement;
 
 
-},{"react":287}]},{},[294]);
+},{"react":287}]},{},[295]);

@@ -6,6 +6,7 @@ PubSub = require 'pubsub-js'
 
 # Local requires
 ImageCache = require './ImageCache'
+TouchDiv = require './TouchDiv'
 {div, el, img} = require './tags'
 
 class ComicView extends React.Component
@@ -14,6 +15,7 @@ class ComicView extends React.Component
 
   constructor: (props) ->
     super props
+    @MAX_SCALE = 3
     @state =
       index: 0
       loaded: false
@@ -62,32 +64,104 @@ class ComicView extends React.Component
         if info.error
           @setState { error: true }
         else
+          imageSize = @calcImageSize(info.width, info.height, 1)
+          imagePos = @calcImageCenterPos(imageSize.width, imageSize.height)
           @setState {
             loaded: true
-            imageWidth: info.width
-            imageHeight: info.height
+            originalImageWidth: info.width
+            originalImageHeight: info.height
+            imageX: imagePos.x
+            imageY: imagePos.y
+            imageWidth: imageSize.width
+            imageHeight: imageSize.height
+            imageScale: 1
           }
 
-  calcImageRect: ->
+  moveImage: (x, y, width, height, scale) ->
+    centerPos = @calcImageCenterPos(width, height)
+
+    if width < @props.width
+      # width fits completely, just center it
+      x = centerPos.x
+    else
+      # clamp to fit in the screen bounds
+      if x > 0
+        x = 0
+      if (x + width) < @props.width
+        x = @props.width - width
+
+    if height < @props.height
+      # height fits completely, just center it
+      y = centerPos.y
+    else
+      # clamp to fit in the screen bounds
+      if y > 0
+        y = 0
+      if (y + height) < @props.height
+        y = @props.height - height
+
+    @setState {
+      imageX: x
+      imageY: y
+      imageWidth: width
+      imageHeight: height
+      imageScale: scale
+    }
+
+  onClick: (x, y) ->
+    # console.log "onClick #{x} #{y}"
+
+  onDrag: (dx, dy) ->
+    # console.log "onDrag #{dx} #{dy}"
+    if not @state.loaded
+      return
+    newX = @state.imageX + dx
+    newY = @state.imageY + dy
+    @moveImage(newX, newY, @state.imageWidth, @state.imageHeight, @state.imageScale)
+
+  onZoom: (x, y, dist) ->
+    # console.log "onZoom #{x} #{y} #{dist}"
+    if not @state.loaded
+      return
+    imageScale = @state.imageScale + (dist / 100)
+    if imageScale < 1
+      imageScale = 1
+    if imageScale > @MAX_SCALE
+      imageScale = @MAX_SCALE
+
+    # calculate the cursor position in normalized image coords
+    normalizedImagePosX = (x - @state.imageX) / @state.imageWidth
+    normalizedImagePosY = (y - @state.imageY) / @state.imageHeight
+
+    imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, imageScale)
+    imagePos = {
+      x: x - (normalizedImagePosX * imageSize.width)
+      y: y - (normalizedImagePosY * imageSize.height)
+    }
+    @moveImage(imagePos.x, imagePos.y, imageSize.width, imageSize.height, imageScale)
+
+  calcImageSize: (imageWidth, imageHeight, imageScale) ->
     viewAspectRatio = @props.width / @props.height
-    imageAspectRatio = @state.imageWidth / @state.imageHeight
+    imageAspectRatio = imageWidth / imageHeight
     if viewAspectRatio < imageAspectRatio
-      aspectCorrectHeight = @props.width / imageAspectRatio
-      rect = {
-        x: 0
-        y: (@props.height - aspectCorrectHeight) >> 1
+      size = {
         width: @props.width
-        height: aspectCorrectHeight
+        height: @props.width / imageAspectRatio
       }
     else
-      aspectCorrectWidth = @props.height * imageAspectRatio
-      rect = {
-        x: (@props.width - aspectCorrectWidth) >> 1
-        y: 0
-        width: aspectCorrectWidth
+      size = {
+        width: @props.height * imageAspectRatio
         height: @props.height
       }
-    return rect
+    size.width *= imageScale
+    size.height *= imageScale
+    return size
+
+  calcImageCenterPos: (imageWidth, imageHeight) ->
+    return {
+      x: (@props.width  - imageWidth ) >> 1
+      y: (@props.height - imageHeight) >> 1
+    }
 
   render: ->
     if @state.error
@@ -99,9 +173,12 @@ class ComicView extends React.Component
         color: '#222222'
       }
 
-    rect = @calcImageRect()
-    return div {
+    return el TouchDiv, {
+        listener: this
+        width: @props.width
+        height: @props.height
         style:
+          id: 'page'
           position: 'absolute'
           left: 0
           top: 0
@@ -109,8 +186,8 @@ class ComicView extends React.Component
           height: @props.height
           background: "url(\"#{@props.metadata.images[@state.index]}\")"
           backgroundRepeat: 'no-repeat'
-          backgroundPosition: "#{rect.x}px #{rect.y}px"
-          backgroundSize: "#{rect.width}px #{rect.height}px"
+          backgroundPosition: "#{@state.imageX}px #{@state.imageY}px"
+          backgroundSize: "#{@state.imageWidth}px #{@state.imageHeight}px"
       }
 
 module.exports = ComicView
