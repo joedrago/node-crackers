@@ -108,7 +108,7 @@ class App extends React.Component
           touch: true
           style:
             opacity: 0.5
-            position: 'absolute'
+            position: 'fixed'
             left: 0
             top: 0
             zIndex: 1
