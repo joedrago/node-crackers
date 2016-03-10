@@ -36143,11 +36143,7 @@ App = (function(superClass) {
       view = el(LoadingView);
     }
     return div({
-      id: 'outerdiv',
-      left: 0,
-      top: 0,
-      right: 0,
-      bottom: 0
+      id: 'outerdiv'
     }, [
       el(LeftNav, {
         docked: false,
@@ -36334,15 +36330,18 @@ ComicView = (function(superClass) {
       });
     }
     rect = this.calcImageRect();
-    return img({
+    return div({
       style: {
         position: 'absolute',
-        left: rect.x,
-        top: rect.y,
-        width: rect.width,
-        height: rect.height
-      },
-      src: this.props.metadata.images[this.state.index]
+        left: 0,
+        top: 0,
+        width: this.props.width,
+        height: this.props.height,
+        background: "url(\"" + this.props.metadata.images[this.state.index] + "\")",
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: rect.x + "px " + rect.y + "px",
+        backgroundSize: rect.width + "px " + rect.height + "px"
+      }
     });
   };
 

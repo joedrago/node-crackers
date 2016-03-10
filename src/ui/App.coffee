@@ -124,10 +124,6 @@ class App extends React.Component
 
     return div {
         id: 'outerdiv'
-        left: 0
-        top: 0
-        right: 0
-        bottom: 0
       }, [
 
       # Left navigation panel

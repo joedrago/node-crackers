@@ -99,20 +99,18 @@ class ComicView extends React.Component
         color: '#222222'
       }
 
-    # return div {
-    #   style:
-    #     color: '#ffffff'
-    # }, "index[#{@state.index} / #{@props.metadata.pages}] #{@props.width}x#{@props.height} #{@state.imageWidth}x#{@state.imageHeight}"
-
     rect = @calcImageRect()
-    return img {
-      style:
-        position: 'absolute'
-        left: rect.x
-        top: rect.y
-        width: rect.width
-        height: rect.height
-      src: @props.metadata.images[@state.index]
-    }
+    return div {
+        style:
+          position: 'absolute'
+          left: 0
+          top: 0
+          width: @props.width
+          height: @props.height
+          background: "url(\"#{@props.metadata.images[@state.index]}\")"
+          backgroundRepeat: 'no-repeat'
+          backgroundPosition: "#{rect.x}px #{rect.y}px"
+          backgroundSize: "#{rect.width}px #{rect.height}px"
+      }
 
 module.exports = ComicView
