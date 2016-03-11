@@ -102,6 +102,7 @@ class TouchDiv extends React.Component
       # We just added a second touch spot. Calculate the anchor for pinching now
       @calcPinchAnchor()
     # console.log "adding touch #{id}, tracking #{@trackedTouches.length} touches"
+    @props.listener.onTouchCount(@trackedTouches.length)
 
   removeTouch: (id, x, y) ->
     index = -1
@@ -117,6 +118,7 @@ class TouchDiv extends React.Component
         # We just forgot one of our pinch touches. Pick a new anchor spot.
         @calcPinchAnchor()
       # console.log "forgetting id #{id}, tracking #{@trackedTouches.length} touches"
+    @props.listener.onTouchCount(@trackedTouches.length)
 
   updateTouch: (id, x, y) ->
     index = -1
@@ -140,6 +142,7 @@ class TouchDiv extends React.Component
     if @trackedTouches.length > 1
       # They're pinching, don't even bother to emit a click
       @dragging = true
+    return
 
   onTouchesMoved: (touches) ->
     prevDistance = 0
@@ -172,6 +175,8 @@ class TouchDiv extends React.Component
         #console.log "distance dragged apart: #{deltaDistance} [anchor: #{@pinchX}, #{@pinchY}]"
         @props.listener.onZoom(@pinchX, @pinchY, deltaDistance)
 
+    return
+
   onTouchesEnded: (touches) ->
     if @trackedTouches.length == 1
       if not @dragging
@@ -179,5 +184,6 @@ class TouchDiv extends React.Component
       @props.listener.onNoTouches()
     for t in touches
       @removeTouch t.identifier, t.clientX, t.clientY
+    return
 
 module.exports = TouchDiv

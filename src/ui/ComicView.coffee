@@ -2,6 +2,7 @@
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
+{Motion, spring} = require 'react-motion'
 PubSub = require 'pubsub-js'
 
 # Local requires
@@ -31,6 +32,7 @@ class ComicView extends React.Component
       index: 0
       loaded: false
       error: false
+      touchCount: false
     @imageCache = new ImageCache()
     @preloadImageCount = 3
     @auto = Auto.None
@@ -40,12 +42,14 @@ class ComicView extends React.Component
 
   componentDidMount: ->
     console.log "ComicView componentDidMount"
+    @setState { touchCount: 0 }
     @keySubscription = PubSub.subscribe 'key', (msg, event) =>
       @onKeyPress(event)
 
   componentWillUnmount: ->
     console.log "ComicView componentWillUnmount"
     PubSub.unsubscribe @keySubscription
+    @setState { touchCount: 0 }
     @keySubscription = null
     @imageCache.flush()
 
@@ -127,25 +131,26 @@ class ComicView extends React.Component
   moveImage: (x, y, width, height, scale) ->
     centerPos = @calcImageCenterPos(width, height)
 
-    if width < @props.width
-      # width fits completely, just center it
-      x = centerPos.x
-    else
-      # clamp to fit in the screen bounds
-      if x > 0
-        x = 0
-      if (x + width) < @props.width
-        x = @props.width - width
+    if @state.touchCount == 0
+      if width < @props.width
+        # width fits completely, just center it
+        x = centerPos.x
+      else
+        # clamp to fit in the screen bounds
+        if x > 0
+          x = 0
+        if (x + width) < @props.width
+          x = @props.width - width
 
-    if height < @props.height
-      # height fits completely, just center it
-      y = centerPos.y
-    else
-      # clamp to fit in the screen bounds
-      if y > 0
-        y = 0
-      if (y + height) < @props.height
-        y = @props.height - height
+      if height < @props.height
+        # height fits completely, just center it
+        y = centerPos.y
+      else
+        # clamp to fit in the screen bounds
+        if y > 0
+          y = 0
+        if (y + height) < @props.height
+          y = @props.height - height
 
     @setState {
       imageX: x
@@ -225,6 +230,12 @@ class ComicView extends React.Component
           return
       @setState { imageSwipeX: 0 }
 
+  onTouchCount: (touchCount) ->
+    # console.log "onTouchCount(#{touchCount})"
+    @setState { touchCount: touchCount }
+    if touchCount == 0
+      @moveImage(@state.imageX, @state.imageY, @state.imageWidth, @state.imageHeight, @state.imageScale)
+
   onDrag: (dx, dy, dragOriginX, dragOriginY) ->
     # console.log "onDrag #{dx} #{dy}"
     if not @state.loaded
@@ -293,21 +304,26 @@ class ComicView extends React.Component
         color: '#222222'
       }
 
-    return el TouchDiv, {
-        listener: this
-        width: @props.width
-        height: @props.height
+    return el Motion, {
         style:
-          id: 'page'
-          position: 'absolute'
-          left: 0
-          top: 0
+          imageX: spring(@state.imageX)
+          imageY: spring(@state.imageY)
+      }, (values) =>
+        el TouchDiv, {
+          listener: this
           width: @props.width
           height: @props.height
-          background: "url(\"#{@props.metadata.images[@state.index]}\")"
-          backgroundRepeat: 'no-repeat'
-          backgroundPosition: "#{@state.imageX}px #{@state.imageY}px"
-          backgroundSize: "#{@state.imageWidth}px #{@state.imageHeight}px"
-      }
+          style:
+            id: 'page'
+            position: 'absolute'
+            left: 0
+            top: 0
+            width: @props.width
+            height: @props.height
+            background: "url(\"#{@props.metadata.images[@state.index]}\")"
+            backgroundRepeat: 'no-repeat'
+            backgroundPosition: "#{values.imageX}px #{values.imageY}px"
+            backgroundSize: "#{@state.imageWidth}px #{@state.imageHeight}px"
+        }
 
 module.exports = ComicView
