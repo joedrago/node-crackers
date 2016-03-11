@@ -27,6 +27,9 @@ class ComicView extends React.Component
 
   constructor: (props) ->
     super props
+    @springConfig =
+      stiffness: 300
+      damping: 40
     @MAX_SCALE = 3
     @state =
       index: 0
@@ -306,8 +309,10 @@ class ComicView extends React.Component
 
     return el Motion, {
         style:
-          imageX: spring(@state.imageX)
-          imageY: spring(@state.imageY)
+          imageX: spring(@state.imageX, @springConfig)
+          imageY: spring(@state.imageY, @springConfig)
+          imageWidth: spring(@state.imageWidth, @springConfig)
+          imageHeight: spring(@state.imageHeight, @springConfig)
       }, (values) =>
         el TouchDiv, {
           listener: this
@@ -323,7 +328,7 @@ class ComicView extends React.Component
             background: "url(\"#{@props.metadata.images[@state.index]}\")"
             backgroundRepeat: 'no-repeat'
             backgroundPosition: "#{values.imageX}px #{values.imageY}px"
-            backgroundSize: "#{@state.imageWidth}px #{@state.imageHeight}px"
+            backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
         }
 
 module.exports = ComicView

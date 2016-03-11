@@ -37810,6 +37810,10 @@ ComicView = (function(superClass) {
 
   function ComicView(props) {
     ComicView.__super__.constructor.call(this, props);
+    this.springConfig = {
+      stiffness: 300,
+      damping: 40
+    };
     this.MAX_SCALE = 3;
     this.state = {
       index: 0,
@@ -38158,8 +38162,10 @@ ComicView = (function(superClass) {
     }
     return el(Motion, {
       style: {
-        imageX: spring(this.state.imageX),
-        imageY: spring(this.state.imageY)
+        imageX: spring(this.state.imageX, this.springConfig),
+        imageY: spring(this.state.imageY, this.springConfig),
+        imageWidth: spring(this.state.imageWidth, this.springConfig),
+        imageHeight: spring(this.state.imageHeight, this.springConfig)
       }
     }, (function(_this) {
       return function(values) {
@@ -38177,7 +38183,7 @@ ComicView = (function(superClass) {
             background: "url(\"" + _this.props.metadata.images[_this.state.index] + "\")",
             backgroundRepeat: 'no-repeat',
             backgroundPosition: values.imageX + "px " + values.imageY + "px",
-            backgroundSize: _this.state.imageWidth + "px " + _this.state.imageHeight + "px"
+            backgroundSize: values.imageWidth + "px " + values.imageHeight + "px"
           }
         });
       };
