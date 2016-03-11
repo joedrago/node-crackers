@@ -37811,8 +37811,9 @@ ComicView = (function(superClass) {
   function ComicView(props) {
     ComicView.__super__.constructor.call(this, props);
     this.springConfig = {
-      stiffness: 300,
-      damping: 40
+      stiffness: 500,
+      damping: 40,
+      precision: 1
     };
     this.MAX_SCALE = 3;
     this.state = {

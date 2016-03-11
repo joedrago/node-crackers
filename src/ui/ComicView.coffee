@@ -28,8 +28,9 @@ class ComicView extends React.Component
   constructor: (props) ->
     super props
     @springConfig =
-      stiffness: 300
+      stiffness: 500
       damping: 40
+      precision: 1
     @MAX_SCALE = 3
     @state =
       index: 0
