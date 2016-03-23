@@ -154,7 +154,7 @@
       for (i = 0, len = list.length; i < len; i++) {
         file = list[i];
         if (file.match(/images$/i)) {
-          results.push(path.resolve(subDir, file).replace(/\/images$/, ""));
+          results.push(path.resolve(subDir, file).replace(/[\/\\]images$/, ""));
         }
       }
       return results;
