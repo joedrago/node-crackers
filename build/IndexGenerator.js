@@ -92,7 +92,7 @@
     IndexGenerator.prototype.ensureFileExists = function(filename) {};
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, i, ieTemplate, images, len, listText, manifestGenerator, md, mdList, metadata, outputText, prevDir, recent, recentcover, timestamp, totalCount;
+      var cover, coverGenerator, endpoint, i, ieTemplate, images, len, listText, manifestGenerator, md, mdList, metadata, outputText, progressEnabled, recent, recentcover, timestamp, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -116,43 +116,47 @@
       if (this.isRoot) {
         manifestGenerator = new ManifestGenerator(this.rootDir);
         manifestGenerator.generate();
-        timestamp = 0;
-        recent = "";
-        for (i = 0, len = mdList.length; i < len; i++) {
-          metadata = mdList[i];
-          if (timestamp < metadata.timestamp) {
-            timestamp = metadata.timestamp;
-            recent = metadata.path;
-          }
-          totalCount += metadata.count;
-          cover = metadata.path + "/" + metadata.cover;
-          cover = cover.replace("#", "%23");
-          metadata.cover = cover;
-          recentcover = metadata.path + "/" + metadata.recentcover;
-          recentcover = recentcover.replace("#", "%23");
-          metadata.recentcover = recentcover;
-          metadata.archive = cfs.findArchive(this.dir, metadata.path);
-          metadata.dir = path.join(this.dir.substr(this.rootDir.length + 1), metadata.path);
-          ieTemplate = (function() {
-            switch (metadata.type) {
-              case 'comic':
-                metadata.id = this.path + "/" + metadata.path;
-                metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase();
-                if (this.download && metadata.archive) {
-                  return 'ie_comic_dl_html';
-                } else {
-                  return 'ie_comic_html';
-                }
-                break;
-              case 'index':
-                return 'ie_index_html';
-            }
-          }).call(this);
-          listText += template(ieTemplate, metadata);
+      }
+      timestamp = 0;
+      recent = "";
+      for (i = 0, len = mdList.length; i < len; i++) {
+        metadata = mdList[i];
+        if (timestamp < metadata.timestamp) {
+          timestamp = metadata.timestamp;
+          recent = metadata.path;
         }
-        prevDir = "";
-        if (!this.isRoot) {
-          prevDir = "../";
+        totalCount += metadata.count;
+        cover = metadata.path + "/" + metadata.cover;
+        cover = cover.replace("#", "%23");
+        metadata.cover = cover;
+        recentcover = metadata.path + "/" + metadata.recentcover;
+        recentcover = recentcover.replace("#", "%23");
+        metadata.recentcover = recentcover;
+        metadata.archive = cfs.findArchive(this.dir, metadata.path);
+        metadata.dir = path.join(this.dir.substr(this.rootDir.length + 1), metadata.path);
+        ieTemplate = (function() {
+          switch (metadata.type) {
+            case 'comic':
+              metadata.id = this.path + "/" + metadata.path;
+              metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase();
+              if (this.download && metadata.archive) {
+                return 'ie_comic_dl_html';
+              } else {
+                return 'ie_comic_html';
+              }
+              break;
+            case 'index':
+              return 'ie_index_html';
+          }
+        }).call(this);
+        listText += template(ieTemplate, metadata);
+      }
+      if (this.isRoot) {
+        endpoint = cfs.getProgressEndpoint(this.rootDir);
+        progressEnabled = "true";
+        if (!endpoint) {
+          endpoint = constants.MANIFEST_CLIENT_FILENAME;
+          progressEnabled = "false";
         }
         outputText = template('index_html', {
           generator: 'index',
@@ -160,7 +164,9 @@
           root: this.relativeRoot,
           title: this.title,
           list: listText,
-          prev: prevDir
+          prev: "",
+          endpoint: endpoint,
+          progress: progressEnabled
         });
         fs.writeFileSync(this.indexFilename, outputText);
         log.verbose("Wrote " + this.indexFilename);
@@ -169,6 +175,7 @@
         type: 'index',
         title: this.title,
         cover: constants.COVER_FILENAME,
+        count: totalCount,
         recentcover: constants.RECENT_COVER_FILENAME,
         timestamp: timestamp,
         recent: recent

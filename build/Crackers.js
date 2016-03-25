@@ -140,13 +140,13 @@
     };
 
     Crackers.prototype.unpack = function(file, dir, force) {
-      var indexFilename, unpackRequired, unpacker, valid;
+      var metaFilename, unpackRequired, unpacker, valid;
       if (!cfs.prepareComicDir(dir)) {
         return false;
       }
-      indexFilename = cfs.join(dir, constants.INDEX_FILENAME);
+      metaFilename = cfs.join(dir, constants.META_FILENAME);
       unpackRequired = force.unpack;
-      if (cfs.newer(file, indexFilename)) {
+      if (cfs.newer(file, metaFilename)) {
         unpackRequired = true;
       }
       if (unpackRequired) {
@@ -158,7 +158,7 @@
           return false;
         }
       } else {
-        log.verbose("Unpack not required: (" + file + " older than " + indexFilename + ")");
+        log.verbose("Unpack not required: (" + file + " older than " + metaFilename + ")");
       }
       return true;
     };

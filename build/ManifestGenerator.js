@@ -15,11 +15,10 @@
   ManifestGenerator = (function() {
     function ManifestGenerator(rootDir) {
       this.rootDir = rootDir;
-      this.manifestFilename = cfs.join(this.rootDir, constants.MANIFEST_FILENAME);
     }
 
     ManifestGenerator.prototype.generate = function() {
-      var atLeaf, children, comic, comics, dir, flat, i, indexDir, indexMetadata, indexlist, issues, j, k, keys, len, len1, list, manifest, metadata, newchildren, parsed, ref;
+      var atLeaf, children, clientManifest, comic, comics, dir, flat, i, indexDir, indexMetadata, indexlist, issues, j, k, keys, len, len1, list, metadata, newchildren, parsed, ref, serverManifest;
       comics = cfs.gatherComics(this.rootDir);
       children = {};
       issues = {};
@@ -84,12 +83,16 @@
         newchildren[indexDir] = list;
       }
       children = newchildren;
-      manifest = {
+      serverManifest = {
         issues: issues,
         children: children,
         flat: flat
       };
-      return fs.writeFileSync(this.manifestFilename, JSON.stringify(manifest, null, 2));
+      fs.writeFileSync(cfs.join(this.rootDir, constants.MANIFEST_SERVER_FILENAME), JSON.stringify(serverManifest, null, 2));
+      clientManifest = {
+        children: children
+      };
+      return fs.writeFileSync(cfs.join(this.rootDir, constants.MANIFEST_CLIENT_FILENAME), JSON.stringify(clientManifest, null, 2));
     };
 
     return ManifestGenerator;

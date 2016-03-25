@@ -101,9 +101,9 @@ class Crackers
     if not cfs.prepareComicDir(dir)
       return false
 
-    indexFilename = cfs.join(dir, constants.INDEX_FILENAME)
+    metaFilename = cfs.join(dir, constants.META_FILENAME)
     unpackRequired = force.unpack
-    if cfs.newer(file, indexFilename)
+    if cfs.newer(file, metaFilename)
       unpackRequired = true
 
     if unpackRequired
@@ -114,7 +114,7 @@ class Crackers
       if not valid
         return false
     else
-      log.verbose "Unpack not required: (#{file} older than #{indexFilename})"
+      log.verbose "Unpack not required: (#{file} older than #{metaFilename})"
 
     return true
 

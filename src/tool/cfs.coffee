@@ -101,6 +101,7 @@ cfs.gatherComics = (subDir, rootDir) ->
   comics = []
   for dir in comicDirs
     relativeDir = dir.substr(rootDir.length + 1)
+    relativeDir = relativeDir.replace(/\\/g, "/")
     metadata = cfs.readMetadata(dir)
     if metadata
       metadata.dir = dir
@@ -147,6 +148,7 @@ cfs.touchRoot = (dir) ->
   return if cfs.fileHasBytes(rootFilename)
   rootinfo = {
     title: constants.DEFAULT_TITLE
+    progress: ""
   }
   json = JSON.stringify(rootinfo, null, 2)
   fs.writeFileSync rootFilename, json
@@ -162,6 +164,18 @@ cfs.getRootTitle = (dir) ->
     catch
 
   return constants.DEFAULT_TITLE
+
+cfs.getProgressEndpoint = (dir) ->
+  rootFilename = cfs.join(dir, constants.ROOT_FILENAME)
+  if cfs.fileHasBytes(rootFilename)
+    try
+      rawJSON = fs.readFileSync(rootFilename)
+      data = JSON.parse(rawJSON)
+      if data.progress
+        return data.progress
+    catch
+
+  return ""
 
 cfs.writeMetadata = (dir, metadata) ->
   metaFilename = cfs.join(dir, constants.META_FILENAME)

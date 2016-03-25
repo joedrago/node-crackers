@@ -30,7 +30,7 @@ class IndexEntry extends React.Component
     ]
 
     switch @props.info.type
-      when 'issue'
+      when 'comic'
         subtitleText = "(#{@props.info.pages} pages)"
       when 'index'
         subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"

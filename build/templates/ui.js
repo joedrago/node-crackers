@@ -37583,6 +37583,7 @@ App = (function(superClass) {
   function App(props) {
     App.__super__.constructor.call(this, props);
     this.comicMetadataCache = new LRUCache(100);
+    this.progressEnabled = "#inject{progress}" === "true";
     this.state = {
       navOpen: false,
       manifest: null,
@@ -37600,7 +37601,7 @@ App = (function(superClass) {
   }
 
   App.prototype.loadManifest = function() {
-    return $.getJSON('manifest.crackers', null, (function(_this) {
+    return $.getJSON('#inject{endpoint}', null, (function(_this) {
       return function(manifest, status) {
         _this.setState({
           manifest: manifest
@@ -38331,7 +38332,7 @@ IndexEntry = (function(superClass) {
       }
     }, [cover, title]);
     switch (this.props.info.type) {
-      case 'issue':
+      case 'comic':
         subtitleText = "(" + this.props.info.pages + " pages)";
         break;
       case 'index':

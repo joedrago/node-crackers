@@ -41,8 +41,13 @@ class ReadState
     // Response info
     var $response;
 
+    // Performance
+    var $startTime;
+
     function ReadState()
     {
+        $this->startTime = microtime(true);
+
         $this->user = $_SERVER['REMOTE_USER'];
         if(!$this->user) {
             fatalError("no user");
@@ -53,7 +58,9 @@ class ReadState
             $this->actions = array();
         }
 
-        $this->path = $_GET['p'];
+        if(array_key_exists($this->path, $_GET)) {
+            $this->path = $_GET['p'];
+        }
         if(!$this->path) {
             $this->path = "";
         }
@@ -65,7 +72,7 @@ class ReadState
     function loadManifest()
     {
         //$start = microtime(true);
-        $json = file_get_contents("manifest.crackers");
+        $json = file_get_contents("server.crackers");
         $this->manifest = json_decode($json, true);
         //$diff = 1000 * (microtime(true) - $start);
         //print("parsed in ".$diff." ms");
@@ -74,7 +81,7 @@ class ReadState
         $this->children = $this->manifest["children"];
     }
 
-    function loadProgressFromDB($user)
+    function loadProgressFromDB()
     {
         global $DB_HOST, $DB_USER, $DB_PASS, $DB_NAME;
         $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
@@ -109,16 +116,18 @@ class ReadState
         $conn->close();
     }
 
-    function readPercent($e)
+    function readProgress($e)
     {
         $perc = 0;
+        $page = 0;
         $type = $e["type"];
         $dir = $e["dir"];
-        if($type == "issue") {
+        if($type == "comic") {
             $pages = (int)$e["pages"];
             if(($pages > 0) && array_key_exists($dir, $this->progressTable))
             {
-                $perc = min(100, (int)(100 * ((int)$this->progressTable[$dir]) / $pages));
+                $page = (int)$this->progressTable[$dir];
+                $perc = min(100, (int)(100 * $page / $pages));
             }
         } else {
             if(array_key_exists($dir, $this->issues))
@@ -148,7 +157,7 @@ class ReadState
                 }
             }
         }
-        return $perc;
+        return array($perc, $page);
     }
 
     function processActions()
@@ -239,24 +248,9 @@ class ReadState
                 }
             }
             $conn->close();
-        } else if(array_key_exists("pos", $this->actions)) {
-            // requesting current position in a comic.
-            $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
-            if($conn->connect_error) {
-                fatalError("Connection failed: " + $conn->connect_error);
-            }
-            $page = 0;
-            $stmt = $conn->prepare("select page from progress where user=? and dir=?");
-            $stmt->bind_param('ss', $this->user, $this->path);
-            $stmt->bind_result($page);
-            if($stmt->execute()) {
-                $stmt->fetch();
-            }
-            // $this->response['stmt'] = $stmt->error;
-            $stmt->close();
-            $conn->close();
-            $this->response['pos'] = $page;
         } else if(array_key_exists("page", $this->actions)) {
+            // Trying to update the current page.
+
             $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
             if($conn->connect_error) {
                 fatalError("Connection failed: " + $conn->connect_error);
@@ -276,24 +270,25 @@ class ReadState
         $this->loadProgressFromDB();
 
         if(!array_key_exists("skip", $this->actions)) {
-            if(!array_key_exists($this->path, $this->children)) {
-                fatalError("Unknown path: ".$this->path);
-            }
+            $this->response["children"] = $this->children;
 
-            $this->response["read"] = array();
-            $children = $this->children[$this->path];
-            foreach($children as $e)
+            foreach($this->response["children"] as $dir => &$list)
             {
-                $perc = $this->readPercent($e);
-                foreach($this->ignoredList as $ignored) {
-                    if(strpos($e['dir'], $ignored) === 0) {
-                        $perc = -1;
-                        break;
+                foreach($list as &$e)
+                {
+                    list ($perc, $page) = $this->readProgress($e);
+                    foreach($this->ignoredList as $ignored) {
+                        if(strpos($e['dir'], $ignored) === 0) {
+                            $perc = -1;
+                            break;
+                        }
+                    }
+
+                    $e["perc"] = $perc;
+                    if($e["type"] === "comic") {
+                        $e["page"] = $page;
                     }
                 }
-                $this->response["read"][$e["dir"]] = array(
-                    "progress" => $perc,
-                );
             }
         }
     }
@@ -301,7 +296,8 @@ class ReadState
     function respond()
     {
         header("Content-Type: application/json");
-        print(json_encode($this->response));
+        $this->response["ms"] = 100 * (microtime(true) - $this->startTime);
+        print(json_encode($this->response, JSON_UNESCAPED_SLASHES));
     }
 }
 

@@ -44,6 +44,7 @@ class App extends React.Component
   constructor: (props) ->
     super props
     @comicMetadataCache = new LRUCache(100)
+    @progressEnabled = "#inject{progress}" == "true"
     @state =
       navOpen: false
       manifest: null
@@ -57,7 +58,7 @@ class App extends React.Component
       @onKeyDown(event)
 
   loadManifest: ->
-    $.getJSON 'manifest.crackers', null, (manifest, status) =>
+    $.getJSON '#inject{endpoint}', null, (manifest, status) =>
       @setState {
         manifest: manifest
       }

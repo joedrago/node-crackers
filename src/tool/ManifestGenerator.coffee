@@ -6,7 +6,6 @@ path = require 'path'
 
 class ManifestGenerator
   constructor: (@rootDir) ->
-    @manifestFilename = cfs.join(@rootDir, constants.MANIFEST_FILENAME)
 
   generate: ->
     comics = cfs.gatherComics(@rootDir)
@@ -69,10 +68,14 @@ class ManifestGenerator
       newchildren[indexDir] = list
     children = newchildren
 
-    manifest =
+    serverManifest =
       issues: issues
       children: children
       flat: flat
-    fs.writeFileSync @manifestFilename, JSON.stringify(manifest, null, 2)
+    fs.writeFileSync cfs.join(@rootDir, constants.MANIFEST_SERVER_FILENAME), JSON.stringify(serverManifest, null, 2)
+
+    clientManifest =
+      children: children
+    fs.writeFileSync cfs.join(@rootDir, constants.MANIFEST_CLIENT_FILENAME), JSON.stringify(clientManifest, null, 2)
 
 module.exports = ManifestGenerator

@@ -83,34 +83,38 @@ class IndexGenerator
       #   updates: ueTerseText
       # })
 
-      timestamp = 0
-      recent = ""
-      for metadata in mdList
-        if timestamp < metadata.timestamp
-          timestamp = metadata.timestamp
-          recent = metadata.path
-        totalCount += metadata.count
-        cover = "#{metadata.path}/#{metadata.cover}"
-        cover = cover.replace("#", "%23")
-        metadata.cover = cover
-        recentcover = "#{metadata.path}/#{metadata.recentcover}"
-        recentcover = recentcover.replace("#", "%23")
-        metadata.recentcover = recentcover
-        metadata.archive = cfs.findArchive(@dir, metadata.path)
-        metadata.dir = path.join(@dir.substr(@rootDir.length + 1), metadata.path)
-        ieTemplate = switch metadata.type
-          when 'comic'
-            metadata.id = "#{@path}/#{metadata.path}"
-            metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase()
-            if @download and metadata.archive
-              'ie_comic_dl_html'
-            else
-              'ie_comic_html'
-          when 'index' then 'ie_index_html'
-        listText += template(ieTemplate, metadata)
-      prevDir = ""
-      if not @isRoot
-        prevDir = "../"
+    timestamp = 0
+    recent = ""
+    for metadata in mdList
+      if timestamp < metadata.timestamp
+        timestamp = metadata.timestamp
+        recent = metadata.path
+      totalCount += metadata.count
+      cover = "#{metadata.path}/#{metadata.cover}"
+      cover = cover.replace("#", "%23")
+      metadata.cover = cover
+      recentcover = "#{metadata.path}/#{metadata.recentcover}"
+      recentcover = recentcover.replace("#", "%23")
+      metadata.recentcover = recentcover
+      metadata.archive = cfs.findArchive(@dir, metadata.path)
+      metadata.dir = path.join(@dir.substr(@rootDir.length + 1), metadata.path)
+      ieTemplate = switch metadata.type
+        when 'comic'
+          metadata.id = "#{@path}/#{metadata.path}"
+          metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase()
+          if @download and metadata.archive
+            'ie_comic_dl_html'
+          else
+            'ie_comic_html'
+        when 'index' then 'ie_index_html'
+      listText += template(ieTemplate, metadata)
+
+    if @isRoot
+      endpoint = cfs.getProgressEndpoint(@rootDir)
+      progressEnabled = "true"
+      if not endpoint
+        endpoint = constants.MANIFEST_CLIENT_FILENAME
+        progressEnabled = "false"
 
       outputText = template('index_html', {
         generator: 'index'
@@ -118,7 +122,9 @@ class IndexGenerator
         root: @relativeRoot
         title: @title
         list: listText
-        prev: prevDir
+        prev: ""
+        endpoint: endpoint
+        progress: progressEnabled
       })
       fs.writeFileSync @indexFilename, outputText
       log.verbose "Wrote #{@indexFilename}"
@@ -127,6 +133,7 @@ class IndexGenerator
       type:  'index'
       title: @title
       cover: constants.COVER_FILENAME
+      count: totalCount
       recentcover: constants.RECENT_COVER_FILENAME
       timestamp: timestamp
       recent: recent

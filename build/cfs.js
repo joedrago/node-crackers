@@ -163,6 +163,7 @@
     for (i = 0, len = comicDirs.length; i < len; i++) {
       dir = comicDirs[i];
       relativeDir = dir.substr(rootDir.length + 1);
+      relativeDir = relativeDir.replace(/\\/g, "/");
       metadata = cfs.readMetadata(dir);
       if (metadata) {
         metadata.dir = dir;
@@ -224,7 +225,8 @@
       return;
     }
     rootinfo = {
-      title: constants.DEFAULT_TITLE
+      title: constants.DEFAULT_TITLE,
+      progress: ""
     };
     json = JSON.stringify(rootinfo, null, 2);
     return fs.writeFileSync(rootFilename, json);
@@ -245,6 +247,23 @@
       }
     }
     return constants.DEFAULT_TITLE;
+  };
+
+  cfs.getProgressEndpoint = function(dir) {
+    var data, rawJSON, rootFilename;
+    rootFilename = cfs.join(dir, constants.ROOT_FILENAME);
+    if (cfs.fileHasBytes(rootFilename)) {
+      try {
+        rawJSON = fs.readFileSync(rootFilename);
+        data = JSON.parse(rawJSON);
+        if (data.progress) {
+          return data.progress;
+        }
+      } catch (_error) {
+
+      }
+    }
+    return "";
   };
 
   cfs.writeMetadata = function(dir, metadata) {
