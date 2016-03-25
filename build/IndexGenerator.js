@@ -92,7 +92,7 @@
     IndexGenerator.prototype.ensureFileExists = function(filename) {};
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, i, ieTemplate, images, len, listText, manifestGenerator, md, mdList, metadata, outputText, prevDir, recent, recentcover, timestamp, totalCount, ueTerseText, ueText, updates, updatesText;
+      var cover, coverGenerator, i, ieTemplate, images, len, listText, manifestGenerator, md, mdList, metadata, outputText, prevDir, recent, recentcover, timestamp, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -114,83 +114,66 @@
       listText = "";
       totalCount = 0;
       if (this.isRoot) {
-        cfs.ensureFileExists(cfs.join(this.rootDir, "local.js"));
-        cfs.ensureFileExists(cfs.join(this.rootDir, "local.comic.js"));
-        cfs.ensureFileExists(cfs.join(this.rootDir, "local.index.js"));
-        cfs.ensureFileExists(cfs.join(this.rootDir, "local.css"));
         manifestGenerator = new ManifestGenerator(this.rootDir);
         manifestGenerator.generate();
-        updates = new UpdatesGenerator(this.rootDir).getUpdates();
-        ueText = this.generateUpdateList(updates);
-        ueTerseText = this.generateUpdateList(updates, constants.MAX_TERSE_UPDATES);
-        updatesText = template('updates_html', {
-          title: this.title,
-          updates: ueText
-        });
-        fs.writeFileSync(this.updatesFilename, updatesText);
-        listText += template('ie_sort_html', {
-          title: this.title,
-          updates: ueTerseText
-        });
-      }
-      timestamp = 0;
-      recent = "";
-      for (i = 0, len = mdList.length; i < len; i++) {
-        metadata = mdList[i];
-        if (timestamp < metadata.timestamp) {
-          timestamp = metadata.timestamp;
-          recent = metadata.path;
-        }
-        totalCount += metadata.count;
-        cover = metadata.path + "/" + metadata.cover;
-        cover = cover.replace("#", "%23");
-        metadata.cover = cover;
-        recentcover = metadata.path + "/" + metadata.recentcover;
-        recentcover = recentcover.replace("#", "%23");
-        metadata.recentcover = recentcover;
-        metadata.archive = cfs.findArchive(this.dir, metadata.path);
-        metadata.dir = path.join(this.dir.substr(this.rootDir.length + 1), metadata.path);
-        ieTemplate = (function() {
-          switch (metadata.type) {
-            case 'comic':
-              metadata.id = this.path + "/" + metadata.path;
-              metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase();
-              if (this.download && metadata.archive) {
-                return 'ie_comic_dl_html';
-              } else {
-                return 'ie_comic_html';
-              }
-              break;
-            case 'index':
-              return 'ie_index_html';
+        timestamp = 0;
+        recent = "";
+        for (i = 0, len = mdList.length; i < len; i++) {
+          metadata = mdList[i];
+          if (timestamp < metadata.timestamp) {
+            timestamp = metadata.timestamp;
+            recent = metadata.path;
           }
-        }).call(this);
-        listText += template(ieTemplate, metadata);
+          totalCount += metadata.count;
+          cover = metadata.path + "/" + metadata.cover;
+          cover = cover.replace("#", "%23");
+          metadata.cover = cover;
+          recentcover = metadata.path + "/" + metadata.recentcover;
+          recentcover = recentcover.replace("#", "%23");
+          metadata.recentcover = recentcover;
+          metadata.archive = cfs.findArchive(this.dir, metadata.path);
+          metadata.dir = path.join(this.dir.substr(this.rootDir.length + 1), metadata.path);
+          ieTemplate = (function() {
+            switch (metadata.type) {
+              case 'comic':
+                metadata.id = this.path + "/" + metadata.path;
+                metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase();
+                if (this.download && metadata.archive) {
+                  return 'ie_comic_dl_html';
+                } else {
+                  return 'ie_comic_html';
+                }
+                break;
+              case 'index':
+                return 'ie_index_html';
+            }
+          }).call(this);
+          listText += template(ieTemplate, metadata);
+        }
+        prevDir = "";
+        if (!this.isRoot) {
+          prevDir = "../";
+        }
+        outputText = template('index_html', {
+          generator: 'index',
+          dir: this.path,
+          root: this.relativeRoot,
+          title: this.title,
+          list: listText,
+          prev: prevDir
+        });
+        fs.writeFileSync(this.indexFilename, outputText);
+        log.verbose("Wrote " + this.indexFilename);
       }
-      prevDir = "";
-      if (!this.isRoot) {
-        prevDir = "../";
-      }
-      outputText = template('index_html', {
-        generator: 'index',
-        dir: this.path,
-        root: this.relativeRoot,
-        title: this.title,
-        list: listText,
-        prev: prevDir
-      });
       cfs.writeMetadata(this.dir, {
         type: 'index',
         title: this.title,
-        count: totalCount,
         cover: constants.COVER_FILENAME,
         recentcover: constants.RECENT_COVER_FILENAME,
         timestamp: timestamp,
         recent: recent
       });
-      fs.writeFileSync(this.indexFilename, outputText);
-      log.verbose("Wrote " + this.indexFilename);
-      return log.progress("Generated index: " + this.title + " (" + totalCount + " comics)");
+      return log.progress("Updated metadata: " + this.title);
     };
 
     return IndexGenerator;

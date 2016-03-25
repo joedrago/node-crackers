@@ -38,15 +38,13 @@
     }
 
     ComicGenerator.prototype.generate = function() {
-      var coverGenerator, i, image, imageUrls, jsList, len, listText, outputText, parsed, ref, url;
+      var coverGenerator, i, image, imageUrls, len, parsed, ref, url;
       if (this.images.length === 0) {
         log.error("No images in '" + this.dir + "', removing index");
         fs.unlinkSync(this.indexFilename);
         cfs.removeMetadata(this.dir);
         return false;
       }
-      listText = "";
-      jsList = "";
       imageUrls = [];
       ref = this.images;
       for (i = 0, len = ref.length; i < len; i++) {
@@ -55,23 +53,7 @@
         url = constants.IMAGES_DIR + "/" + parsed.base;
         url = url.replace("#", "%23");
         imageUrls.push((this.relativeDir + "/" + url).replace(/\\/g, "/"));
-        listText += template('image_html', {
-          url: url
-        });
-        jsList += template('image_js', {
-          url: url
-        });
       }
-      outputText = template('comic_html', {
-        generator: 'comic',
-        dir: this.relativeDir,
-        root: this.relativeRoot,
-        title: this.title,
-        list: listText,
-        jslist: jsList,
-        prev: this.prevDir,
-        next: this.nextDir
-      });
       coverGenerator = new CoverGenerator(this.rootDir, this.dir, [this.images[0]], this.force);
       coverGenerator.generate();
       cfs.writeMetadata(this.dir, {
@@ -84,9 +66,7 @@
         timestamp: cfs.dirTime(this.imagesDir),
         images: imageUrls
       });
-      fs.writeFileSync(this.indexFilename, outputText);
-      log.verbose("Wrote " + this.indexFilename);
-      log.progress("Generated comic: " + this.title + " (" + this.images.length + " pages, next: '" + this.nextDir + "')");
+      log.progress("Updated comic: " + this.title + " (" + this.images.length + " pages)");
       return true;
     };
 

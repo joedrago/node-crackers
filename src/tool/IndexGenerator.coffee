@@ -67,70 +67,70 @@ class IndexGenerator
     listText = ""
     totalCount = 0
     if @isRoot
-      cfs.ensureFileExists(cfs.join(@rootDir, "local.js"))
-      cfs.ensureFileExists(cfs.join(@rootDir, "local.comic.js"))
-      cfs.ensureFileExists(cfs.join(@rootDir, "local.index.js"))
-      cfs.ensureFileExists(cfs.join(@rootDir, "local.css"))
+      # cfs.ensureFileExists(cfs.join(@rootDir, "local.js"))
+      # cfs.ensureFileExists(cfs.join(@rootDir, "local.comic.js"))
+      # cfs.ensureFileExists(cfs.join(@rootDir, "local.index.js"))
+      # cfs.ensureFileExists(cfs.join(@rootDir, "local.css"))
       manifestGenerator = new ManifestGenerator(@rootDir)
       manifestGenerator.generate()
-      updates = new UpdatesGenerator(@rootDir).getUpdates()
-      ueText = @generateUpdateList(updates)
-      ueTerseText = @generateUpdateList(updates, constants.MAX_TERSE_UPDATES)
-      updatesText = template('updates_html', { title: @title, updates: ueText })
-      fs.writeFileSync @updatesFilename, updatesText
-      listText += template('ie_sort_html', {
-        title: @title
-        updates: ueTerseText
-      })
-    timestamp = 0
-    recent = ""
-    for metadata in mdList
-      if timestamp < metadata.timestamp
-        timestamp = metadata.timestamp
-        recent = metadata.path
-      totalCount += metadata.count
-      cover = "#{metadata.path}/#{metadata.cover}"
-      cover = cover.replace("#", "%23")
-      metadata.cover = cover
-      recentcover = "#{metadata.path}/#{metadata.recentcover}"
-      recentcover = recentcover.replace("#", "%23")
-      metadata.recentcover = recentcover
-      metadata.archive = cfs.findArchive(@dir, metadata.path)
-      metadata.dir = path.join(@dir.substr(@rootDir.length + 1), metadata.path)
-      ieTemplate = switch metadata.type
-        when 'comic'
-          metadata.id = "#{@path}/#{metadata.path}"
-          metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase()
-          if @download and metadata.archive
-            'ie_comic_dl_html'
-          else
-            'ie_comic_html'
-        when 'index' then 'ie_index_html'
-      listText += template(ieTemplate, metadata)
-    prevDir = ""
-    if not @isRoot
-      prevDir = "../"
+      # updates = new UpdatesGenerator(@rootDir).getUpdates()
+      # ueText = @generateUpdateList(updates)
+      # ueTerseText = @generateUpdateList(updates, constants.MAX_TERSE_UPDATES)
+      # updatesText = template('updates_html', { title: @title, updates: ueText })
+      # fs.writeFileSync @updatesFilename, updatesText
+      # listText += template('ie_sort_html', {
+      #   title: @title
+      #   updates: ueTerseText
+      # })
 
-    outputText = template('index_html', {
-      generator: 'index'
-      dir: @path
-      root: @relativeRoot
-      title: @title
-      list: listText
-      prev: prevDir
-    })
+      timestamp = 0
+      recent = ""
+      for metadata in mdList
+        if timestamp < metadata.timestamp
+          timestamp = metadata.timestamp
+          recent = metadata.path
+        totalCount += metadata.count
+        cover = "#{metadata.path}/#{metadata.cover}"
+        cover = cover.replace("#", "%23")
+        metadata.cover = cover
+        recentcover = "#{metadata.path}/#{metadata.recentcover}"
+        recentcover = recentcover.replace("#", "%23")
+        metadata.recentcover = recentcover
+        metadata.archive = cfs.findArchive(@dir, metadata.path)
+        metadata.dir = path.join(@dir.substr(@rootDir.length + 1), metadata.path)
+        ieTemplate = switch metadata.type
+          when 'comic'
+            metadata.id = "#{@path}/#{metadata.path}"
+            metadata.id = metadata.id.replace(/[\\\/ ]/g, "_").toLowerCase()
+            if @download and metadata.archive
+              'ie_comic_dl_html'
+            else
+              'ie_comic_html'
+          when 'index' then 'ie_index_html'
+        listText += template(ieTemplate, metadata)
+      prevDir = ""
+      if not @isRoot
+        prevDir = "../"
+
+      outputText = template('index_html', {
+        generator: 'index'
+        dir: @path
+        root: @relativeRoot
+        title: @title
+        list: listText
+        prev: prevDir
+      })
+      fs.writeFileSync @indexFilename, outputText
+      log.verbose "Wrote #{@indexFilename}"
 
     cfs.writeMetadata @dir, {
       type:  'index'
       title: @title
-      count: totalCount
       cover: constants.COVER_FILENAME
       recentcover: constants.RECENT_COVER_FILENAME
       timestamp: timestamp
       recent: recent
     }
-    fs.writeFileSync @indexFilename, outputText
-    log.verbose "Wrote #{@indexFilename}"
-    log.progress "Generated index: #{@title} (#{totalCount} comics)"
+    log.progress "Updated metadata: #{@title}"
 
 module.exports = IndexGenerator

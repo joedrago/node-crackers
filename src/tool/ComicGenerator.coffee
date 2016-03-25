@@ -27,26 +27,27 @@ class ComicGenerator
       cfs.removeMetadata(@dir)
       return false
 
-    listText = ""
-    jsList = ""
+    # listText = ""
+    # jsList = ""
     imageUrls = []
     for image in @images
       parsed = path.parse(image)
       url = "#{constants.IMAGES_DIR}/#{parsed.base}"
       url = url.replace("#", "%23")
       imageUrls.push "#{@relativeDir}/#{url}".replace(/\\/g, "/")
-      listText += template('image_html', { url: url })
-      jsList += template('image_js', { url: url })
-    outputText = template('comic_html', {
-      generator: 'comic'
-      dir: @relativeDir
-      root: @relativeRoot
-      title: @title
-      list: listText
-      jslist: jsList
-      prev: @prevDir
-      next: @nextDir
-    })
+      # listText += template('image_html', { url: url })
+      # jsList += template('image_js', { url: url })
+
+    # outputText = template('comic_html', {
+    #   generator: 'comic'
+    #   dir: @relativeDir
+    #   root: @relativeRoot
+    #   title: @title
+    #   list: listText
+    #   jslist: jsList
+    #   prev: @prevDir
+    #   next: @nextDir
+    # })
 
     coverGenerator = new CoverGenerator(@rootDir, @dir, [ @images[0] ], @force)
     coverGenerator.generate()
@@ -61,9 +62,9 @@ class ComicGenerator
       timestamp: cfs.dirTime(@imagesDir)
       images: imageUrls
     }
-    fs.writeFileSync @indexFilename, outputText
-    log.verbose "Wrote #{@indexFilename}"
-    log.progress "Generated comic: #{@title} (#{@images.length} pages, next: '#{@nextDir}')"
+    # fs.writeFileSync @indexFilename, outputText
+    # log.verbose "Wrote #{@indexFilename}"
+    log.progress "Updated comic: #{@title} (#{@images.length} pages)"
     return true
 
 module.exports = ComicGenerator
