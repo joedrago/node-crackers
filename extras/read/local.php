@@ -271,6 +271,7 @@ class ReadState
 
         if(!array_key_exists("skip", $this->actions)) {
             $this->response["children"] = $this->children;
+            $this->response["exists"] = $this->manifest["exists"];
 
             foreach($this->response["children"] as $dir => &$list)
             {
