@@ -37509,7 +37509,7 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":165}],304:[function(require,module,exports){
-var App, AppBar, ComicView, DOM, DarkTheme, Dimensions, Divider, FlatButton, FontIcon, IconButton, IndexView, LRUCache, LeftNav, LoadingView, MenuItem, PubSub, RaisedButton, React, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, div, el, getMuiTheme, injectTapEventPlugin, ref,
+var App, AppBar, BrowseView, ComicView, DOM, DarkTheme, Dimensions, Divider, FlatButton, FontIcon, HelpView, HomeView, IconButton, LRUCache, LeftNav, LoadingView, MenuItem, PubSub, RaisedButton, React, SearchView, SettingsView, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, UpdatesView, div, el, getMuiTheme, injectTapEventPlugin, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -37521,11 +37521,21 @@ Dimensions = require('react-dimensions');
 
 PubSub = require('pubsub-js');
 
-ComicView = require('./ComicView');
+ComicView = require('./views/ComicView');
 
-IndexView = require('./IndexView');
+BrowseView = require('./views/BrowseView');
 
-LoadingView = require('./LoadingView');
+HelpView = require('./views/HelpView');
+
+HomeView = require('./views/HomeView');
+
+LoadingView = require('./views/LoadingView');
+
+SearchView = require('./views/SearchView');
+
+SettingsView = require('./views/SettingsView');
+
+UpdatesView = require('./views/UpdatesView');
 
 LRUCache = require('./LRUCache');
 
@@ -37576,10 +37586,6 @@ App = (function(superClass) {
     };
   };
 
-  App.defaultProps = {
-    start: 0
-  };
-
   function App(props) {
     App.__super__.constructor.call(this, props);
     this.comicMetadataCache = new LRUCache(100);
@@ -37587,28 +37593,73 @@ App = (function(superClass) {
     this.state = {
       navOpen: false,
       manifest: null,
-      view: 'comics',
+      view: 'home',
+      viewArg: '',
       dir: '',
       comicMetadata: null,
       indexList: null
     };
+    this.views = {
+      home: HomeView,
+      browse: BrowseView,
+      comic: ComicView,
+      help: HelpView,
+      search: SearchView,
+      settings: SettingsView,
+      updates: UpdatesView
+    };
     this.loadManifest();
     $(document).keydown((function(_this) {
       return function(event) {
-        return _this.onKeyDown(event);
+        _this.onKeyDown(event);
+        return true;
       };
     })(this));
+    this.navigate(true);
+    window.addEventListener('hashchange', (function(_this) {
+      return function(event) {
+        return _this.navigate();
+      };
+    })(this), false);
   }
 
   App.prototype.loadManifest = function() {
     return $.getJSON('#inject{endpoint}', null, (function(_this) {
       return function(manifest, status) {
-        _this.setState({
+        return _this.setState({
           manifest: manifest
         });
-        return _this.changeDir(_this.state.dir);
       };
     })(this));
+  };
+
+  App.prototype.redirect = function(newHash) {
+    window.location.replace(window.location.pathname + window.location.search + newHash);
+  };
+
+  App.prototype.navigate = function(fromConstructor) {
+    var newHash, view, viewArg;
+    if (fromConstructor == null) {
+      fromConstructor = false;
+    }
+    newHash = window.location.hash.replace(/^#\/?|\/$/g, '');
+    view = newHash.split('/')[0];
+    viewArg = newHash.substring(view.length + 1);
+    if (!this.views.hasOwnProperty(view)) {
+      view = 'home';
+      viewArg = '';
+      this.redirect('#home');
+    }
+    console.log("navigate('" + view + "', '" + viewArg + "')");
+    if (fromConstructor) {
+      this.state.view = view;
+      return this.state.viewArg = viewArg;
+    } else {
+      return this.setState({
+        view: view,
+        viewArg: viewArg
+      });
+    }
   };
 
   App.prototype.changeDir = function(dir) {
@@ -37687,7 +37738,20 @@ App = (function(superClass) {
         }, 'home'),
         onTouchTap: (function(_this) {
           return function() {
-            _this.changeDir('');
+            _this.redirect('#home');
+            return _this.setState({
+              navOpen: false
+            });
+          };
+        })(this)
+      }), el(MenuItem, {
+        primaryText: "Browse",
+        leftIcon: el(FontIcon, {
+          className: 'material-icons'
+        }, 'grid_on'),
+        onTouchTap: (function(_this) {
+          return function() {
+            _this.redirect('#browse');
             return _this.setState({
               navOpen: false
             });
@@ -37699,13 +37763,52 @@ App = (function(superClass) {
           className: 'material-icons'
         }, 'event_note'),
         onTouchTap: (function(_this) {
-          return function() {};
+          return function() {
+            _this.redirect('#updates');
+            return _this.setState({
+              navOpen: false
+            });
+          };
         })(this)
       }), el(MenuItem, {
         primaryText: "Search",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
-        }, 'search')
+        }, 'search'),
+        onTouchTap: (function(_this) {
+          return function() {
+            _this.redirect('#search');
+            return _this.setState({
+              navOpen: false
+            });
+          };
+        })(this)
+      }), el(MenuItem, {
+        primaryText: "Settings",
+        leftIcon: el(FontIcon, {
+          className: 'material-icons'
+        }, 'settings'),
+        onTouchTap: (function(_this) {
+          return function() {
+            _this.redirect('#settings');
+            return _this.setState({
+              navOpen: false
+            });
+          };
+        })(this)
+      }), el(MenuItem, {
+        primaryText: "Help",
+        leftIcon: el(FontIcon, {
+          className: 'material-icons'
+        }, 'help'),
+        onTouchTap: (function(_this) {
+          return function() {
+            _this.redirect('#help');
+            return _this.setState({
+              navOpen: false
+            });
+          };
+        })(this)
       })
     ];
     if (false) {
@@ -37729,30 +37832,15 @@ App = (function(superClass) {
         };
       })(this)
     }, navMenuItems));
-    view = null;
-    if (this.state.manifest && (this.state.view === 'comics')) {
-      if (this.state.indexList) {
-        console.log("choosing IndexView");
-        view = el(IndexView, {
-          key: 'indexview',
-          list: this.state.manifest.children[this.state.dir],
-          onChangeDir: (function(_this) {
-            return function(dir) {
-              return _this.changeDir(dir);
-            };
-          })(this)
-        });
-      } else if (this.state.comicMetadata) {
-        console.log("choosing ComicView");
-        view = el(ComicView, {
-          metadata: this.state.comicMetadata,
-          width: this.props.containerWidth,
-          height: this.props.containerHeight
-        });
-      }
-    }
-    if (view === null) {
-      console.log("choosing LoadingView");
+    if (this.state.manifest) {
+      console.log("chose view " + this.state.view);
+      view = el(this.views[this.state.view], {
+        width: this.props.containerWidth,
+        height: this.props.containerHeight,
+        manifest: this.state.manifest,
+        arg: this.state.viewArg
+      });
+    } else {
       view = el(LoadingView);
     }
     elements.push(view);
@@ -37768,8 +37856,8 @@ App = (function(superClass) {
 module.exports = Dimensions()(App);
 
 
-},{"./ComicView":305,"./IndexView":307,"./LRUCache":308,"./LoadingView":309,"./tags":312,"material-ui/lib/app-bar":2,"material-ui/lib/divider":6,"material-ui/lib/flat-button":9,"material-ui/lib/font-icon":10,"material-ui/lib/icon-button":11,"material-ui/lib/left-nav":12,"material-ui/lib/menus/menu-item":20,"material-ui/lib/raised-button":31,"material-ui/lib/styles/baseThemes/darkBaseTheme":37,"material-ui/lib/styles/getMuiTheme":40,"material-ui/lib/toolbar/toolbar":58,"material-ui/lib/toolbar/toolbar-group":55,"material-ui/lib/toolbar/toolbar-separator":56,"material-ui/lib/toolbar/toolbar-title":57,"pubsub-js":118,"react":303,"react-dimensions":119,"react-dom":120,"react-tap-event-plugin":141}],305:[function(require,module,exports){
-var Auto, ComicView, Corner, DOM, ImageCache, Loader, Motion, PubSub, React, TouchDiv, div, el, img, ref, ref1, spring,
+},{"./LRUCache":307,"./tags":310,"./views/BrowseView":311,"./views/ComicView":312,"./views/HelpView":313,"./views/HomeView":314,"./views/LoadingView":315,"./views/SearchView":316,"./views/SettingsView":317,"./views/UpdatesView":318,"material-ui/lib/app-bar":2,"material-ui/lib/divider":6,"material-ui/lib/flat-button":9,"material-ui/lib/font-icon":10,"material-ui/lib/icon-button":11,"material-ui/lib/left-nav":12,"material-ui/lib/menus/menu-item":20,"material-ui/lib/raised-button":31,"material-ui/lib/styles/baseThemes/darkBaseTheme":37,"material-ui/lib/styles/getMuiTheme":40,"material-ui/lib/toolbar/toolbar":58,"material-ui/lib/toolbar/toolbar-group":55,"material-ui/lib/toolbar/toolbar-separator":56,"material-ui/lib/toolbar/toolbar-title":57,"pubsub-js":118,"react":303,"react-dimensions":119,"react-dom":120,"react-tap-event-plugin":141}],305:[function(require,module,exports){
+var Auto, ComicRenderer, Corner, DOM, ImageCache, Loader, Motion, PubSub, React, TouchDiv, div, el, img, ref, ref1, spring,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -37802,15 +37890,15 @@ Corner = {
   BottomLeft: 3
 };
 
-ComicView = (function(superClass) {
-  extend(ComicView, superClass);
+ComicRenderer = (function(superClass) {
+  extend(ComicRenderer, superClass);
 
-  ComicView.defaultProps = {
+  ComicRenderer.defaultProps = {
     metadata: null
   };
 
-  function ComicView(props) {
-    ComicView.__super__.constructor.call(this, props);
+  function ComicRenderer(props) {
+    ComicRenderer.__super__.constructor.call(this, props);
     this.springConfig = {
       stiffness: 500,
       damping: 40,
@@ -37830,8 +37918,8 @@ ComicView = (function(superClass) {
     this.setIndex(0, true);
   }
 
-  ComicView.prototype.componentDidMount = function() {
-    console.log("ComicView componentDidMount");
+  ComicRenderer.prototype.componentDidMount = function() {
+    console.log("ComicRenderer componentDidMount");
     this.setState({
       touchCount: 0
     });
@@ -37842,8 +37930,8 @@ ComicView = (function(superClass) {
     })(this));
   };
 
-  ComicView.prototype.componentWillUnmount = function() {
-    console.log("ComicView componentWillUnmount");
+  ComicRenderer.prototype.componentWillUnmount = function() {
+    console.log("ComicRenderer componentWillUnmount");
     PubSub.unsubscribe(this.keySubscription);
     this.setState({
       touchCount: 0
@@ -37852,7 +37940,7 @@ ComicView = (function(superClass) {
     return this.imageCache.flush();
   };
 
-  ComicView.prototype.onKeyPress = function(event) {
+  ComicRenderer.prototype.onKeyPress = function(event) {
     switch (event.keyCode) {
       case 49:
         this.setScale(1.5);
@@ -37898,7 +37986,7 @@ ComicView = (function(superClass) {
     }
   };
 
-  ComicView.prototype.setIndex = function(index, initial) {
+  ComicRenderer.prototype.setIndex = function(index, initial) {
     var i, image, imagesToPreload, len;
     if (index >= this.props.metadata.pages) {
       index = this.props.metadata.pages - 1;
@@ -37948,7 +38036,7 @@ ComicView = (function(superClass) {
     })(this));
   };
 
-  ComicView.prototype.moveImage = function(x, y, width, height, scale) {
+  ComicRenderer.prototype.moveImage = function(x, y, width, height, scale) {
     var centerPos;
     centerPos = this.calcImageCenterPos(width, height);
     if (this.state.touchCount === 0) {
@@ -37983,7 +38071,7 @@ ComicView = (function(superClass) {
     });
   };
 
-  ComicView.prototype.autoPrev = function() {
+  ComicRenderer.prototype.autoPrev = function() {
     switch (this.auto) {
       case Auto.None:
         this.setIndex(this.state.index - 1);
@@ -37997,7 +38085,7 @@ ComicView = (function(superClass) {
     }
   };
 
-  ComicView.prototype.autoNext = function() {
+  ComicRenderer.prototype.autoNext = function() {
     switch (this.auto) {
       case Auto.None:
         this.zoomToCorner(Corner.TopLeft);
@@ -38010,7 +38098,7 @@ ComicView = (function(superClass) {
     }
   };
 
-  ComicView.prototype.zoomToCorner = function(corner) {
+  ComicRenderer.prototype.zoomToCorner = function(corner) {
     var imageScale, imageSize, x, y;
     imageScale = this.state.imageScale;
     if (imageScale === 1) {
@@ -38041,7 +38129,7 @@ ComicView = (function(superClass) {
     return this.moveImage(x, y, imageSize.width, imageSize.height, imageScale);
   };
 
-  ComicView.prototype.setScale = function(scale, setAutoScale) {
+  ComicRenderer.prototype.setScale = function(scale, setAutoScale) {
     var imageSize;
     if (setAutoScale == null) {
       setAutoScale = true;
@@ -38053,9 +38141,9 @@ ComicView = (function(superClass) {
     }
   };
 
-  ComicView.prototype.onClick = function(x, y) {};
+  ComicRenderer.prototype.onClick = function(x, y) {};
 
-  ComicView.prototype.onNoTouches = function() {
+  ComicRenderer.prototype.onNoTouches = function() {
     var direction, newState;
     if (this.state.imageSwipeX !== 0) {
       newState = {
@@ -38074,7 +38162,7 @@ ComicView = (function(superClass) {
     }
   };
 
-  ComicView.prototype.onTouchCount = function(touchCount) {
+  ComicRenderer.prototype.onTouchCount = function(touchCount) {
     this.setState({
       touchCount: touchCount
     });
@@ -38083,7 +38171,7 @@ ComicView = (function(superClass) {
     }
   };
 
-  ComicView.prototype.onDrag = function(dx, dy, dragOriginX, dragOriginY) {
+  ComicRenderer.prototype.onDrag = function(dx, dy, dragOriginX, dragOriginY) {
     var newX, newY;
     if (!this.state.loaded) {
       return;
@@ -38101,7 +38189,7 @@ ComicView = (function(superClass) {
     return this.moveImage(newX, newY, this.state.imageWidth, this.state.imageHeight, this.state.imageScale);
   };
 
-  ComicView.prototype.onZoom = function(x, y, dist) {
+  ComicRenderer.prototype.onZoom = function(x, y, dist) {
     var imagePos, imageScale, imageSize, normalizedImagePosX, normalizedImagePosY;
     if (!this.state.loaded) {
       return;
@@ -38124,7 +38212,7 @@ ComicView = (function(superClass) {
     return this.moveImage(imagePos.x, imagePos.y, imageSize.width, imageSize.height, imageScale);
   };
 
-  ComicView.prototype.calcImageSize = function(imageWidth, imageHeight, imageScale) {
+  ComicRenderer.prototype.calcImageSize = function(imageWidth, imageHeight, imageScale) {
     var imageAspectRatio, size, viewAspectRatio;
     viewAspectRatio = this.props.width / this.props.height;
     imageAspectRatio = imageWidth / imageHeight;
@@ -38144,14 +38232,14 @@ ComicView = (function(superClass) {
     return size;
   };
 
-  ComicView.prototype.calcImageCenterPos = function(imageWidth, imageHeight) {
+  ComicRenderer.prototype.calcImageCenterPos = function(imageWidth, imageHeight) {
     return {
       x: (this.props.width - imageWidth) >> 1,
       y: (this.props.height - imageHeight) >> 1
     };
   };
 
-  ComicView.prototype.render = function() {
+  ComicRenderer.prototype.render = function() {
     if (this.state.error) {
       return el(Loader, {
         color: '#ff0000'
@@ -38192,14 +38280,14 @@ ComicView = (function(superClass) {
     })(this));
   };
 
-  return ComicView;
+  return ComicRenderer;
 
 })(React.Component);
 
-module.exports = ComicView;
+module.exports = ComicRenderer;
 
 
-},{"./ImageCache":306,"./TouchDiv":310,"./tags":312,"pubsub-js":118,"react":303,"react-dom":120,"react-loader":121,"react-motion":129}],306:[function(require,module,exports){
+},{"./ImageCache":306,"./TouchDiv":308,"./tags":310,"pubsub-js":118,"react":303,"react-dom":120,"react-loader":121,"react-motion":129}],306:[function(require,module,exports){
 var ImageCache, LRUCache;
 
 LRUCache = require('./LRUCache');
@@ -38289,135 +38377,7 @@ ImageCache = (function() {
 module.exports = ImageCache;
 
 
-},{"./LRUCache":308}],307:[function(require,module,exports){
-var DOM, IndexEntry, IndexView, React, a, div, img, ref, span,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
-
-React = require('react');
-
-DOM = require('react-dom');
-
-ref = require('./tags'), a = ref.a, div = ref.div, img = ref.img, span = ref.span;
-
-IndexEntry = (function(superClass) {
-  extend(IndexEntry, superClass);
-
-  function IndexEntry(props) {
-    IndexEntry.__super__.constructor.call(this, props);
-  }
-
-  IndexEntry.prototype.render = function() {
-    var cover, entry, link, subtitle, subtitleText, title;
-    cover = img({
-      key: 'cover',
-      src: this.props.info.dir + "/cover.png"
-    });
-    title = span({
-      key: 'title',
-      style: {
-        fontWeight: 900,
-        color: '#ffffff'
-      }
-    }, this.props.info.dir.replace(/\//g, " | "));
-    link = a({
-      key: 'link',
-      onClick: (function(_this) {
-        return function() {
-          return _this.props.click(_this.props.info);
-        };
-      })(this),
-      style: {
-        cursor: 'pointer'
-      }
-    }, [cover, title]);
-    switch (this.props.info.type) {
-      case 'comic':
-        subtitleText = "(" + this.props.info.pages + " pages)";
-        break;
-      case 'index':
-        subtitleText = "(" + this.props.info.count + " comics, Newest: " + this.props.info.recent + ")";
-    }
-    subtitle = div({
-      key: 'subtitle',
-      style: {
-        color: '#aaaaaa',
-        fontSize: '0.7em'
-      }
-    }, subtitleText);
-    entry = div({
-      style: {
-        display: 'inline-block',
-        width: '150px',
-        textAlign: 'center',
-        margin: '10px',
-        verticalAlign: 'top'
-      }
-    }, [link, subtitle]);
-    return entry;
-  };
-
-  return IndexEntry;
-
-})(React.Component);
-
-IndexView = (function(superClass) {
-  extend(IndexView, superClass);
-
-  IndexView.defaultProps = {
-    dir: null,
-    list: [],
-    onChangeDir: function() {
-      return console.log("IndexView.onChangeDir: Ignored");
-    }
-  };
-
-  function IndexView(props) {
-    IndexView.__super__.constructor.call(this, props);
-  }
-
-  IndexView.prototype.click = function(info) {
-    if (this.props.onChangeDir) {
-      return this.props.onChangeDir(info.dir);
-    }
-  };
-
-  IndexView.prototype.render = function() {
-    var entries, entry, entryElement, i, len, ref1, view;
-    entries = [];
-    ref1 = this.props.list;
-    for (i = 0, len = ref1.length; i < len; i++) {
-      entry = ref1[i];
-      entryElement = React.createElement(IndexEntry, {
-        key: entry.dir,
-        info: entry,
-        click: (function(_this) {
-          return function(info) {
-            return _this.click(info);
-          };
-        })(this)
-      });
-      entries.push(entryElement);
-    }
-    view = div({
-      style: {
-        width: '100%',
-        height: '100%',
-        backgroundColor: '#111111',
-        textAlign: 'center'
-      }
-    }, entries);
-    return view;
-  };
-
-  return IndexView;
-
-})(React.Component);
-
-module.exports = IndexView;
-
-
-},{"./tags":312,"react":303,"react-dom":120}],308:[function(require,module,exports){
+},{"./LRUCache":307}],307:[function(require,module,exports){
 var LRUCache;
 
 LRUCache = (function() {
@@ -38627,47 +38587,7 @@ LRUCache = (function() {
 module.exports = LRUCache;
 
 
-},{}],309:[function(require,module,exports){
-var DOM, Loader, LoadingView, React, div, el, img, ref,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
-
-React = require('react');
-
-DOM = require('react-dom');
-
-Loader = require('react-loader');
-
-ref = require('./tags'), el = ref.el, div = ref.div, img = ref.img;
-
-LoadingView = (function(superClass) {
-  extend(LoadingView, superClass);
-
-  LoadingView.defaultProps = {
-    dir: '.'
-  };
-
-  function LoadingView(props) {
-    LoadingView.__super__.constructor.call(this, props);
-    this.state = {
-      dir: props.dir
-    };
-  }
-
-  LoadingView.prototype.render = function() {
-    return el(Loader, {
-      color: '#444444'
-    });
-  };
-
-  return LoadingView;
-
-})(React.Component);
-
-module.exports = LoadingView;
-
-
-},{"./tags":312,"react":303,"react-dom":120,"react-loader":121}],310:[function(require,module,exports){
+},{}],308:[function(require,module,exports){
 var DOM, ENGAGE_DRAG_DISTANCE, React, TouchDiv, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -38930,7 +38850,7 @@ TouchDiv = (function(superClass) {
 module.exports = TouchDiv;
 
 
-},{"./tags":312,"react":303,"react-dom":120}],311:[function(require,module,exports){
+},{"./tags":310,"react":303,"react-dom":120}],309:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -38942,7 +38862,7 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":304,"react":303,"react-dom":120}],312:[function(require,module,exports){
+},{"./App":304,"react":303,"react-dom":120}],310:[function(require,module,exports){
 var React, elementName, i, len, tags;
 
 React = require('react');
@@ -38959,4 +38879,436 @@ for (i = 0, len = tags.length; i < len; i++) {
 module.exports.el = React.createElement;
 
 
-},{"react":303}]},{},[311]);
+},{"react":303}],311:[function(require,module,exports){
+var BrowseEntry, BrowseView, DOM, React, a, div, img, ref, span,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+ref = require('../tags'), a = ref.a, div = ref.div, img = ref.img, span = ref.span;
+
+BrowseEntry = (function(superClass) {
+  extend(BrowseEntry, superClass);
+
+  function BrowseEntry(props) {
+    BrowseEntry.__super__.constructor.call(this, props);
+  }
+
+  BrowseEntry.prototype.render = function() {
+    var cover, entry, link, subtitle, subtitleText, title;
+    cover = img({
+      key: 'cover',
+      src: this.props.info.dir + "/cover.png"
+    });
+    switch (this.props.info.type) {
+      case 'comic':
+        link = "#comic/" + this.props.info.dir;
+        subtitleText = "(" + this.props.info.pages + " pages)";
+        break;
+      case 'index':
+        link = "#browse/" + this.props.info.dir;
+        subtitleText = "(" + this.props.info.count + " comics, Newest: " + this.props.info.recent + ")";
+    }
+    title = span({
+      key: 'title',
+      style: {
+        fontWeight: 900,
+        color: '#ffffff'
+      }
+    }, this.props.info.dir.replace(/\//g, " | "));
+    link = a({
+      key: 'link',
+      href: link,
+      style: {
+        cursor: 'pointer'
+      }
+    }, [cover, title]);
+    subtitle = div({
+      key: 'subtitle',
+      style: {
+        color: '#aaaaaa',
+        fontSize: '0.7em'
+      }
+    }, subtitleText);
+    entry = div({
+      style: {
+        display: 'inline-block',
+        width: '150px',
+        textAlign: 'center',
+        margin: '10px',
+        verticalAlign: 'top'
+      }
+    }, [link, subtitle]);
+    return entry;
+  };
+
+  return BrowseEntry;
+
+})(React.Component);
+
+BrowseView = (function(superClass) {
+  extend(BrowseView, superClass);
+
+  function BrowseView(props) {
+    BrowseView.__super__.constructor.call(this, props);
+  }
+
+  BrowseView.prototype.click = function(info) {};
+
+  BrowseView.prototype.render = function() {
+    var entries, entry, entryElement, i, len, list, view;
+    if (!this.props.manifest.children.hasOwnProperty(this.props.arg)) {
+      return div({
+        style: {
+          color: '#ffffff'
+        }
+      }, "Invalid directory. Go home.");
+    }
+    list = this.props.manifest.children[this.props.arg];
+    entries = [];
+    for (i = 0, len = list.length; i < len; i++) {
+      entry = list[i];
+      entryElement = React.createElement(BrowseEntry, {
+        key: entry.dir,
+        info: entry
+      });
+      entries.push(entryElement);
+    }
+    view = div({
+      style: {
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#111111',
+        textAlign: 'center'
+      }
+    }, entries);
+    return view;
+  };
+
+  return BrowseView;
+
+})(React.Component);
+
+module.exports = BrowseView;
+
+
+},{"../tags":310,"react":303,"react-dom":120}],312:[function(require,module,exports){
+var ComicRenderer, ComicView, DOM, Loader, React, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+ComicRenderer = require('../ComicRenderer');
+
+ComicView = (function(superClass) {
+  extend(ComicView, superClass);
+
+  function ComicView(props) {
+    ComicView.__super__.constructor.call(this, props);
+    this.state = {
+      dir: null,
+      metadata: null,
+      metadataUrl: null
+    };
+    this.changeDir(props.arg, true);
+  }
+
+  ComicView.prototype.componentWillReceiveProps = function(nextProps) {
+    console.log("componentWillReceiveProps", nextProps);
+    return this.changeDir(nextProps.arg);
+  };
+
+  ComicView.prototype.changeDir = function(dir, fromConstructor) {
+    var metadataUrl;
+    if (fromConstructor == null) {
+      fromConstructor = false;
+    }
+    console.log("changeDir(" + dir + "), current state " + this.state.dir);
+    metadataUrl = dir + "/meta.crackers";
+    if (!this.props.manifest.exists[dir]) {
+      dir = null;
+      metadataUrl = null;
+    }
+    if (this.state.dir !== dir) {
+      if (fromConstructor) {
+        this.state.dir = dir;
+        this.state.metadata = null;
+        this.state.metadataUrl = metadataUrl;
+      } else {
+        this.setState({
+          dir: dir,
+          metadata: null,
+          metadataUrl: metadataUrl
+        });
+      }
+    }
+    if (metadataUrl) {
+      return this.loadMetadata(metadataUrl);
+    }
+  };
+
+  ComicView.prototype.loadMetadata = function(url) {
+    return $.getJSON(url).success((function(_this) {
+      return function(metadata) {
+        return _this.setState({
+          metadata: metadata
+        });
+      };
+    })(this)).error(function() {
+      return console.log("lel error!");
+    });
+  };
+
+  ComicView.prototype.render = function() {
+    if (this.state.dir === null) {
+      return div({
+        style: {
+          color: '#ffffff'
+        }
+      }, "Invalid comic. Go Home.");
+    }
+    if (this.state.metadata === null) {
+      return el(Loader, {
+        color: '#222222'
+      });
+    }
+    return el(ComicRenderer, {
+      metadata: this.state.metadata,
+      width: this.props.width,
+      height: this.props.height
+    });
+  };
+
+  return ComicView;
+
+})(React.Component);
+
+module.exports = ComicView;
+
+
+},{"../ComicRenderer":305,"../tags":310,"react":303,"react-dom":120,"react-loader":121}],313:[function(require,module,exports){
+var DOM, HelpView, Loader, React, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+HelpView = (function(superClass) {
+  extend(HelpView, superClass);
+
+  function HelpView(props) {
+    HelpView.__super__.constructor.call(this, props);
+  }
+
+  HelpView.prototype.render = function() {
+    return div({
+      style: {
+        color: '#ffffff'
+      }
+    }, "Help");
+  };
+
+  return HelpView;
+
+})(React.Component);
+
+module.exports = HelpView;
+
+
+},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],314:[function(require,module,exports){
+var DOM, HomeView, Loader, React, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+HomeView = (function(superClass) {
+  extend(HomeView, superClass);
+
+  function HomeView(props) {
+    HomeView.__super__.constructor.call(this, props);
+  }
+
+  HomeView.prototype.render = function() {
+    return div({
+      style: {
+        color: '#ffffff'
+      }
+    }, "Home '" + this.props.arg + "'");
+  };
+
+  return HomeView;
+
+})(React.Component);
+
+module.exports = HomeView;
+
+
+},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],315:[function(require,module,exports){
+var DOM, Loader, LoadingView, React, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+LoadingView = (function(superClass) {
+  extend(LoadingView, superClass);
+
+  LoadingView.defaultProps = {
+    dir: '.'
+  };
+
+  function LoadingView(props) {
+    LoadingView.__super__.constructor.call(this, props);
+    this.state = {
+      dir: props.dir
+    };
+  }
+
+  LoadingView.prototype.render = function() {
+    return el(Loader, {
+      color: '#444444'
+    });
+  };
+
+  return LoadingView;
+
+})(React.Component);
+
+module.exports = LoadingView;
+
+
+},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],316:[function(require,module,exports){
+var DOM, Loader, React, SearchView, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+SearchView = (function(superClass) {
+  extend(SearchView, superClass);
+
+  function SearchView(props) {
+    SearchView.__super__.constructor.call(this, props);
+  }
+
+  SearchView.prototype.render = function() {
+    return div({
+      style: {
+        color: '#ffffff'
+      }
+    }, "Search '" + this.props.arg + "'");
+  };
+
+  return SearchView;
+
+})(React.Component);
+
+module.exports = SearchView;
+
+
+},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],317:[function(require,module,exports){
+var DOM, Loader, React, SettingsView, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+SettingsView = (function(superClass) {
+  extend(SettingsView, superClass);
+
+  function SettingsView(props) {
+    SettingsView.__super__.constructor.call(this, props);
+  }
+
+  SettingsView.prototype.render = function() {
+    return div({
+      style: {
+        color: '#ffffff'
+      }
+    }, "Settings '" + this.props.arg + "'");
+  };
+
+  return SettingsView;
+
+})(React.Component);
+
+module.exports = SettingsView;
+
+
+},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],318:[function(require,module,exports){
+var DOM, Loader, React, UpdatesView, div, el, img, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+React = require('react');
+
+DOM = require('react-dom');
+
+Loader = require('react-loader');
+
+ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
+
+UpdatesView = (function(superClass) {
+  extend(UpdatesView, superClass);
+
+  function UpdatesView(props) {
+    UpdatesView.__super__.constructor.call(this, props);
+  }
+
+  UpdatesView.prototype.render = function() {
+    return div({
+      style: {
+        color: '#ffffff'
+      }
+    }, "Updates");
+  };
+
+  return UpdatesView;
+
+})(React.Component);
+
+module.exports = UpdatesView;
+
+
+},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}]},{},[309]);

@@ -12,6 +12,7 @@ class ManifestGenerator
 
     children = {}
     issues = {}
+    exists = {}
     flat = []
     for comic in comics
       metadata = cfs.readMetadata(comic.dir)
@@ -38,6 +39,7 @@ class ManifestGenerator
             pages: metadata.pages
             timestamp: comic.timestamp
           }
+          exists[comic.relativeDir] = true
         else
           indexMetadata = cfs.readMetadata(path.join(@rootDir, dir))
           children[indexDir][dir] = {
@@ -72,10 +74,12 @@ class ManifestGenerator
       issues: issues
       children: children
       flat: flat
+      exists: exists
     fs.writeFileSync cfs.join(@rootDir, constants.MANIFEST_SERVER_FILENAME), JSON.stringify(serverManifest, null, 2)
 
     clientManifest =
       children: children
+      exists: exists
     fs.writeFileSync cfs.join(@rootDir, constants.MANIFEST_CLIENT_FILENAME), JSON.stringify(clientManifest, null, 2)
 
 module.exports = ManifestGenerator

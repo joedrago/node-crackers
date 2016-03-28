@@ -18,10 +18,11 @@
     }
 
     ManifestGenerator.prototype.generate = function() {
-      var atLeaf, children, clientManifest, comic, comics, dir, flat, i, indexDir, indexMetadata, indexlist, issues, j, k, keys, len, len1, list, metadata, newchildren, parsed, ref, serverManifest;
+      var atLeaf, children, clientManifest, comic, comics, dir, exists, flat, i, indexDir, indexMetadata, indexlist, issues, j, k, keys, len, len1, list, metadata, newchildren, parsed, ref, serverManifest;
       comics = cfs.gatherComics(this.rootDir);
       children = {};
       issues = {};
+      exists = {};
       flat = [];
       for (i = 0, len = comics.length; i < len; i++) {
         comic = comics[i];
@@ -47,6 +48,7 @@
               pages: metadata.pages,
               timestamp: comic.timestamp
             };
+            exists[comic.relativeDir] = true;
           } else {
             indexMetadata = cfs.readMetadata(path.join(this.rootDir, dir));
             children[indexDir][dir] = {
@@ -86,11 +88,13 @@
       serverManifest = {
         issues: issues,
         children: children,
-        flat: flat
+        flat: flat,
+        exists: exists
       };
       fs.writeFileSync(cfs.join(this.rootDir, constants.MANIFEST_SERVER_FILENAME), JSON.stringify(serverManifest, null, 2));
       clientManifest = {
-        children: children
+        children: children,
+        exists: exists
       };
       return fs.writeFileSync(cfs.join(this.rootDir, constants.MANIFEST_CLIENT_FILENAME), JSON.stringify(clientManifest, null, 2));
     };

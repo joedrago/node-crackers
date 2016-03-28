@@ -1,8 +1,8 @@
 React = require 'react'
 DOM = require 'react-dom'
-{a, div, img, span} = require './tags'
+{a, div, img, span} = require '../tags'
 
-class IndexEntry extends React.Component
+class BrowseEntry extends React.Component
   constructor: (props) ->
     super props
 
@@ -11,6 +11,14 @@ class IndexEntry extends React.Component
       key: 'cover'
       src: "#{@props.info.dir}/cover.png"
     }
+
+    switch @props.info.type
+      when 'comic'
+        link = "#comic/#{@props.info.dir}"
+        subtitleText = "(#{@props.info.pages} pages)"
+      when 'index'
+        link = "#browse/#{@props.info.dir}"
+        subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"
 
     title = span {
       key: 'title'
@@ -21,19 +29,13 @@ class IndexEntry extends React.Component
 
     link = a {
       key: 'link'
-      onClick: => @props.click(@props.info)
+      href: link
       style:
         cursor: 'pointer'
     }, [
       cover
       title
     ]
-
-    switch @props.info.type
-      when 'comic'
-        subtitleText = "(#{@props.info.pages} pages)"
-      when 'index'
-        subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"
 
     subtitle = div {
       key: 'subtitle'
@@ -55,26 +57,27 @@ class IndexEntry extends React.Component
     ]
     return entry
 
-class IndexView extends React.Component
-  @defaultProps:
-    dir: null
-    list: []
-    onChangeDir: -> console.log "IndexView.onChangeDir: Ignored"
-
+class BrowseView extends React.Component
   constructor: (props) ->
     super props
 
   click: (info) ->
-    if @props.onChangeDir
-      @props.onChangeDir(info.dir)
+    # if @props.onChangeDir
+    #   @props.onChangeDir(info.dir)
 
   render: ->
+    if not @props.manifest.children.hasOwnProperty(@props.arg)
+      return div {
+        style:
+          color: '#ffffff'
+      }, "Invalid directory. Go home."
+
+    list = @props.manifest.children[@props.arg]
     entries = []
-    for entry in @props.list
-      entryElement = React.createElement IndexEntry, {
+    for entry in list
+      entryElement = React.createElement BrowseEntry, {
         key: entry.dir
         info: entry
-        click: (info) => @click(info)
       }
       entries.push entryElement
 
@@ -88,4 +91,4 @@ class IndexView extends React.Component
 
     return view
 
-module.exports = IndexView
+module.exports = BrowseView

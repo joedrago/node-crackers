@@ -5,11 +5,18 @@ Dimensions = require 'react-dimensions'
 PubSub = require 'pubsub-js'
 
 # Local requires
-ComicView = require './ComicView'
-IndexView = require './IndexView'
-LoadingView = require './LoadingView'
 LRUCache = require './LRUCache'
 {div, el} = require './tags'
+
+# Views
+BrowseView = require './views/BrowseView'
+ComicView = require './views/ComicView'
+HelpView = require './views/HelpView'
+HomeView = require './views/HomeView'
+LoadingView = require './views/LoadingView'
+SearchView = require './views/SearchView'
+SettingsView = require './views/SettingsView'
+UpdatesView = require './views/UpdatesView'
 
 # Material UI components
 AppBar = require 'material-ui/lib/app-bar'
@@ -38,31 +45,66 @@ class App extends React.Component
   @childContextTypes: { muiTheme: React.PropTypes.object }
   getChildContext: -> { muiTheme: getMuiTheme(DarkTheme) }
 
-  @defaultProps:
-    start: 0
-
   constructor: (props) ->
     super props
+
     @comicMetadataCache = new LRUCache(100)
     @progressEnabled = "#inject{progress}" == "true"
     @state =
       navOpen: false
       manifest: null
-      view: 'comics'
+      view: 'home'
+      viewArg: ''
       dir: ''
       comicMetadata: null
       indexList: null
 
+    @views =
+      home: HomeView
+      browse: BrowseView
+      comic: ComicView
+      help: HelpView
+      search: SearchView
+      settings: SettingsView
+      updates: UpdatesView
+
     @loadManifest()
+
     $(document).keydown (event) =>
       @onKeyDown(event)
+      return true
+
+    @navigate(true)
+    window.addEventListener('hashchange', (event) =>
+      @navigate()
+    , false)
 
   loadManifest: ->
     $.getJSON '#inject{endpoint}', null, (manifest, status) =>
       @setState {
         manifest: manifest
       }
-      @changeDir(@state.dir)
+      # @changeDir(@state.dir)
+
+  redirect: (newHash) ->
+    window.location.replace(window.location.pathname + window.location.search + newHash)
+    return
+
+  navigate: (fromConstructor = false) ->
+    newHash = window.location.hash.replace(/^#\/?|\/$/g, '')
+    view = newHash.split('/')[0]
+    viewArg = newHash.substring(view.length+1)
+    if not @views.hasOwnProperty(view)
+      view = 'home'
+      viewArg = ''
+      @redirect('#home')
+
+    console.log "navigate('#{view}', '#{viewArg}')"
+    if fromConstructor
+      @state.view = view
+      @state.viewArg = viewArg
+    else
+      @setState { view: view, viewArg: viewArg }
 
   changeDir: (dir) ->
     console.log "changeDir(#{dir})"
@@ -119,23 +161,49 @@ class App extends React.Component
         }, 'keyboard_arrow_right'
     ]
 
-      # Left navigation panel
+    # Left navigation panel
     navMenuItems = [
       el MenuItem, {
         primaryText: "Home"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
         onTouchTap: =>
-          @changeDir('')
+          @redirect('#home')
+          @setState { navOpen: false }
+      }
+      el MenuItem, {
+        primaryText: "Browse"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'grid_on'
+        onTouchTap: =>
+          @redirect('#browse')
           @setState { navOpen: false }
       }
       el MenuItem, {
         primaryText: "Updates"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
         onTouchTap: =>
+          @redirect('#updates')
+          @setState { navOpen: false }
       }
       el MenuItem, {
         primaryText: "Search"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
+        onTouchTap: =>
+          @redirect('#search')
+          @setState { navOpen: false }
+      }
+      el MenuItem, {
+        primaryText: "Settings"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'settings'
+        onTouchTap: =>
+          @redirect('#settings')
+          @setState { navOpen: false }
+      }
+      el MenuItem, {
+        primaryText: "Help"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
+        onTouchTap: =>
+          @redirect('#help')
+          @setState { navOpen: false }
       }
     ]
 
@@ -156,25 +224,15 @@ class App extends React.Component
       }, navMenuItems
     )
 
-    view = null
-    if @state.manifest and (@state.view == 'comics')
-      if @state.indexList
-        console.log "choosing IndexView"
-        view = el IndexView, {
-          key: 'indexview'
-          list: @state.manifest.children[@state.dir]
-          onChangeDir: (dir) => @changeDir(dir)
-        }
-      else if @state.comicMetadata
-        console.log "choosing ComicView"
-        view = el ComicView, {
-          metadata: @state.comicMetadata
-          width: @props.containerWidth
-          height: @props.containerHeight
-        }
-
-    if view == null
-      console.log "choosing LoadingView"
+    if @state.manifest
+      # console.log "chose view #{@state.view}"
+      view = el @views[@state.view], {
+        width: @props.containerWidth
+        height: @props.containerHeight
+        manifest: @state.manifest
+        arg: @state.viewArg
+      }
+    else
       view = el LoadingView
 
     elements.push view

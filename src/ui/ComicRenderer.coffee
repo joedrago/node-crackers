@@ -21,7 +21,7 @@ Corner =
   BottomRight: 2
   BottomLeft: 3
 
-class ComicView extends React.Component
+class ComicRenderer extends React.Component
   @defaultProps:
     metadata: null
 
@@ -45,13 +45,13 @@ class ComicView extends React.Component
     @setIndex(0, true)
 
   componentDidMount: ->
-    console.log "ComicView componentDidMount"
+    console.log "ComicRenderer componentDidMount"
     @setState { touchCount: 0 }
     @keySubscription = PubSub.subscribe 'key', (msg, event) =>
       @onKeyPress(event)
 
   componentWillUnmount: ->
-    console.log "ComicView componentWillUnmount"
+    console.log "ComicRenderer componentWillUnmount"
     PubSub.unsubscribe @keySubscription
     @setState { touchCount: 0 }
     @keySubscription = null
@@ -332,4 +332,4 @@ class ComicView extends React.Component
             backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
         }
 
-module.exports = ComicView
+module.exports = ComicRenderer
