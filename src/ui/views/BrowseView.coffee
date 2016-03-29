@@ -1,15 +1,46 @@
 React = require 'react'
 DOM = require 'react-dom'
-{a, div, img, span} = require '../tags'
+{a, div, el, img, span} = require '../tags'
 
 COVER_WIDTH = '150px'
+COVER_HEIGHT = '231px' # placeholder height, the real images are auto-height
+
+class PlaceholderImage extends React.Component
+  constructor: (props) ->
+    super props
+    @state =
+      loaded: false
+
+  onLoad: ->
+    @setState { loaded: true }
+
+  componentDidMount: ->
+    @image = new Image()
+    @image.onload = @onLoad.bind(this)
+    @image.src = @props.src
+
+  render: ->
+    if @state.loaded
+      return img {
+        key: @props.key
+        src: @props.src
+      }
+
+    return div {
+      key: @props.key
+      style:
+        display: 'block'
+        width: COVER_WIDTH
+        height: COVER_HEIGHT
+        background: '#333355'
+    }
 
 class BrowseEntry extends React.Component
   constructor: (props) ->
     super props
 
   render: ->
-    cover = img {
+    cover = el PlaceholderImage, {
       key: 'cover'
       src: "#{@props.info.dir}/cover.png"
     }

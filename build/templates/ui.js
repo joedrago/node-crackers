@@ -38937,7 +38937,7 @@ module.exports.el = React.createElement;
 
 
 },{"react":303}],311:[function(require,module,exports){
-var BrowseEntry, BrowseView, COVER_WIDTH, DOM, React, a, div, img, ref, span,
+var BrowseEntry, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, PlaceholderImage, React, a, div, el, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -38945,9 +38945,55 @@ React = require('react');
 
 DOM = require('react-dom');
 
-ref = require('../tags'), a = ref.a, div = ref.div, img = ref.img, span = ref.span;
+ref = require('../tags'), a = ref.a, div = ref.div, el = ref.el, img = ref.img, span = ref.span;
 
 COVER_WIDTH = '150px';
+
+COVER_HEIGHT = '231px';
+
+PlaceholderImage = (function(superClass) {
+  extend(PlaceholderImage, superClass);
+
+  function PlaceholderImage(props) {
+    PlaceholderImage.__super__.constructor.call(this, props);
+    this.state = {
+      loaded: false
+    };
+  }
+
+  PlaceholderImage.prototype.onLoad = function() {
+    return this.setState({
+      loaded: true
+    });
+  };
+
+  PlaceholderImage.prototype.componentDidMount = function() {
+    this.image = new Image();
+    this.image.onload = this.onLoad.bind(this);
+    return this.image.src = this.props.src;
+  };
+
+  PlaceholderImage.prototype.render = function() {
+    if (this.state.loaded) {
+      return img({
+        key: this.props.key,
+        src: this.props.src
+      });
+    }
+    return div({
+      key: this.props.key,
+      style: {
+        display: 'block',
+        width: COVER_WIDTH,
+        height: COVER_HEIGHT,
+        background: '#333355'
+      }
+    });
+  };
+
+  return PlaceholderImage;
+
+})(React.Component);
 
 BrowseEntry = (function(superClass) {
   extend(BrowseEntry, superClass);
@@ -38958,7 +39004,7 @@ BrowseEntry = (function(superClass) {
 
   BrowseEntry.prototype.render = function() {
     var cover, entry, link, linkContents, percent, progressBar, subtitle, subtitleText, title;
-    cover = img({
+    cover = el(PlaceholderImage, {
       key: 'cover',
       src: this.props.info.dir + "/cover.png"
     });
