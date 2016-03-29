@@ -255,9 +255,10 @@ class ReadState
             if($conn->connect_error) {
                 fatalError("Connection failed: " + $conn->connect_error);
             }
+            $dir = $this->actions["dir"];
             $page = $this->actions['page'];
             $stmt = $conn->prepare("insert into progress (user, dir, page) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE page=?");
-            $stmt->bind_param('ssii', $this->user, $this->path, $page, $page);
+            $stmt->bind_param('ssii', $this->user, $dir, $page, $page);
             $stmt->execute();
             // $this->response['stmt'] = $stmt->error;
             $stmt->close();
@@ -271,7 +272,8 @@ class ReadState
 
         if(!array_key_exists("skip", $this->actions)) {
             $this->response["children"] = $this->children;
-            $this->response["exists"] = $this->manifest["exists"];
+            // $this->response["exists"] = $this->manifest["exists"];
+            $this->response["page"] = array();
 
             foreach($this->response["children"] as $dir => &$list)
             {
@@ -288,6 +290,7 @@ class ReadState
                     $e["perc"] = $perc;
                     if($e["type"] === "comic") {
                         $e["page"] = $page;
+                        $this->response["page"][$e['dir']] = $page;
                     }
                 }
             }

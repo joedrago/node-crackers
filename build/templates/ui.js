@@ -37521,9 +37521,13 @@ Dimensions = require('react-dimensions');
 
 PubSub = require('pubsub-js');
 
-ComicView = require('./views/ComicView');
+LRUCache = require('./LRUCache');
+
+ref = require('./tags'), div = ref.div, el = ref.el;
 
 BrowseView = require('./views/BrowseView');
+
+ComicView = require('./views/ComicView');
 
 HelpView = require('./views/HelpView');
 
@@ -37536,10 +37540,6 @@ SearchView = require('./views/SearchView');
 SettingsView = require('./views/SettingsView');
 
 UpdatesView = require('./views/UpdatesView');
-
-LRUCache = require('./LRUCache');
-
-ref = require('./tags'), div = ref.div, el = ref.el;
 
 AppBar = require('material-ui/lib/app-bar');
 
@@ -37590,6 +37590,7 @@ App = (function(superClass) {
     App.__super__.constructor.call(this, props);
     this.comicMetadataCache = new LRUCache(100);
     this.progressEnabled = "#inject{progress}" === "true";
+    this.pageUpdateTimer = null;
     this.state = {
       navOpen: false,
       manifest: null,
@@ -37623,14 +37624,35 @@ App = (function(superClass) {
     })(this), false);
   }
 
-  App.prototype.loadManifest = function() {
-    return $.getJSON('#inject{endpoint}', null, (function(_this) {
-      return function(manifest, status) {
-        return _this.setState({
-          manifest: manifest
-        });
-      };
-    })(this));
+  App.prototype.loadManifest = function(updateDir, updatePage) {
+    var ajaxData;
+    if (updateDir == null) {
+      updateDir = null;
+    }
+    if (updatePage == null) {
+      updatePage = 0;
+    }
+    ajaxData = {
+      url: '#inject{endpoint}',
+      dataType: 'json',
+      data: null,
+      success: (function(_this) {
+        return function(manifest, status) {
+          console.log(manifest);
+          return _this.setState({
+            manifest: manifest
+          });
+        };
+      })(this)
+    };
+    if (this.progressEnabled && (updateDir !== null)) {
+      ajaxData.data = JSON.stringify({
+        dir: updateDir,
+        page: updatePage
+      });
+      ajaxData.type = 'POST';
+    }
+    return $.ajax(ajaxData);
   };
 
   App.prototype.redirect = function(newHash) {
@@ -37697,6 +37719,27 @@ App = (function(superClass) {
       indexList: indexList,
       comicMetadata: comicMetadata
     });
+  };
+
+  App.prototype.updatePageProgress = function(dir, page) {
+    console.log("[" + dir + "] update page progress " + page);
+    return this.loadManifest(dir, page);
+  };
+
+  App.prototype.onViewPage = function(dir, page) {
+    if (!this.progressEnabled) {
+      return;
+    }
+    console.log("[" + dir + "] displaying page " + page);
+    if (this.pageUpdateTimer !== null) {
+      clearTimeout(this.pageUpdateTimer);
+    }
+    return this.pageUpdateTimer = setTimeout((function(_this) {
+      return function() {
+        _this.updatePageProgress(dir, page);
+        return _this.pageUpdateTimer = null;
+      };
+    })(this), 1000);
   };
 
   App.prototype.onKeyDown = function(event) {
@@ -37833,12 +37876,16 @@ App = (function(superClass) {
       })(this)
     }, navMenuItems));
     if (this.state.manifest) {
-      console.log("chose view " + this.state.view);
       view = el(this.views[this.state.view], {
         width: this.props.containerWidth,
         height: this.props.containerHeight,
         manifest: this.state.manifest,
-        arg: this.state.viewArg
+        arg: this.state.viewArg,
+        onViewPage: (function(_this) {
+          return function(dir, page) {
+            return _this.onViewPage(dir, page);
+          };
+        })(this)
       });
     } else {
       view = el(LoadingView);
@@ -37898,6 +37945,7 @@ ComicRenderer = (function(superClass) {
   };
 
   function ComicRenderer(props) {
+    var index;
     ComicRenderer.__super__.constructor.call(this, props);
     this.springConfig = {
       stiffness: 500,
@@ -37915,7 +37963,12 @@ ComicRenderer = (function(superClass) {
     this.preloadImageCount = 3;
     this.auto = Auto.None;
     this.autoScale = 1.5;
-    this.setIndex(0, true);
+    console.log("ComicRenderer", this.props);
+    index = 0;
+    if (this.props.page !== null) {
+      index = this.props.page - 1;
+    }
+    this.setIndex(index, true);
   }
 
   ComicRenderer.prototype.componentDidMount = function() {
@@ -37988,19 +38041,23 @@ ComicRenderer = (function(superClass) {
 
   ComicRenderer.prototype.setIndex = function(index, initial) {
     var i, image, imagesToPreload, len;
+    console.log("setIndex(" + index + ", " + initial + ")");
     if (index >= this.props.metadata.pages) {
       index = this.props.metadata.pages - 1;
     }
     if (index < 0) {
       index = 0;
     }
-    if (!initial) {
+    if (initial) {
+      this.state.index = index;
+    } else {
       this.setState({
         index: index,
         loaded: false,
         error: false,
         imageSwipeX: 0
       });
+      this.props.onViewPage(this.props.dir, index + 1);
     }
     this.auto = Auto.None;
     imagesToPreload = this.props.metadata.images.slice(this.state.index + 1, this.state.index + 1 + this.preloadImageCount);
@@ -38880,7 +38937,7 @@ module.exports.el = React.createElement;
 
 
 },{"react":303}],311:[function(require,module,exports){
-var BrowseEntry, BrowseView, DOM, React, a, div, img, ref, span,
+var BrowseEntry, BrowseView, COVER_WIDTH, DOM, React, a, div, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -38890,6 +38947,8 @@ DOM = require('react-dom');
 
 ref = require('../tags'), a = ref.a, div = ref.div, img = ref.img, span = ref.span;
 
+COVER_WIDTH = '150px';
+
 BrowseEntry = (function(superClass) {
   extend(BrowseEntry, superClass);
 
@@ -38898,7 +38957,7 @@ BrowseEntry = (function(superClass) {
   }
 
   BrowseEntry.prototype.render = function() {
-    var cover, entry, link, subtitle, subtitleText, title;
+    var cover, entry, link, linkContents, percent, progressBar, subtitle, subtitleText, title;
     cover = img({
       key: 'cover',
       src: this.props.info.dir + "/cover.png"
@@ -38919,13 +38978,39 @@ BrowseEntry = (function(superClass) {
         color: '#ffffff'
       }
     }, this.props.info.dir.replace(/\//g, " | "));
+    linkContents = [cover];
+    if (this.props.info.hasOwnProperty('perc')) {
+      percent = this.props.info.perc;
+      if (percent < 0) {
+        percent = 0;
+      }
+      progressBar = div({
+        style: {
+          display: 'block',
+          width: COVER_WIDTH,
+          height: '10px',
+          marginBottom: '3px',
+          background: '#333333'
+        }
+      }, [
+        div({
+          style: {
+            width: percent + "%",
+            height: '100%',
+            background: '#669966'
+          }
+        })
+      ]);
+      linkContents.push(progressBar);
+    }
+    linkContents.push(title);
     link = a({
       key: 'link',
       href: link,
       style: {
         cursor: 'pointer'
       }
-    }, [cover, title]);
+    }, linkContents);
     subtitle = div({
       key: 'subtitle',
       style: {
@@ -38936,7 +39021,7 @@ BrowseEntry = (function(superClass) {
     entry = div({
       style: {
         display: 'inline-block',
-        width: '150px',
+        width: COVER_WIDTH,
         textAlign: 'center',
         margin: '10px',
         verticalAlign: 'top'
@@ -39029,13 +39114,20 @@ ComicView = (function(superClass) {
   };
 
   ComicView.prototype.changeDir = function(dir, fromConstructor) {
-    var metadataUrl;
+    var comicExists, metadataUrl;
     if (fromConstructor == null) {
       fromConstructor = false;
     }
     console.log("changeDir(" + dir + "), current state " + this.state.dir);
     metadataUrl = dir + "/meta.crackers";
-    if (!this.props.manifest.exists[dir]) {
+    comicExists = false;
+    if (this.props.manifest.hasOwnProperty('exists') && this.props.manifest.exists[dir]) {
+      comicExists = true;
+    }
+    if (this.props.manifest.hasOwnProperty('page') && this.props.manifest.page.hasOwnProperty(dir)) {
+      comicExists = true;
+    }
+    if (!comicExists) {
       dir = null;
       metadataUrl = null;
     }
@@ -39065,11 +39157,15 @@ ComicView = (function(superClass) {
         });
       };
     })(this)).error(function() {
-      return console.log("lel error!");
+      console.log("lel error!");
+      return this.setState({
+        dir: null
+      });
     });
   };
 
   ComicView.prototype.render = function() {
+    var page;
     if (this.state.dir === null) {
       return div({
         style: {
@@ -39082,10 +39178,17 @@ ComicView = (function(superClass) {
         color: '#222222'
       });
     }
+    page = null;
+    if (this.props.manifest.hasOwnProperty('page')) {
+      page = this.props.manifest.page[this.state.dir];
+    }
     return el(ComicRenderer, {
       metadata: this.state.metadata,
       width: this.props.width,
-      height: this.props.height
+      height: this.props.height,
+      dir: this.state.dir,
+      page: page,
+      onViewPage: this.props.onViewPage
     });
   };
 

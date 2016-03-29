@@ -42,7 +42,11 @@ class ComicRenderer extends React.Component
     @auto = Auto.None
     @autoScale = 1.5
 
-    @setIndex(0, true)
+    console.log "ComicRenderer", @props
+    index = 0
+    if @props.page != null
+      index = @props.page - 1
+    @setIndex(index, true)
 
   componentDidMount: ->
     console.log "ComicRenderer componentDidMount"
@@ -95,17 +99,21 @@ class ComicRenderer extends React.Component
     return
 
   setIndex: (index, initial) ->
+    console.log "setIndex(#{index}, #{initial})"
     if index >= @props.metadata.pages
       index = @props.metadata.pages - 1
     if index < 0
       index = 0
-    if not initial
+    if initial
+      @state.index = index
+    else
       @setState {
         index: index
         loaded: false
         error: false
         imageSwipeX: 0
       }
+      @props.onViewPage(@props.dir, index + 1)
     @auto = Auto.None
 
     imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)

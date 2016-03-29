@@ -2,6 +2,8 @@ React = require 'react'
 DOM = require 'react-dom'
 {a, div, img, span} = require '../tags'
 
+COVER_WIDTH = '150px'
+
 class BrowseEntry extends React.Component
   constructor: (props) ->
     super props
@@ -27,15 +29,37 @@ class BrowseEntry extends React.Component
         color: '#ffffff'
     }, @props.info.dir.replace(/\//g, " | ")
 
+    linkContents = [ cover ]
+
+    if @props.info.hasOwnProperty('perc')
+      percent = @props.info.perc
+      if percent < 0
+        percent = 0
+      progressBar = div {
+        style:
+          display: 'block'
+          width: COVER_WIDTH
+          height: '10px'
+          marginBottom: '3px'
+          background: '#333333'
+      }, [
+        div {
+          style:
+            width: "#{percent}%"
+            height: '100%'
+            background: '#669966'
+        }
+      ]
+      linkContents.push progressBar
+
+    linkContents.push title
+
     link = a {
       key: 'link'
       href: link
       style:
         cursor: 'pointer'
-    }, [
-      cover
-      title
-    ]
+    }, linkContents
 
     subtitle = div {
       key: 'subtitle'
@@ -47,7 +71,7 @@ class BrowseEntry extends React.Component
     entry = div {
       style:
         display: 'inline-block'
-        width: '150px'
+        width: COVER_WIDTH
         textAlign: 'center'
         margin: '10px'
         verticalAlign: 'top'

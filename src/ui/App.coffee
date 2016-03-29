@@ -50,6 +50,7 @@ class App extends React.Component
 
     @comicMetadataCache = new LRUCache(100)
     @progressEnabled = "#inject{progress}" == "true"
+    @pageUpdateTimer = null
     @state =
       navOpen: false
       manifest: null
@@ -79,12 +80,26 @@ class App extends React.Component
       @navigate()
     , false)
 
-  loadManifest: ->
-    $.getJSON '#inject{endpoint}', null, (manifest, status) =>
-      @setState {
-        manifest: manifest
-      }
-      # @changeDir(@state.dir)
+  loadManifest: (updateDir = null, updatePage = 0) ->
+    ajaxData = {
+      url: '#inject{endpoint}'
+      dataType: 'json'
+      data: null
+      success: (manifest, status) =>
+        console.log manifest
+        @setState {
+          manifest: manifest
+        }
+    }
+    if @progressEnabled and (updateDir != null)
+      ajaxData.data = JSON.stringify({
+        dir: updateDir
+        page: updatePage
+      })
+      ajaxData.type = 'POST'
+    $.ajax ajaxData
+
+    # @changeDir(@state.dir)
 
   redirect: (newHash) ->
     window.location.replace(window.location.pathname + window.location.search + newHash)
@@ -137,6 +152,22 @@ class App extends React.Component
       indexList: indexList
       comicMetadata: comicMetadata
     }
+
+  updatePageProgress: (dir, page) ->
+    console.log "[#{dir}] update page progress #{page}"
+    @loadManifest(dir, page)
+
+  onViewPage: (dir, page) ->
+    if not @progressEnabled
+      return
+
+    console.log "[#{dir}] displaying page #{page}"
+    if @pageUpdateTimer != null
+      clearTimeout(@pageUpdateTimer)
+    @pageUpdateTimer = setTimeout =>
+      @updatePageProgress(dir, page)
+      @pageUpdateTimer = null
+    , 1000
 
   onKeyDown: (event) ->
     # console.log "App.onKeyDown"
@@ -231,6 +262,9 @@ class App extends React.Component
         height: @props.containerHeight
         manifest: @state.manifest
         arg: @state.viewArg
+
+        onViewPage: (dir, page) =>
+          @onViewPage(dir, page)
       }
     else
       view = el LoadingView

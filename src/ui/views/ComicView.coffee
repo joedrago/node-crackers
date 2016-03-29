@@ -22,7 +22,12 @@ class ComicView extends React.Component
   changeDir: (dir, fromConstructor = false) ->
     console.log "changeDir(#{dir}), current state #{@state.dir}"
     metadataUrl = "#{dir}/meta.crackers"
-    if not @props.manifest.exists[dir]
+    comicExists = false
+    if @props.manifest.hasOwnProperty('exists') and @props.manifest.exists[dir]
+      comicExists = true
+    if @props.manifest.hasOwnProperty('page') and @props.manifest.page.hasOwnProperty(dir)
+      comicExists = true
+    if not comicExists
       dir = null
       metadataUrl = null
     if @state.dir != dir
@@ -56,6 +61,9 @@ class ComicView extends React.Component
       }
     .error ->
       console.log "lel error!"
+      @setState {
+        dir: null
+      }
 
   render: ->
     if @state.dir == null
@@ -69,10 +77,16 @@ class ComicView extends React.Component
         color: '#222222'
       }
 
+    page = null
+    if @props.manifest.hasOwnProperty('page')
+      page = @props.manifest.page[@state.dir]
     return el ComicRenderer, {
       metadata: @state.metadata
       width: @props.width
       height: @props.height
+      dir: @state.dir
+      page: page
+      onViewPage: @props.onViewPage
     }
 
 module.exports = ComicView
