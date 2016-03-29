@@ -14,6 +14,12 @@ RaisedButton = require 'material-ui/lib/raised-button'
 {div, el} = require './tags'
 
 class ConfirmDialog extends React.Component
+  @defaultProps: {
+    title: ''
+    label: ''
+    yes: 'Confirm'
+  }
+
   constructor: (props) ->
     super props
     @state =

@@ -1,6 +1,6 @@
 React = require 'react'
 
-tags = ['a', 'div', 'img', 'span']
+tags = ['a', 'div', 'hr', 'img', 'span']
 
 module.exports = {}
 for elementName in tags

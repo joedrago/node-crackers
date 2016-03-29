@@ -43,8 +43,8 @@ injectTapEventPlugin()
 
 class App extends React.Component
   # Enables the "Dark" theme
-  # @childContextTypes: { muiTheme: React.PropTypes.object }
-  # getChildContext: -> { muiTheme: getMuiTheme(DarkTheme) }
+  @childContextTypes: { muiTheme: React.PropTypes.object }
+  getChildContext: -> { muiTheme: getMuiTheme(DarkTheme) }
 
   constructor: (props) ->
     super props
@@ -306,6 +306,7 @@ class App extends React.Component
     if @state.manifest
       # console.log "chose view #{@state.view}"
       view = el @views[@state.view], {
+        progressEnabled: @progressEnabled
         width: @props.containerWidth
         height: @props.containerHeight
         manifest: @state.manifest

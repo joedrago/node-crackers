@@ -3,13 +3,18 @@ React = require 'react'
 DOM = require 'react-dom'
 
 # Material UI components
+DropDownMenu = require 'material-ui/lib/DropDownMenu'
 FlatButton = require 'material-ui/lib/flat-button'
 IconButton = require 'material-ui/lib/icon-button'
 IconMenu = require 'material-ui/lib/menus/icon-menu'
 MenuItem = require 'material-ui/lib/menus/menu-item'
+Toolbar = require 'material-ui/lib/toolbar/toolbar'
+ToolbarGroup = require 'material-ui/lib/toolbar/toolbar-group'
+ToolbarSeparator = require 'material-ui/lib/toolbar/toolbar-separator'
+ToolbarTitle = require 'material-ui/lib/toolbar/toolbar-title'
 
 # Local requires
-{a, div, el, img, span} = require '../tags'
+{a, div, el, img, hr, span} = require '../tags'
 
 COVER_WIDTH = '150px'
 COVER_HEIGHT = '231px' # placeholder height, the real images are auto-height
@@ -69,7 +74,7 @@ class BrowseEntry extends React.Component
         color: '#ffffff'
     }, @props.info.dir.replace(/\//g, " | ")
 
-    linkContents = [ cover ]
+    linkContents = []
 
     hasProgress = @props.info.hasOwnProperty('perc')
     if hasProgress
@@ -93,7 +98,7 @@ class BrowseEntry extends React.Component
       ]
       linkContents.push progressBar
 
-    # linkContents.push title
+    linkContents.push cover
 
     link = a {
       key: 'link'
@@ -158,6 +163,12 @@ class BrowseEntry extends React.Component
 class BrowseView extends React.Component
   constructor: (props) ->
     super props
+    @state =
+      sort: 'recent'
+      showIgnored: false
+      showCompleted: false
+    if @props.progressEnabled
+      @state.sort = 'interest'
 
   click: (info) ->
     # if @props.onChangeDir
@@ -170,9 +181,117 @@ class BrowseView extends React.Component
           color: '#ffffff'
       }, "Invalid directory. Go home."
 
+    sorts = [
+      el MenuItem, {
+        value: 'alphabetical'
+        primaryText: 'Alphabetical'
+      }
+      el MenuItem, {
+        value: 'recent'
+        primaryText: 'Recent'
+      }
+    ]
+
+    if @props.progressEnabled
+      sorts.unshift el MenuItem, {
+        value: 'interest'
+        primaryText: 'By Interest'
+      }
+
+    menuItems = []
+    if @props.progressEnabled
+      label = "Show Ignored"
+      if @state.showIgnored
+        label = "Hide Ignored"
+      menuItems.push el MenuItem, {
+        primaryText: label
+        onTouchTap: => @setState { showIgnored: !@state.showIgnored }
+      }
+      label = "Show Completed"
+      if @state.showCompleted
+        label = "Hide Completed"
+      menuItems.push el MenuItem, {
+        primaryText: label
+        onTouchTap: => @setState { showCompleted: !@state.showCompleted }
+      }
+
+    toolbar = el Toolbar, {
+      style:
+        position: 'fixed'
+    }, [
+      el ToolbarGroup, {
+        float: 'right'
+      }, [
+        el IconMenu, {
+          iconButtonElement: el IconButton, {
+              iconClassName: 'material-icons'
+            }, 'expand_more'
+          anchorOrigin: { horizontal: 'left', vertical: 'top' }
+          targetOrigin: { horizontal: 'left', vertical: 'top' }
+        }, menuItems
+
+        el ToolbarSeparator
+        el DropDownMenu, {
+          value: @state.sort
+          onChange: (event, index, value) => @setState { sort: value }
+        }, sorts
+      ]
+    ]
+
+    spacing = div {
+      style:
+        height: '60px'
+    }
+
     list = @props.manifest.children[@props.arg]
-    entries = []
+    console.log list
+    if @props.progressEnabled
+      if not @state.showIgnored
+        list = list.filter (e) -> e.perc != -1
+      if not @state.showCompleted
+        list = list.filter (e) -> e.perc != 100
+
+    switch @state.sort
+      when 'interest'
+        list.sort (a, b) ->
+          if a.perc == b.perc
+            return -1 if a.dir < b.dir
+            return  1 if a.dir > b.dir
+            return 0
+          return  1 if a.perc == 100
+          return -1 if b.perc == 100
+          return  1 if a.perc  <  b.perc
+          return -1 if a.perc  >  b.perc
+          return 0
+      when 'alphabetical'
+        list.sort (a, b) ->
+          return -1 if a.dir < b.dir
+          return  1 if a.dir > b.dir
+          return 0
+      when 'recent'
+        list.sort (a, b) ->
+          return  1 if a.dir < b.dir
+          return -1 if a.dir > b.dir
+          return 0
+
+    entries = [toolbar, spacing]
+    lastPerc = null
     for entry in list
+      if @props.progressEnabled and (@state.sort == 'interest')
+        if lastPerc != null
+          addDivider = false
+          if ((lastPerc != -1) and (entry.perc == -1))
+            addDivider = true
+          if ((lastPerc != 100) and (entry.perc == 100))
+            addDivider = true
+          if addDivider
+            entries.push hr {
+              size: 1
+              style:
+                borderColor: '#777777'
+            }
+        lastPerc = entry.perc
+
       entryElement = React.createElement BrowseEntry, {
         key: entry.dir
         info: entry
