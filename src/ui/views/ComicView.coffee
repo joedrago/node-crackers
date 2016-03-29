@@ -1,6 +1,7 @@
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
+loadMetadata = require '../MetadataCache'
 {el, div, img} = require '../tags'
 
 ComicRenderer = require '../ComicRenderer'
@@ -21,7 +22,6 @@ class ComicView extends React.Component
 
   changeDir: (dir, fromConstructor = false) ->
     console.log "changeDir(#{dir}), current state #{@state.dir}"
-    metadataUrl = "#{dir}/meta.crackers"
     comicExists = false
     if @props.manifest.hasOwnProperty('exists') and @props.manifest.exists[dir]
       comicExists = true
@@ -29,40 +29,26 @@ class ComicView extends React.Component
       comicExists = true
     if not comicExists
       dir = null
-      metadataUrl = null
     if @state.dir != dir
       if fromConstructor
         @state.dir = dir
         @state.metadata = null
-        @state.metadataUrl = metadataUrl
       else
         @setState {
           dir: dir
           metadata: null
-          metadataUrl: metadataUrl
         }
-    if metadataUrl
-      @loadMetadata(metadataUrl)
+    if comicExists
+      @loadMetadata(dir)
 
-  loadMetadata: (url) ->
-    # metadata = null
-    # metadata = @metadataCache.get(dir)
-    # if metadata
-    #   console.log "using cached metadata: #{dir}"
-    #   @setState {
-    #     metadata: metadata
-    #   }
-    # else
-    $.getJSON(url)
-    .success (metadata) =>
-      # @comicMetadataCache.put metadataDir, metadata
+  loadMetadata: (dir) ->
+    loadMetadata dir, (metadata) =>
+      dir = @state.dir
+      if metadata == null
+        dir = null
       @setState {
+        dir: dir
         metadata: metadata
-      }
-    .error ->
-      console.log "lel error!"
-      @setState {
-        dir: null
       }
 
   render: ->

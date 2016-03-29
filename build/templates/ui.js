@@ -37903,7 +37903,7 @@ App = (function(superClass) {
 module.exports = Dimensions()(App);
 
 
-},{"./LRUCache":307,"./tags":310,"./views/BrowseView":311,"./views/ComicView":312,"./views/HelpView":313,"./views/HomeView":314,"./views/LoadingView":315,"./views/SearchView":316,"./views/SettingsView":317,"./views/UpdatesView":318,"material-ui/lib/app-bar":2,"material-ui/lib/divider":6,"material-ui/lib/flat-button":9,"material-ui/lib/font-icon":10,"material-ui/lib/icon-button":11,"material-ui/lib/left-nav":12,"material-ui/lib/menus/menu-item":20,"material-ui/lib/raised-button":31,"material-ui/lib/styles/baseThemes/darkBaseTheme":37,"material-ui/lib/styles/getMuiTheme":40,"material-ui/lib/toolbar/toolbar":58,"material-ui/lib/toolbar/toolbar-group":55,"material-ui/lib/toolbar/toolbar-separator":56,"material-ui/lib/toolbar/toolbar-title":57,"pubsub-js":118,"react":303,"react-dimensions":119,"react-dom":120,"react-tap-event-plugin":141}],305:[function(require,module,exports){
+},{"./LRUCache":307,"./tags":311,"./views/BrowseView":312,"./views/ComicView":313,"./views/HelpView":314,"./views/HomeView":315,"./views/LoadingView":316,"./views/SearchView":317,"./views/SettingsView":318,"./views/UpdatesView":319,"material-ui/lib/app-bar":2,"material-ui/lib/divider":6,"material-ui/lib/flat-button":9,"material-ui/lib/font-icon":10,"material-ui/lib/icon-button":11,"material-ui/lib/left-nav":12,"material-ui/lib/menus/menu-item":20,"material-ui/lib/raised-button":31,"material-ui/lib/styles/baseThemes/darkBaseTheme":37,"material-ui/lib/styles/getMuiTheme":40,"material-ui/lib/toolbar/toolbar":58,"material-ui/lib/toolbar/toolbar-group":55,"material-ui/lib/toolbar/toolbar-separator":56,"material-ui/lib/toolbar/toolbar-title":57,"pubsub-js":118,"react":303,"react-dimensions":119,"react-dom":120,"react-tap-event-plugin":141}],305:[function(require,module,exports){
 var Auto, ComicRenderer, Corner, DOM, ImageCache, Loader, Motion, PubSub, React, TouchDiv, div, el, img, ref, ref1, spring,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -38344,7 +38344,7 @@ ComicRenderer = (function(superClass) {
 module.exports = ComicRenderer;
 
 
-},{"./ImageCache":306,"./TouchDiv":308,"./tags":310,"pubsub-js":118,"react":303,"react-dom":120,"react-loader":121,"react-motion":129}],306:[function(require,module,exports){
+},{"./ImageCache":306,"./TouchDiv":309,"./tags":311,"pubsub-js":118,"react":303,"react-dom":120,"react-loader":121,"react-motion":129}],306:[function(require,module,exports){
 var ImageCache, LRUCache;
 
 LRUCache = require('./LRUCache');
@@ -38645,6 +38645,51 @@ module.exports = LRUCache;
 
 
 },{}],308:[function(require,module,exports){
+var LRUCache, MetadataCache, instance;
+
+LRUCache = require('./LRUCache');
+
+MetadataCache = (function() {
+  function MetadataCache() {
+    this.cache = new LRUCache(100);
+  }
+
+  MetadataCache.prototype.load = function(dir, cb) {
+    var metadata, metadataUrl;
+    metadata = this.cache.get(dir);
+    if (metadata) {
+      return setTimeout(function() {
+        return cb(metadata);
+      }, 0);
+    } else {
+      metadataUrl = dir + "/meta.crackers";
+      return $.getJSON(metadataUrl).success((function(_this) {
+        return function(metadata) {
+          _this.cache.put(dir, metadata);
+          return cb(metadata);
+        };
+      })(this)).error(function() {
+        console.log("metadata download error");
+        return cb(null);
+      });
+    }
+  };
+
+  return MetadataCache;
+
+})();
+
+instance = null;
+
+module.exports = function(dir, cb) {
+  if (!instance) {
+    instance = new MetadataCache();
+  }
+  return instance.load(dir, cb);
+};
+
+
+},{"./LRUCache":307}],309:[function(require,module,exports){
 var DOM, ENGAGE_DRAG_DISTANCE, React, TouchDiv, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -38907,7 +38952,7 @@ TouchDiv = (function(superClass) {
 module.exports = TouchDiv;
 
 
-},{"./tags":310,"react":303,"react-dom":120}],309:[function(require,module,exports){
+},{"./tags":311,"react":303,"react-dom":120}],310:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -38919,7 +38964,7 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":304,"react":303,"react-dom":120}],310:[function(require,module,exports){
+},{"./App":304,"react":303,"react-dom":120}],311:[function(require,module,exports){
 var React, elementName, i, len, tags;
 
 React = require('react');
@@ -38936,7 +38981,7 @@ for (i = 0, len = tags.length; i < len; i++) {
 module.exports.el = React.createElement;
 
 
-},{"react":303}],311:[function(require,module,exports){
+},{"react":303}],312:[function(require,module,exports){
 var BrowseEntry, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, PlaceholderImage, React, a, div, el, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39126,8 +39171,8 @@ BrowseView = (function(superClass) {
 module.exports = BrowseView;
 
 
-},{"../tags":310,"react":303,"react-dom":120}],312:[function(require,module,exports){
-var ComicRenderer, ComicView, DOM, Loader, React, div, el, img, ref,
+},{"../tags":311,"react":303,"react-dom":120}],313:[function(require,module,exports){
+var ComicRenderer, ComicView, DOM, Loader, React, div, el, img, loadMetadata, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -39136,6 +39181,8 @@ React = require('react');
 DOM = require('react-dom');
 
 Loader = require('react-loader');
+
+loadMetadata = require('../MetadataCache');
 
 ref = require('../tags'), el = ref.el, div = ref.div, img = ref.img;
 
@@ -39160,12 +39207,11 @@ ComicView = (function(superClass) {
   };
 
   ComicView.prototype.changeDir = function(dir, fromConstructor) {
-    var comicExists, metadataUrl;
+    var comicExists;
     if (fromConstructor == null) {
       fromConstructor = false;
     }
     console.log("changeDir(" + dir + "), current state " + this.state.dir);
-    metadataUrl = dir + "/meta.crackers";
     comicExists = false;
     if (this.props.manifest.hasOwnProperty('exists') && this.props.manifest.exists[dir]) {
       comicExists = true;
@@ -39175,39 +39221,36 @@ ComicView = (function(superClass) {
     }
     if (!comicExists) {
       dir = null;
-      metadataUrl = null;
     }
     if (this.state.dir !== dir) {
       if (fromConstructor) {
         this.state.dir = dir;
         this.state.metadata = null;
-        this.state.metadataUrl = metadataUrl;
       } else {
         this.setState({
           dir: dir,
-          metadata: null,
-          metadataUrl: metadataUrl
+          metadata: null
         });
       }
     }
-    if (metadataUrl) {
-      return this.loadMetadata(metadataUrl);
+    if (comicExists) {
+      return this.loadMetadata(dir);
     }
   };
 
-  ComicView.prototype.loadMetadata = function(url) {
-    return $.getJSON(url).success((function(_this) {
+  ComicView.prototype.loadMetadata = function(dir) {
+    return loadMetadata(dir, (function(_this) {
       return function(metadata) {
+        dir = _this.state.dir;
+        if (metadata === null) {
+          dir = null;
+        }
         return _this.setState({
+          dir: dir,
           metadata: metadata
         });
       };
-    })(this)).error(function() {
-      console.log("lel error!");
-      return this.setState({
-        dir: null
-      });
-    });
+    })(this));
   };
 
   ComicView.prototype.render = function() {
@@ -39245,7 +39288,7 @@ ComicView = (function(superClass) {
 module.exports = ComicView;
 
 
-},{"../ComicRenderer":305,"../tags":310,"react":303,"react-dom":120,"react-loader":121}],313:[function(require,module,exports){
+},{"../ComicRenderer":305,"../MetadataCache":308,"../tags":311,"react":303,"react-dom":120,"react-loader":121}],314:[function(require,module,exports){
 var DOM, HelpView, Loader, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39280,7 +39323,7 @@ HelpView = (function(superClass) {
 module.exports = HelpView;
 
 
-},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],314:[function(require,module,exports){
+},{"../tags":311,"react":303,"react-dom":120,"react-loader":121}],315:[function(require,module,exports){
 var DOM, HomeView, Loader, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39315,7 +39358,7 @@ HomeView = (function(superClass) {
 module.exports = HomeView;
 
 
-},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],315:[function(require,module,exports){
+},{"../tags":311,"react":303,"react-dom":120,"react-loader":121}],316:[function(require,module,exports){
 var DOM, Loader, LoadingView, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39355,7 +39398,7 @@ LoadingView = (function(superClass) {
 module.exports = LoadingView;
 
 
-},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],316:[function(require,module,exports){
+},{"../tags":311,"react":303,"react-dom":120,"react-loader":121}],317:[function(require,module,exports){
 var DOM, Loader, React, SearchView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39390,7 +39433,7 @@ SearchView = (function(superClass) {
 module.exports = SearchView;
 
 
-},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],317:[function(require,module,exports){
+},{"../tags":311,"react":303,"react-dom":120,"react-loader":121}],318:[function(require,module,exports){
 var DOM, Loader, React, SettingsView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39425,7 +39468,7 @@ SettingsView = (function(superClass) {
 module.exports = SettingsView;
 
 
-},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}],318:[function(require,module,exports){
+},{"../tags":311,"react":303,"react-dom":120,"react-loader":121}],319:[function(require,module,exports){
 var DOM, Loader, React, UpdatesView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -39460,4 +39503,4 @@ UpdatesView = (function(superClass) {
 module.exports = UpdatesView;
 
 
-},{"../tags":310,"react":303,"react-dom":120,"react-loader":121}]},{},[309]);
+},{"../tags":311,"react":303,"react-dom":120,"react-loader":121}]},{},[310]);
