@@ -284,6 +284,8 @@ class BrowseView extends React.Component
             addDivider = true
           if ((lastPerc != 100) and (entry.perc == 100))
             addDivider = true
+          if ((lastPerc != 0) and (entry.perc == 0))
+            addDivider = true
           if addDivider
             entries.push hr {
               size: 1
