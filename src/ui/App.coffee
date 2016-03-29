@@ -6,6 +6,7 @@ PubSub = require 'pubsub-js'
 
 # Local requires
 LRUCache = require './LRUCache'
+ConfirmDialog = require './ConfirmDialog'
 {div, el} = require './tags'
 
 # Views
@@ -42,8 +43,8 @@ injectTapEventPlugin()
 
 class App extends React.Component
   # Enables the "Dark" theme
-  @childContextTypes: { muiTheme: React.PropTypes.object }
-  getChildContext: -> { muiTheme: getMuiTheme(DarkTheme) }
+  # @childContextTypes: { muiTheme: React.PropTypes.object }
+  # getChildContext: -> { muiTheme: getMuiTheme(DarkTheme) }
 
   constructor: (props) ->
     super props
@@ -59,6 +60,7 @@ class App extends React.Component
       dir: ''
       comicMetadata: null
       indexList: null
+      confirmCB: null
 
     @views =
       home: HomeView
@@ -80,7 +82,7 @@ class App extends React.Component
       @navigate()
     , false)
 
-  loadManifest: (updateDir = null, updatePage = 0) ->
+  loadManifest: (updateData = null) ->
     ajaxData = {
       url: '#inject{endpoint}'
       dataType: 'json'
@@ -91,15 +93,10 @@ class App extends React.Component
           manifest: manifest
         }
     }
-    if @progressEnabled and (updateDir != null)
-      ajaxData.data = JSON.stringify({
-        dir: updateDir
-        page: updatePage
-      })
+    if @progressEnabled and (updateData != null)
+      ajaxData.data = JSON.stringify(updateData)
       ajaxData.type = 'POST'
     $.ajax ajaxData
-
-    # @changeDir(@state.dir)
 
   redirect: (newHash) ->
     window.location.replace(window.location.pathname + window.location.search + newHash)
@@ -110,9 +107,9 @@ class App extends React.Component
     view = newHash.split('/')[0]
     viewArg = newHash.substring(view.length+1)
     if not @views.hasOwnProperty(view)
-      view = 'home'
+      view = 'browse'
       viewArg = ''
-      @redirect('#home')
+      @redirect('#browse')
 
     console.log "navigate('#{view}', '#{viewArg}')"
     if fromConstructor
@@ -155,7 +152,45 @@ class App extends React.Component
 
   updatePageProgress: (dir, page) ->
     console.log "[#{dir}] update page progress #{page}"
-    @loadManifest(dir, page)
+    @loadManifest({
+      dir: dir
+      page: page
+    })
+
+  dirAction: (dir, action) ->
+    switch action
+      when 'mark'
+        yesText = "Mark As Read"
+        title = "Confirmation!"
+        text = "Mark '#{dir}' as Read?"
+      when 'unmark'
+        yesText = "Mark As Unread"
+        title = "Confirmation!"
+        text = "Mark '#{dir}' as Unread?"
+      when 'ignore'
+        yesText = "Toggle Ignore"
+        title = "Confirmation!"
+        text = "Toggle ignore on '#{dir}'?"
+      else
+        return
+
+    @setState {
+      confirmYes: yesText
+      confirmTitle: title
+      confirmText: text
+      confirmCB: (confirmed) =>
+        if not confirmed
+          return
+        console.log "dirAction(#{dir}, #{action}) confirmed: #{confirmed}"
+        updateData = switch action
+          when 'mark'   then { mark:   dir }
+          when 'unmark' then { unmark: dir }
+          when 'ignore' then { ignore: dir }
+          else null
+        if updateData
+          @loadManifest(updateData)
+    }
+    return
 
   onViewPage: (dir, page) ->
     if not @progressEnabled
@@ -187,9 +222,22 @@ class App extends React.Component
             left: 0
             top: 0
             zIndex: 1
+          iconStyle:
+            color: '#ffffff'
           onTouchTap: =>
             @setState { navOpen: !@state.navOpen }
         }, 'keyboard_arrow_right'
+
+        el ConfirmDialog, {
+          open: (@state.confirmCB != null)
+          yes: @state.confirmYes
+          title: @state.confirmTitle
+          text: @state.confirmText
+          cb: (confirmed) =>
+            if @state.confirmCB
+              @state.confirmCB(confirmed)
+              @setState { confirmCB: null }
+        }
     ]
 
     # Left navigation panel
@@ -265,6 +313,10 @@ class App extends React.Component
 
         onViewPage: (dir, page) =>
           @onViewPage(dir, page)
+        dirAction: (dir, action) =>
+          @dirAction(dir, action)
+        redirect: (newHash) =>
+          @redirect(newHash)
       }
     else
       view = el LoadingView

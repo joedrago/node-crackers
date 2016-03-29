@@ -1,5 +1,14 @@
+# React
 React = require 'react'
 DOM = require 'react-dom'
+
+# Material UI components
+FlatButton = require 'material-ui/lib/flat-button'
+IconButton = require 'material-ui/lib/icon-button'
+IconMenu = require 'material-ui/lib/menus/icon-menu'
+MenuItem = require 'material-ui/lib/menus/menu-item'
+
+# Local requires
 {a, div, el, img, span} = require '../tags'
 
 COVER_WIDTH = '150px'
@@ -47,10 +56,10 @@ class BrowseEntry extends React.Component
 
     switch @props.info.type
       when 'comic'
-        link = "#comic/#{@props.info.dir}"
+        href = "#comic/#{@props.info.dir}"
         subtitleText = "(#{@props.info.pages} pages)"
       when 'index'
-        link = "#browse/#{@props.info.dir}"
+        href = "#browse/#{@props.info.dir}"
         subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"
 
     title = span {
@@ -62,7 +71,8 @@ class BrowseEntry extends React.Component
 
     linkContents = [ cover ]
 
-    if @props.info.hasOwnProperty('perc')
+    hasProgress = @props.info.hasOwnProperty('perc')
+    if hasProgress
       percent = @props.info.perc
       if percent < 0
         percent = 0
@@ -83,11 +93,11 @@ class BrowseEntry extends React.Component
       ]
       linkContents.push progressBar
 
-    linkContents.push title
+    # linkContents.push title
 
     link = a {
       key: 'link'
-      href: link
+      href: href
       style:
         cursor: 'pointer'
     }, linkContents
@@ -99,6 +109,38 @@ class BrowseEntry extends React.Component
         fontSize: '0.7em'
     }, subtitleText
 
+    menuItems = [
+      el MenuItem, {
+        primaryText: "Open"
+        onTouchTap: => @props.redirect(href)
+      }
+    ]
+
+    if hasProgress
+      menuItems.push el MenuItem, {
+        primaryText: "Mark as Read"
+        onTouchTap: => @props.dirAction(@props.info.dir, 'mark')
+      }
+      menuItems.push el MenuItem, {
+        primaryText: "Mark as Unread"
+        onTouchTap: => @props.dirAction(@props.info.dir, 'unmark')
+      }
+      menuItems.push el MenuItem, {
+        primaryText: "Toggle Ignore"
+        onTouchTap: => @props.dirAction(@props.info.dir, 'ignore')
+      }
+
+    menu = el IconMenu, {
+      iconButtonElement: el FlatButton, {
+        label: title
+        style:
+          lineHeight: '16px'
+          textTransform: 'none'
+      }
+      anchorOrigin: { horizontal: 'left', vertical: 'top' }
+      targetOrigin: { horizontal: 'left', vertical: 'top' }
+    }, menuItems
+
     entry = div {
       style:
         display: 'inline-block'
@@ -108,6 +150,7 @@ class BrowseEntry extends React.Component
         verticalAlign: 'top'
     }, [
       link
+      menu
       subtitle
     ]
     return entry
@@ -133,6 +176,8 @@ class BrowseView extends React.Component
       entryElement = React.createElement BrowseEntry, {
         key: entry.dir
         info: entry
+        dirAction: @props.dirAction
+        redirect: @props.redirect
       }
       entries.push entryElement
 
