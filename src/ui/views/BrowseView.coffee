@@ -61,10 +61,10 @@ class BrowseEntry extends React.Component
 
     switch @props.info.type
       when 'comic'
-        href = "#comic/#{@props.info.dir}"
+        href = "#comic/"+encodeURIComponent("#{@props.info.dir}").replace("%2F", "/")
         subtitleText = "(#{@props.info.pages} pages)"
       when 'index'
-        href = "#browse/#{@props.info.dir}"
+        href = "#browse/" + encodeURIComponent("#{@props.info.dir}").replace("%2F", "/")
         subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"
 
     title = span {
@@ -245,7 +245,6 @@ class BrowseView extends React.Component
     }
 
     list = @props.manifest.children[@props.arg]
-    console.log list
     if @props.progressEnabled
       if not @state.showIgnored
         list = list.filter (e) -> e.perc != -1
@@ -271,8 +270,12 @@ class BrowseView extends React.Component
           return 0
       when 'recent'
         list.sort (a, b) ->
-          return  1 if a.dir < b.dir
-          return -1 if a.dir > b.dir
+          if a.timestamp == b.timestamp
+            return -1 if a.dir < b.dir
+            return  1 if a.dir > b.dir
+            return 0
+          return  1 if a.timestamp < b.timestamp
+          return -1 if a.timestamp > b.timestamp
           return 0
 
     entries = [toolbar, spacing]

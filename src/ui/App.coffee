@@ -103,7 +103,7 @@ class App extends React.Component
     return
 
   navigate: (fromConstructor = false) ->
-    newHash = window.location.hash.replace(/^#\/?|\/$/g, '')
+    newHash = decodeURIComponent(window.location.hash.replace(/^#\/?|\/$/g, ''))
     view = newHash.split('/')[0]
     viewArg = newHash.substring(view.length+1)
     if not @views.hasOwnProperty(view)

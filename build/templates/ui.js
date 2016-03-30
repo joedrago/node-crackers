@@ -39339,7 +39339,7 @@ App = (function(superClass) {
     if (fromConstructor == null) {
       fromConstructor = false;
     }
-    newHash = window.location.hash.replace(/^#\/?|\/$/g, '');
+    newHash = decodeURIComponent(window.location.hash.replace(/^#\/?|\/$/g, ''));
     view = newHash.split('/')[0];
     viewArg = newHash.substring(view.length + 1);
     if (!this.views.hasOwnProperty(view)) {
@@ -40937,11 +40937,11 @@ BrowseEntry = (function(superClass) {
     });
     switch (this.props.info.type) {
       case 'comic':
-        href = "#comic/" + this.props.info.dir;
+        href = "#comic/" + encodeURIComponent("" + this.props.info.dir).replace("%2F", "/");
         subtitleText = "(" + this.props.info.pages + " pages)";
         break;
       case 'index':
-        href = "#browse/" + this.props.info.dir;
+        href = "#browse/" + encodeURIComponent("" + this.props.info.dir).replace("%2F", "/");
         subtitleText = "(" + this.props.info.count + " comics, Newest: " + this.props.info.recent + ")";
     }
     title = span({
@@ -41172,7 +41172,6 @@ BrowseView = (function(superClass) {
       }
     });
     list = this.props.manifest.children[this.props.arg];
-    console.log(list);
     if (this.props.progressEnabled) {
       if (!this.state.showIgnored) {
         list = list.filter(function(e) {
@@ -41225,10 +41224,19 @@ BrowseView = (function(superClass) {
         break;
       case 'recent':
         list.sort(function(a, b) {
-          if (a.dir < b.dir) {
+          if (a.timestamp === b.timestamp) {
+            if (a.dir < b.dir) {
+              return -1;
+            }
+            if (a.dir > b.dir) {
+              return 1;
+            }
+            return 0;
+          }
+          if (a.timestamp < b.timestamp) {
             return 1;
           }
-          if (a.dir > b.dir) {
+          if (a.timestamp > b.timestamp) {
             return -1;
           }
           return 0;
