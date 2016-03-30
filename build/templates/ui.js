@@ -40855,7 +40855,7 @@ module.exports.el = React.createElement;
 
 
 },{"react":308}],318:[function(require,module,exports){
-var BrowseEntry, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, DropDownMenu, FlatButton, IconButton, IconMenu, MenuItem, PlaceholderImage, React, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, a, div, el, hr, img, ref, span,
+var BrowseEntry, BrowseTitle, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, DropDownMenu, FlatButton, IconButton, IconMenu, MenuItem, PlaceholderImage, React, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, a, div, el, hr, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -41070,6 +41070,37 @@ BrowseEntry = (function(superClass) {
 
 })(React.Component);
 
+BrowseTitle = (function(superClass) {
+  extend(BrowseTitle, superClass);
+
+  function BrowseTitle(props) {
+    BrowseTitle.__super__.constructor.call(this, props);
+  }
+
+  BrowseTitle.prototype.render = function() {
+    var title;
+    if (this.props.perc === -1) {
+      title = "Ignored";
+    } else if (this.props.perc === 100) {
+      title = "Completed";
+    } else if (this.props.perc === 0) {
+      title = "Unread";
+    } else {
+      title = "Reading";
+    }
+    return div({
+      style: {
+        color: '#aaaaaa',
+        fontSize: '1.2em',
+        fontStyle: 'italic'
+      }
+    }, title + ":");
+  };
+
+  return BrowseTitle;
+
+})(React.Component);
+
 BrowseView = (function(superClass) {
   extend(BrowseView, superClass);
 
@@ -41077,8 +41108,12 @@ BrowseView = (function(superClass) {
     BrowseView.__super__.constructor.call(this, props);
     this.state = {
       sort: 'alphabetical',
-      showIgnored: false,
-      showCompleted: false
+      show: {
+        reading: true,
+        unread: true,
+        completed: true,
+        ignored: false
+      }
     };
     if (this.props.progressEnabled) {
       this.state.sort = 'interest';
@@ -41088,7 +41123,7 @@ BrowseView = (function(superClass) {
   BrowseView.prototype.click = function(info) {};
 
   BrowseView.prototype.render = function() {
-    var addDivider, entries, entry, entryElement, i, label, lastPerc, len, list, menuItems, sorts, spacing, toolbar, view;
+    var addDivider, enabledValues, entries, entry, entryElement, i, lastPerc, len, list, sorts, spacing, toolbar, toolbarItems, view;
     if (!this.props.manifest.children.hasOwnProperty(this.props.arg)) {
       return div({
         style: {
@@ -41096,6 +41131,7 @@ BrowseView = (function(superClass) {
         }
       }, "Invalid directory. Go home.");
     }
+    toolbarItems = [];
     sorts = [
       el(MenuItem, {
         value: 'alphabetical',
@@ -41111,85 +41147,112 @@ BrowseView = (function(superClass) {
         primaryText: 'By Interest'
       }));
     }
-    menuItems = [];
+    toolbarItems.push(el(ToolbarGroup, {
+      float: 'right'
+    }, [
+      el(DropDownMenu, {
+        value: this.state.sort,
+        onChange: (function(_this) {
+          return function(event, index, value) {
+            return _this.setState({
+              sort: value
+            });
+          };
+        })(this)
+      }, sorts)
+    ]));
     if (this.props.progressEnabled) {
-      label = "Show Ignored";
-      if (this.state.showIgnored) {
-        label = "Hide Ignored";
-      }
-      menuItems.push(el(MenuItem, {
-        primaryText: label,
-        onTouchTap: (function(_this) {
-          return function() {
-            return _this.setState({
-              showIgnored: !_this.state.showIgnored
-            });
-          };
-        })(this)
-      }));
-      label = "Show Completed";
-      if (this.state.showCompleted) {
-        label = "Hide Completed";
-      }
-      menuItems.push(el(MenuItem, {
-        primaryText: label,
-        onTouchTap: (function(_this) {
-          return function() {
-            return _this.setState({
-              showCompleted: !_this.state.showCompleted
-            });
-          };
-        })(this)
-      }));
+      enabledValues = Object.keys(this.state.show).filter((function(_this) {
+        return function(e) {
+          return _this.state.show[e];
+        };
+      })(this));
+      console.log("enabledValues", enabledValues);
+      toolbarItems.push(el(ToolbarGroup, {
+        float: 'right'
+      }, [
+        el(IconMenu, {
+          iconButtonElement: el(IconButton, {
+            iconClassName: 'material-icons'
+          }, 'filter_list'),
+          anchorOrigin: {
+            horizontal: 'right',
+            vertical: 'top'
+          },
+          targetOrigin: {
+            horizontal: 'right',
+            vertical: 'top'
+          },
+          value: enabledValues,
+          multiple: true,
+          onChange: (function(_this) {
+            return function(event, values) {
+              var i, k, len, show, v;
+              show = {};
+              for (k in _this.state.show) {
+                show[k] = false;
+              }
+              for (i = 0, len = values.length; i < len; i++) {
+                v = values[i];
+                show[v] = true;
+              }
+              return _this.setState({
+                show: show
+              });
+            };
+          })(this)
+        }, [
+          el(MenuItem, {
+            primaryText: "Show:",
+            disabled: true
+          }), el(MenuItem, {
+            primaryText: "Reading",
+            value: 'reading'
+          }), el(MenuItem, {
+            primaryText: "Unread",
+            value: 'unread'
+          }), el(MenuItem, {
+            primaryText: "Completed",
+            value: 'completed'
+          }), el(MenuItem, {
+            primaryText: "Ignored",
+            value: 'ignored'
+          })
+        ])
+      ]));
     }
     toolbar = el(Toolbar, {
       style: {
         position: 'fixed',
         zIndex: 1
       }
-    }, [
-      el(ToolbarGroup, {
-        float: 'right'
-      }, [
-        el(IconMenu, {
-          iconButtonElement: el(IconButton, {
-            iconClassName: 'material-icons'
-          }, 'expand_more'),
-          anchorOrigin: {
-            horizontal: 'left',
-            vertical: 'top'
-          },
-          targetOrigin: {
-            horizontal: 'left',
-            vertical: 'top'
-          }
-        }, menuItems), el(ToolbarSeparator), el(DropDownMenu, {
-          value: this.state.sort,
-          onChange: (function(_this) {
-            return function(event, index, value) {
-              return _this.setState({
-                sort: value
-              });
-            };
-          })(this)
-        }, sorts)
-      ])
-    ]);
+    }, toolbarItems);
     spacing = div({
       style: {
         height: '60px'
       }
     });
+    entries = [toolbar, spacing];
     list = this.props.manifest.children[this.props.arg];
     if (this.props.progressEnabled) {
-      if (!this.state.showIgnored) {
+      if (!this.state.show.reading) {
         list = list.filter(function(e) {
-          return e.perc !== -1;
+          return (e.perc <= 0) || (e.perc >= 100);
         });
       }
-      if (!this.state.showCompleted) {
+      if (!this.state.show.unread) {
+        list = list.filter(function(e) {
+          return e.perc !== 0;
+        });
+      }
+      if (!this.state.show.completed) {
         list = list.filter(function(e) {
           return e.perc !== 100;
+        });
+      }
+      if (!this.state.show.ignored) {
+        list = list.filter(function(e) {
+          return e.perc !== -1;
         });
       }
     }
@@ -41251,12 +41314,15 @@ BrowseView = (function(superClass) {
           return 0;
         });
     }
-    entries = [toolbar, spacing];
     lastPerc = null;
     for (i = 0, len = list.length; i < len; i++) {
       entry = list[i];
       if (this.props.progressEnabled && (this.state.sort === 'interest')) {
-        if (lastPerc !== null) {
+        if (lastPerc === null) {
+          entries.push(el(BrowseTitle, {
+            perc: entry.perc
+          }));
+        } else {
           addDivider = false;
           if ((lastPerc !== -1) && (entry.perc === -1)) {
             addDivider = true;
@@ -41273,6 +41339,9 @@ BrowseView = (function(superClass) {
               style: {
                 borderColor: '#777777'
               }
+            }));
+            entries.push(el(BrowseTitle, {
+              perc: entry.perc
             }));
           }
         }

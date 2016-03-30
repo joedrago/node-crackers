@@ -160,13 +160,37 @@ class BrowseEntry extends React.Component
     ]
     return entry
 
+class BrowseTitle extends React.Component
+  constructor: (props) ->
+    super props
+
+  render: ->
+    if @props.perc == -1
+      title = "Ignored"
+    else if @props.perc == 100
+      title = "Completed"
+    else if @props.perc == 0
+      title = "Unread"
+    else
+      title = "Reading"
+
+    return div {
+      style:
+        color: '#aaaaaa'
+        fontSize: '1.2em'
+        fontStyle: 'italic'
+    }, "#{title}:"
+
 class BrowseView extends React.Component
   constructor: (props) ->
     super props
     @state =
       sort: 'alphabetical'
-      showIgnored: false
-      showCompleted: false
+      show:
+        reading: true
+        unread: true
+        completed: true
+        ignored: false
     if @props.progressEnabled
       @state.sort = 'interest'
 
@@ -175,11 +199,22 @@ class BrowseView extends React.Component
     #   @props.onChangeDir(info.dir)
 
   render: ->
+    # ------------------------------------------------------------------------
+    # Bail out if the directory doesn't make sense.
+
     if not @props.manifest.children.hasOwnProperty(@props.arg)
       return div {
         style:
           color: '#ffffff'
       }, "Invalid directory. Go home."
+
+    # ------------------------------------------------------------------------
+    # Prepare variables
+
+    toolbarItems = []
+
+    # ------------------------------------------------------------------------
+    # Toolbar sorting choices
 
     sorts = [
       el MenuItem, {
@@ -198,58 +233,92 @@ class BrowseView extends React.Component
         primaryText: 'By Interest'
       }
 
-    menuItems = []
-    if @props.progressEnabled
-      label = "Show Ignored"
-      if @state.showIgnored
-        label = "Hide Ignored"
-      menuItems.push el MenuItem, {
-        primaryText: label
-        onTouchTap: => @setState { showIgnored: !@state.showIgnored }
-      }
-      label = "Show Completed"
-      if @state.showCompleted
-        label = "Hide Completed"
-      menuItems.push el MenuItem, {
-        primaryText: label
-        onTouchTap: => @setState { showCompleted: !@state.showCompleted }
-      }
-
-    toolbar = el Toolbar, {
-      style:
-        position: 'fixed'
-        zIndex: 1
+    toolbarItems.push el ToolbarGroup, {
+      float: 'right'
     }, [
-      el ToolbarGroup, {
+      el DropDownMenu, {
+        value: @state.sort
+        onChange: (event, index, value) => @setState { sort: value }
+      }, sorts
+    ]
+
+    # ------------------------------------------------------------------------
+    # If progress is on, add visibility filter
+
+    if @props.progressEnabled
+      enabledValues = Object.keys(@state.show).filter (e) => @state.show[e]
+      console.log "enabledValues", enabledValues
+      toolbarItems.push el ToolbarGroup, {
         float: 'right'
       }, [
         el IconMenu, {
           iconButtonElement: el IconButton, {
               iconClassName: 'material-icons'
-            }, 'expand_more'
-          anchorOrigin: { horizontal: 'left', vertical: 'top' }
-          targetOrigin: { horizontal: 'left', vertical: 'top' }
-        }, menuItems
-
-        el ToolbarSeparator
-        el DropDownMenu, {
-          value: @state.sort
-          onChange: (event, index, value) => @setState { sort: value }
-        }, sorts
+            }, 'filter_list'
+          anchorOrigin: { horizontal: 'right', vertical: 'top' }
+          targetOrigin: { horizontal: 'right', vertical: 'top' }
+          value: enabledValues
+          multiple: true
+          onChange: (event, values) =>
+            show = {}
+            for k of @state.show
+              show[k] = false
+            for v in values
+              show[v] = true
+            @setState { show: show }
+        }, [
+          el MenuItem, {
+            primaryText: "Show:"
+            disabled: true
+          }
+          el MenuItem, {
+            primaryText: "Reading"
+            value: 'reading'
+          }
+          el MenuItem, {
+            primaryText: "Unread"
+            value: 'unread'
+          }
+          el MenuItem, {
+            primaryText: "Completed"
+            value: 'completed'
+          }
+          el MenuItem, {
+            primaryText: "Ignored"
+            value: 'ignored'
+          }
+        ]
       ]
-    ]
+
+    # ------------------------------------------------------------------------
+    # Create toolbar and spacing
+
+    toolbar = el Toolbar, {
+      style:
+        position: 'fixed'
+        zIndex: 1
+    }, toolbarItems
 
     spacing = div {
       style:
         height: '60px'
     }
 
+    entries = [toolbar, spacing]
+
+    # ------------------------------------------------------------------------
+    # Filter comics list based on current show filters, then sort what is left
+
     list = @props.manifest.children[@props.arg]
     if @props.progressEnabled
-      if not @state.showIgnored
-        list = list.filter (e) -> e.perc != -1
-      if not @state.showCompleted
+      if not @state.show.reading
+        list = list.filter (e) -> (e.perc <= 0) or (e.perc >= 100)
+      if not @state.show.unread
+        list = list.filter (e) -> e.perc != 0
+      if not @state.show.completed
         list = list.filter (e) -> e.perc != 100
+      if not @state.show.ignored
+        list = list.filter (e) -> e.perc != -1
 
     switch @state.sort
       when 'interest'
@@ -278,11 +347,15 @@ class BrowseView extends React.Component
           return -1 if a.timestamp > b.timestamp
           return 0
 
-    entries = [toolbar, spacing]
+    # ------------------------------------------------------------------------
+    # Create view entries
+
     lastPerc = null
     for entry in list
       if @props.progressEnabled and (@state.sort == 'interest')
-        if lastPerc != null
+        if lastPerc == null
+          entries.push el BrowseTitle, { perc: entry.perc }
+        else
           addDivider = false
           if ((lastPerc != -1) and (entry.perc == -1))
             addDivider = true
@@ -296,6 +369,7 @@ class BrowseView extends React.Component
               style:
                 borderColor: '#777777'
             }
+            entries.push el BrowseTitle, { perc: entry.perc }
         lastPerc = entry.perc
 
       entryElement = React.createElement BrowseEntry, {
@@ -305,6 +379,9 @@ class BrowseView extends React.Component
         redirect: @props.redirect
       }
       entries.push entryElement
+
+    # ------------------------------------------------------------------------
+    # Create view
 
     view = div {
       style:
