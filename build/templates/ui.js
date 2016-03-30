@@ -39486,6 +39486,7 @@ App = (function(superClass) {
     var elements, navMenuItems, view;
     elements = [
       el(IconButton, {
+        key: "opennavbutton",
         iconClassName: 'material-icons',
         touch: true,
         style: {
@@ -39500,12 +39501,15 @@ App = (function(superClass) {
         },
         onTouchTap: (function(_this) {
           return function() {
-            return _this.setState({
-              navOpen: !_this.state.navOpen
-            });
+            return setTimeout(function() {
+              return _this.setState({
+                navOpen: !_this.state.navOpen
+              });
+            }, 0);
           };
         })(this)
       }, 'keyboard_arrow_right'), el(ConfirmDialog, {
+        key: "confirmdialog",
         open: this.state.confirmCB !== null,
         yes: this.state.confirmYes,
         title: this.state.confirmTitle,
@@ -39524,6 +39528,7 @@ App = (function(superClass) {
     ];
     navMenuItems = [
       el(MenuItem, {
+        key: "menu.home",
         primaryText: "Home",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39537,6 +39542,7 @@ App = (function(superClass) {
           };
         })(this)
       }), el(MenuItem, {
+        key: "menu.browse",
         primaryText: "Browse",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39550,6 +39556,7 @@ App = (function(superClass) {
           };
         })(this)
       }), el(MenuItem, {
+        key: "menu.updates",
         primaryText: "Updates",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39563,6 +39570,7 @@ App = (function(superClass) {
           };
         })(this)
       }), el(MenuItem, {
+        key: "menu.search",
         primaryText: "Search",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39576,6 +39584,7 @@ App = (function(superClass) {
           };
         })(this)
       }), el(MenuItem, {
+        key: "menu.settings",
         primaryText: "Settings",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39589,6 +39598,7 @@ App = (function(superClass) {
           };
         })(this)
       }), el(MenuItem, {
+        key: "menu.help",
         primaryText: "Help",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39606,6 +39616,7 @@ App = (function(superClass) {
     if (false) {
       navMenuItems.push(el(Divider));
       navMenuItems.push(el(MenuItem, {
+        key: "menu.nextissue",
         primaryText: "Next Issue in Series",
         leftIcon: el(FontIcon, {
           className: 'material-icons'
@@ -39613,6 +39624,7 @@ App = (function(superClass) {
       }));
     }
     elements.push(el(LeftNav, {
+      key: 'leftnav',
       docked: false,
       open: this.state.navOpen,
       disableSwipeToOpen: true,
@@ -39626,6 +39638,7 @@ App = (function(superClass) {
     }, navMenuItems));
     if (this.state.manifest) {
       view = el(this.views[this.state.view], {
+        key: "view." + this.state.view,
         progressEnabled: this.progressEnabled,
         width: this.props.containerWidth,
         height: this.props.containerHeight,
@@ -39648,7 +39661,9 @@ App = (function(superClass) {
         })(this)
       });
     } else {
-      view = el(LoadingView);
+      view = el(LoadingView, {
+        key: "app.loadingview"
+      });
     }
     elements.push(view);
     return div({
@@ -41035,6 +41050,7 @@ BrowseEntry = (function(superClass) {
         percent = 0;
       }
       progressBar = div({
+        key: 'progressbar',
         style: {
           display: 'block',
           width: COVER_WIDTH,
@@ -41044,6 +41060,7 @@ BrowseEntry = (function(superClass) {
         }
       }, [
         div({
+          key: 'progressbarinner',
           style: {
             width: percent + "%",
             height: '100%',
@@ -41070,6 +41087,7 @@ BrowseEntry = (function(superClass) {
     }, subtitleText);
     menuItems = [
       el(MenuItem, {
+        key: 'menu.open',
         primaryText: "Open",
         onTouchTap: (function(_this) {
           return function() {
@@ -41080,6 +41098,7 @@ BrowseEntry = (function(superClass) {
     ];
     if (hasProgress) {
       menuItems.push(el(MenuItem, {
+        key: 'menu.read',
         primaryText: "Mark as Read",
         onTouchTap: (function(_this) {
           return function() {
@@ -41088,6 +41107,7 @@ BrowseEntry = (function(superClass) {
         })(this)
       }));
       menuItems.push(el(MenuItem, {
+        key: 'menu.unread',
         primaryText: "Mark as Unread",
         onTouchTap: (function(_this) {
           return function() {
@@ -41096,6 +41116,7 @@ BrowseEntry = (function(superClass) {
         })(this)
       }));
       menuItems.push(el(MenuItem, {
+        key: 'menu.ignore',
         primaryText: "Toggle Ignore",
         onTouchTap: (function(_this) {
           return function() {
@@ -41105,6 +41126,7 @@ BrowseEntry = (function(superClass) {
       }));
     }
     menu = el(IconMenu, {
+      key: 'menu',
       iconButtonElement: el(FlatButton, {
         label: title,
         style: {
@@ -41122,6 +41144,7 @@ BrowseEntry = (function(superClass) {
       }
     }, menuItems);
     entry = div({
+      key: "BrowseEntry",
       style: {
         display: 'inline-block',
         width: COVER_WIDTH,
@@ -41235,29 +41258,36 @@ BrowseView = (function(superClass) {
     toolbarItems = [];
     sorts = [
       el(MenuItem, {
+        key: 'sort.alphabetical',
         value: 'alphabetical',
         primaryText: 'Alphabetical'
       }), el(MenuItem, {
+        key: 'sort.recent',
         value: 'recent',
         primaryText: 'Recent'
       })
     ];
     if (this.props.progressEnabled) {
       sorts.unshift(el(MenuItem, {
+        key: 'sort.interest',
         value: 'interest',
         primaryText: 'By Interest'
       }));
     }
     toolbarItems.push(el(ToolbarGroup, {
+      key: 'toolbar.group.sort',
       float: 'right'
     }, [
       el(DropDownMenu, {
+        key: 'sortmenu',
         value: this.state.sort,
         onChange: (function(_this) {
           return function(event, index, value) {
-            return _this.setState({
-              sort: value
-            });
+            return setTimeout(function() {
+              return _this.setState({
+                sort: value
+              });
+            }, 0);
           };
         })(this)
       }, sorts)
@@ -41269,9 +41299,11 @@ BrowseView = (function(superClass) {
         };
       })(this));
       toolbarItems.push(el(ToolbarGroup, {
+        key: 'toolbar.group.filter',
         float: 'right'
       }, [
         el(IconMenu, {
+          key: 'filterbutton',
           iconButtonElement: el(IconButton, {
             iconClassName: 'material-icons'
           }, 'filter_list'),
@@ -41294,18 +41326,23 @@ BrowseView = (function(superClass) {
           })(this)
         }, [
           el(MenuItem, {
+            key: 'menu.show',
             primaryText: "Show:",
             disabled: true
           }), el(MenuItem, {
+            key: 'menu.reading',
             primaryText: "Reading",
             value: 'reading'
           }), el(MenuItem, {
+            key: 'menu.unread',
             primaryText: "Unread",
             value: 'unread'
           }), el(MenuItem, {
+            key: 'menu.completed',
             primaryText: "Completed",
             value: 'completed'
           }), el(MenuItem, {
+            key: 'menu.ignored',
             primaryText: "Ignored",
             value: 'ignored'
           })
@@ -41313,12 +41350,14 @@ BrowseView = (function(superClass) {
       ]));
     }
     toolbar = el(Toolbar, {
+      key: 'toolbar',
       style: {
         position: 'fixed',
         zIndex: 1
       }
     }, toolbarItems);
     spacing = div({
+      key: 'spacing',
       style: {
         height: '60px'
       }
@@ -41414,6 +41453,7 @@ BrowseView = (function(superClass) {
       if (this.props.progressEnabled && (this.state.sort === 'interest')) {
         if (lastPerc === null) {
           entries.push(el(BrowseTitle, {
+            key: 'browsetitle.perc#{entry.perc}',
             perc: entry.perc
           }));
         } else {
@@ -41435,6 +41475,7 @@ BrowseView = (function(superClass) {
               }
             }));
             entries.push(el(BrowseTitle, {
+              key: 'browsetitle.perc#{entry.perc}',
               perc: entry.perc
             }));
           }
@@ -41459,12 +41500,14 @@ BrowseView = (function(superClass) {
           }
         }));
         entries.push(el(BrowseTitle, {
+          key: "text.filtercount",
           title: "Filtered " + (unfilteredListSize - filteredListSize) + " item(s).",
           size: '0.7em'
         }));
       }
     } else {
       entries.push(el(BrowseTitle, {
+        key: "text.none",
         title: "Showing none of the " + unfilteredListSize + " item(s) here. Please adjust your filter."
       }));
     }

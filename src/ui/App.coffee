@@ -217,6 +217,7 @@ class App extends React.Component
     elements = [
       # Corner icon
       el IconButton, {
+          key: "opennavbutton"
           iconClassName: 'material-icons'
           touch: true
           style:
@@ -228,10 +229,13 @@ class App extends React.Component
           iconStyle:
             color: '#ffffff'
           onTouchTap: =>
-            @setState { navOpen: !@state.navOpen }
+            setTimeout =>
+              @setState { navOpen: !@state.navOpen }
+            , 0
         }, 'keyboard_arrow_right'
 
         el ConfirmDialog, {
+          key: "confirmdialog"
           open: (@state.confirmCB != null)
           yes: @state.confirmYes
           title: @state.confirmTitle
@@ -246,6 +250,7 @@ class App extends React.Component
     # Left navigation panel
     navMenuItems = [
       el MenuItem, {
+        key: "menu.home"
         primaryText: "Home"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
         onTouchTap: =>
@@ -253,6 +258,7 @@ class App extends React.Component
           @setState { navOpen: false }
       }
       el MenuItem, {
+        key: "menu.browse"
         primaryText: "Browse"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'grid_on'
         onTouchTap: =>
@@ -260,6 +266,7 @@ class App extends React.Component
           @setState { navOpen: false }
       }
       el MenuItem, {
+        key: "menu.updates"
         primaryText: "Updates"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
         onTouchTap: =>
@@ -267,6 +274,7 @@ class App extends React.Component
           @setState { navOpen: false }
       }
       el MenuItem, {
+        key: "menu.search"
         primaryText: "Search"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
         onTouchTap: =>
@@ -274,6 +282,7 @@ class App extends React.Component
           @setState { navOpen: false }
       }
       el MenuItem, {
+        key: "menu.settings"
         primaryText: "Settings"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'settings'
         onTouchTap: =>
@@ -281,6 +290,7 @@ class App extends React.Component
           @setState { navOpen: false }
       }
       el MenuItem, {
+        key: "menu.help"
         primaryText: "Help"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
         onTouchTap: =>
@@ -293,12 +303,14 @@ class App extends React.Component
       navMenuItems.push(el Divider)
       navMenuItems.push(
         el MenuItem, {
+          key: "menu.nextissue"
           primaryText: "Next Issue in Series"
           leftIcon: el FontIcon, { className: 'material-icons' }, 'skip_next'
         }
       )
 
     elements.push(el LeftNav, {
+        key: 'leftnav'
         docked: false
         open: @state.navOpen
         disableSwipeToOpen: true
@@ -309,6 +321,7 @@ class App extends React.Component
     if @state.manifest
       # console.log "chose view #{@state.view}"
       view = el @views[@state.view], {
+        key: "view.#{@state.view}"
         progressEnabled: @progressEnabled
         width: @props.containerWidth
         height: @props.containerHeight
@@ -323,7 +336,9 @@ class App extends React.Component
           @redirect(newHash)
       }
     else
-      view = el LoadingView
+      view = el LoadingView, {
+        key: "app.loadingview"
+      }
 
     elements.push view
     return div { id: 'outerdiv' }, elements

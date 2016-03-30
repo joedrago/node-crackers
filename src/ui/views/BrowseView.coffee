@@ -83,6 +83,7 @@ class BrowseEntry extends React.Component
       if percent < 0
         percent = 0
       progressBar = div {
+        key: 'progressbar'
         style:
           display: 'block'
           width: COVER_WIDTH
@@ -91,6 +92,7 @@ class BrowseEntry extends React.Component
           background: '#333333'
       }, [
         div {
+          key: 'progressbarinner'
           style:
             width: "#{percent}%"
             height: '100%'
@@ -117,6 +119,7 @@ class BrowseEntry extends React.Component
 
     menuItems = [
       el MenuItem, {
+        key: 'menu.open'
         primaryText: "Open"
         onTouchTap: => @props.redirect(href)
       }
@@ -124,19 +127,23 @@ class BrowseEntry extends React.Component
 
     if hasProgress
       menuItems.push el MenuItem, {
+        key: 'menu.read'
         primaryText: "Mark as Read"
         onTouchTap: => @props.dirAction(@props.info.dir, 'mark')
       }
       menuItems.push el MenuItem, {
+        key: 'menu.unread'
         primaryText: "Mark as Unread"
         onTouchTap: => @props.dirAction(@props.info.dir, 'unmark')
       }
       menuItems.push el MenuItem, {
+        key: 'menu.ignore'
         primaryText: "Toggle Ignore"
         onTouchTap: => @props.dirAction(@props.info.dir, 'ignore')
       }
 
     menu = el IconMenu, {
+      key: 'menu'
       iconButtonElement: el FlatButton, {
         label: title
         style:
@@ -148,6 +155,7 @@ class BrowseEntry extends React.Component
     }, menuItems
 
     entry = div {
+      key: "BrowseEntry"
       style:
         display: 'inline-block'
         width: COVER_WIDTH
@@ -237,10 +245,12 @@ class BrowseView extends React.Component
 
     sorts = [
       el MenuItem, {
+        key: 'sort.alphabetical'
         value: 'alphabetical'
         primaryText: 'Alphabetical'
       }
       el MenuItem, {
+        key: 'sort.recent'
         value: 'recent'
         primaryText: 'Recent'
       }
@@ -248,16 +258,22 @@ class BrowseView extends React.Component
 
     if @props.progressEnabled
       sorts.unshift el MenuItem, {
+        key: 'sort.interest'
         value: 'interest'
         primaryText: 'By Interest'
       }
 
     toolbarItems.push el ToolbarGroup, {
+      key: 'toolbar.group.sort'
       float: 'right'
     }, [
       el DropDownMenu, {
+        key: 'sortmenu'
         value: @state.sort
-        onChange: (event, index, value) => @setState { sort: value }
+        onChange: (event, index, value) =>
+          setTimeout =>
+            @setState { sort: value }
+          , 0
       }, sorts
     ]
 
@@ -268,9 +284,11 @@ class BrowseView extends React.Component
       enabledValues = Object.keys(@state.show).filter (e) => @state.show[e]
       # console.log "enabledValues", enabledValues
       toolbarItems.push el ToolbarGroup, {
+        key: 'toolbar.group.filter'
         float: 'right'
       }, [
         el IconMenu, {
+          key: 'filterbutton'
           iconButtonElement: el IconButton, {
               iconClassName: 'material-icons'
             }, 'filter_list'
@@ -287,22 +305,27 @@ class BrowseView extends React.Component
             , 0
         }, [
           el MenuItem, {
+            key: 'menu.show'
             primaryText: "Show:"
             disabled: true
           }
           el MenuItem, {
+            key: 'menu.reading'
             primaryText: "Reading"
             value: 'reading'
           }
           el MenuItem, {
+            key: 'menu.unread'
             primaryText: "Unread"
             value: 'unread'
           }
           el MenuItem, {
+            key: 'menu.completed'
             primaryText: "Completed"
             value: 'completed'
           }
           el MenuItem, {
+            key: 'menu.ignored'
             primaryText: "Ignored"
             value: 'ignored'
           }
@@ -313,12 +336,14 @@ class BrowseView extends React.Component
     # Create toolbar and spacing
 
     toolbar = el Toolbar, {
+      key: 'toolbar'
       style:
         position: 'fixed'
         zIndex: 1
     }, toolbarItems
 
     spacing = div {
+      key: 'spacing'
       style:
         height: '60px'
     }
@@ -377,7 +402,7 @@ class BrowseView extends React.Component
     for entry in list
       if @props.progressEnabled and (@state.sort == 'interest')
         if lastPerc == null
-          entries.push el BrowseTitle, { perc: entry.perc }
+          entries.push el BrowseTitle, { key: 'browsetitle.perc#{entry.perc}', perc: entry.perc }
         else
           addDivider = false
           if ((lastPerc != -1) and (entry.perc == -1))
@@ -392,7 +417,7 @@ class BrowseView extends React.Component
               style:
                 borderColor: '#777777'
             }
-            entries.push el BrowseTitle, { perc: entry.perc }
+            entries.push el BrowseTitle, { key: 'browsetitle.perc#{entry.perc}', perc: entry.perc }
         lastPerc = entry.perc
 
       sawOneEntry = true
@@ -411,9 +436,9 @@ class BrowseView extends React.Component
           style:
             borderColor: '#777777'
         }
-        entries.push el BrowseTitle, { title: "Filtered #{unfilteredListSize - filteredListSize} item(s).", size: '0.7em' }
+        entries.push el BrowseTitle, { key: "text.filtercount", title: "Filtered #{unfilteredListSize - filteredListSize} item(s).", size: '0.7em' }
     else
-      entries.push el BrowseTitle, { title: "Showing none of the #{unfilteredListSize} item(s) here. Please adjust your filter." }
+      entries.push el BrowseTitle, { key: "text.none", title: "Showing none of the #{unfilteredListSize} item(s) here. Please adjust your filter." }
 
     # ------------------------------------------------------------------------
     # Create view
