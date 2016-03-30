@@ -39479,11 +39479,6 @@ App = (function(superClass) {
   };
 
   App.prototype.onKeyDown = function(event) {
-    if (event.keyCode === 32) {
-      this.setState({
-        navOpen: !this.state.navOpen
-      });
-    }
     return PubSub.publish('key', event);
   };
 
@@ -39498,7 +39493,7 @@ App = (function(superClass) {
           position: 'fixed',
           left: 0,
           top: 0,
-          zIndex: 1
+          zIndex: 2
         },
         iconStyle: {
           color: '#ffffff'
@@ -39620,7 +39615,7 @@ App = (function(superClass) {
     elements.push(el(LeftNav, {
       docked: false,
       open: this.state.navOpen,
-      swipeAreaWidth: 50,
+      disableSwipeToOpen: true,
       onRequestChange: (function(_this) {
         return function(open) {
           return _this.setState({
@@ -41072,7 +41067,7 @@ BrowseView = (function(superClass) {
   function BrowseView(props) {
     BrowseView.__super__.constructor.call(this, props);
     this.state = {
-      sort: 'recent',
+      sort: 'alphabetical',
       showIgnored: false,
       showCompleted: false
     };
@@ -41140,7 +41135,8 @@ BrowseView = (function(superClass) {
     }
     toolbar = el(Toolbar, {
       style: {
-        position: 'fixed'
+        position: 'fixed',
+        zIndex: 1
       }
     }, [
       el(ToolbarGroup, {
@@ -41249,6 +41245,9 @@ BrowseView = (function(superClass) {
             addDivider = true;
           }
           if ((lastPerc !== 100) && (entry.perc === 100)) {
+            addDivider = true;
+          }
+          if ((lastPerc !== 0) && (entry.perc === 0)) {
             addDivider = true;
           }
           if (addDivider) {

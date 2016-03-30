@@ -206,8 +206,11 @@ class App extends React.Component
 
   onKeyDown: (event) ->
     # console.log "App.onKeyDown"
-    if event.keyCode == 32
-      @setState { navOpen: !@state.navOpen }
+
+    # Space bar. Interferes with scrolling via space in Chrome
+    # if event.keyCode == 32
+    #   @setState { navOpen: !@state.navOpen }
+
     PubSub.publish('key', event)
 
   render: ->
@@ -221,7 +224,7 @@ class App extends React.Component
             position: 'fixed'
             left: 0
             top: 0
-            zIndex: 1
+            zIndex: 2
           iconStyle:
             color: '#ffffff'
           onTouchTap: =>
@@ -298,7 +301,7 @@ class App extends React.Component
     elements.push(el LeftNav, {
         docked: false
         open: @state.navOpen
-        swipeAreaWidth: 50
+        disableSwipeToOpen: true
         onRequestChange: (open) => @setState { navOpen: open }
       }, navMenuItems
     )

@@ -164,7 +164,7 @@ class BrowseView extends React.Component
   constructor: (props) ->
     super props
     @state =
-      sort: 'recent'
+      sort: 'alphabetical'
       showIgnored: false
       showCompleted: false
     if @props.progressEnabled
@@ -218,6 +218,7 @@ class BrowseView extends React.Component
     toolbar = el Toolbar, {
       style:
         position: 'fixed'
+        zIndex: 1
     }, [
       el ToolbarGroup, {
         float: 'right'
