@@ -278,7 +278,13 @@ class BrowseView extends React.Component
           targetOrigin: { horizontal: 'right', vertical: 'top' }
           value: enabledValues
           multiple: true
-          onChange: (event, values) => @updateShowFilter(values)
+          onChange: (event, values) =>
+            # Processing updateShowFilter() can take a reaaaaally long time on slow
+            # devices, like an old Android tablet. If you try to do it synchronously,
+            # it can cause the update to be lost and the change doesn't occur.
+            setTimeout =>
+              @updateShowFilter(values)
+            , 0
         }, [
           el MenuItem, {
             primaryText: "Show:"

@@ -41287,7 +41287,9 @@ BrowseView = (function(superClass) {
           multiple: true,
           onChange: (function(_this) {
             return function(event, values) {
-              return _this.updateShowFilter(values);
+              return setTimeout(function() {
+                return _this.updateShowFilter(values);
+              }, 0);
             };
           })(this)
         }, [
