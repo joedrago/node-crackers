@@ -39663,7 +39663,7 @@ App = (function(superClass) {
 module.exports = Dimensions()(App);
 
 
-},{"./ConfirmDialog":311,"./LRUCache":313,"./tags":317,"./views/BrowseView":318,"./views/ComicView":319,"./views/HelpView":320,"./views/HomeView":321,"./views/LoadingView":322,"./views/SearchView":323,"./views/SettingsView":324,"./views/UpdatesView":325,"material-ui/lib/app-bar":4,"material-ui/lib/divider":9,"material-ui/lib/flat-button":12,"material-ui/lib/font-icon":13,"material-ui/lib/icon-button":14,"material-ui/lib/left-nav":15,"material-ui/lib/menus/menu-item":24,"material-ui/lib/raised-button":36,"material-ui/lib/styles/baseThemes/darkBaseTheme":42,"material-ui/lib/styles/getMuiTheme":45,"material-ui/lib/toolbar/toolbar":63,"material-ui/lib/toolbar/toolbar-group":60,"material-ui/lib/toolbar/toolbar-separator":61,"material-ui/lib/toolbar/toolbar-title":62,"pubsub-js":123,"react":308,"react-dimensions":124,"react-dom":125,"react-tap-event-plugin":146}],310:[function(require,module,exports){
+},{"./ConfirmDialog":311,"./LRUCache":313,"./tags":318,"./views/BrowseView":319,"./views/ComicView":320,"./views/HelpView":321,"./views/HomeView":322,"./views/LoadingView":323,"./views/SearchView":324,"./views/SettingsView":325,"./views/UpdatesView":326,"material-ui/lib/app-bar":4,"material-ui/lib/divider":9,"material-ui/lib/flat-button":12,"material-ui/lib/font-icon":13,"material-ui/lib/icon-button":14,"material-ui/lib/left-nav":15,"material-ui/lib/menus/menu-item":24,"material-ui/lib/raised-button":36,"material-ui/lib/styles/baseThemes/darkBaseTheme":42,"material-ui/lib/styles/getMuiTheme":45,"material-ui/lib/toolbar/toolbar":63,"material-ui/lib/toolbar/toolbar-group":60,"material-ui/lib/toolbar/toolbar-separator":61,"material-ui/lib/toolbar/toolbar-title":62,"pubsub-js":123,"react":308,"react-dimensions":124,"react-dom":125,"react-tap-event-plugin":146}],310:[function(require,module,exports){
 var Auto, ComicRenderer, Corner, DOM, ImageCache, Loader, Motion, PubSub, React, TouchDiv, div, el, img, ref, ref1, spring,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -40113,7 +40113,7 @@ ComicRenderer = (function(superClass) {
 module.exports = ComicRenderer;
 
 
-},{"./ImageCache":312,"./TouchDiv":315,"./tags":317,"pubsub-js":123,"react":308,"react-dom":125,"react-loader":126,"react-motion":134}],311:[function(require,module,exports){
+},{"./ImageCache":312,"./TouchDiv":316,"./tags":318,"pubsub-js":123,"react":308,"react-dom":125,"react-loader":126,"react-motion":134}],311:[function(require,module,exports){
 var ConfirmDialog, DOM, Dialog, Dimensions, FlatButton, PubSub, RaisedButton, React, div, el, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -40217,7 +40217,7 @@ ConfirmDialog = (function(superClass) {
 module.exports = ConfirmDialog;
 
 
-},{"./tags":317,"material-ui/lib/dialog":8,"material-ui/lib/flat-button":12,"material-ui/lib/raised-button":36,"pubsub-js":123,"react":308,"react-dimensions":124,"react-dom":125}],312:[function(require,module,exports){
+},{"./tags":318,"material-ui/lib/dialog":8,"material-ui/lib/flat-button":12,"material-ui/lib/raised-button":36,"pubsub-js":123,"react":308,"react-dimensions":124,"react-dom":125}],312:[function(require,module,exports){
 var ImageCache, LRUCache;
 
 LRUCache = require('./LRUCache');
@@ -40563,6 +40563,64 @@ module.exports = function(dir, cb) {
 
 
 },{"./LRUCache":313}],315:[function(require,module,exports){
+var Settings, ensureInstanceExists, instance;
+
+Settings = (function() {
+  function Settings() {}
+
+  Settings.prototype.get = function(key, defaultValue) {
+    var value;
+    value = window.localStorage.getItem(key);
+    if ((value === null) || (value === void 0)) {
+      value = defaultValue;
+    }
+    return value;
+  };
+
+  Settings.prototype.getBool = function(key, defaultValue) {
+    var value;
+    value = this.get(key, null);
+    if (value === null) {
+      value = defaultValue;
+    } else {
+      value = value === 'true';
+    }
+    return value;
+  };
+
+  Settings.prototype.set = function(key, value) {
+    window.localStorage.setItem(key, value);
+  };
+
+  return Settings;
+
+})();
+
+instance = null;
+
+ensureInstanceExists = function() {
+  if (!instance) {
+    instance = new Settings();
+  }
+};
+
+module.exports = {
+  get: function(key, defaultValue) {
+    ensureInstanceExists();
+    return instance.get(key, defaultValue);
+  },
+  getBool: function(key, defaultValue) {
+    ensureInstanceExists();
+    return instance.getBool(key, defaultValue);
+  },
+  set: function(key, value) {
+    ensureInstanceExists();
+    return instance.set(key, value);
+  }
+};
+
+
+},{}],316:[function(require,module,exports){
 var DOM, ENGAGE_DRAG_DISTANCE, React, TouchDiv, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -40825,7 +40883,7 @@ TouchDiv = (function(superClass) {
 module.exports = TouchDiv;
 
 
-},{"./tags":317,"react":308,"react-dom":125}],316:[function(require,module,exports){
+},{"./tags":318,"react":308,"react-dom":125}],317:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -40837,7 +40895,7 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":309,"react":308,"react-dom":125}],317:[function(require,module,exports){
+},{"./App":309,"react":308,"react-dom":125}],318:[function(require,module,exports){
 var React, elementName, i, len, tags;
 
 React = require('react');
@@ -40854,8 +40912,8 @@ for (i = 0, len = tags.length; i < len; i++) {
 module.exports.el = React.createElement;
 
 
-},{"react":308}],318:[function(require,module,exports){
-var BrowseEntry, BrowseTitle, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, DropDownMenu, FlatButton, IconButton, IconMenu, MenuItem, PlaceholderImage, React, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, a, div, el, hr, img, ref, span,
+},{"react":308}],319:[function(require,module,exports){
+var BrowseEntry, BrowseTitle, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, DropDownMenu, FlatButton, IconButton, IconMenu, MenuItem, PlaceholderImage, React, Settings, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, a, div, el, hr, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -40880,6 +40938,8 @@ ToolbarGroup = require('material-ui/lib/toolbar/toolbar-group');
 ToolbarSeparator = require('material-ui/lib/toolbar/toolbar-separator');
 
 ToolbarTitle = require('material-ui/lib/toolbar/toolbar-title');
+
+Settings = require('../Settings');
 
 ref = require('../tags'), a = ref.a, div = ref.div, el = ref.el, img = ref.img, hr = ref.hr, span = ref.span;
 
@@ -41073,28 +41133,37 @@ BrowseEntry = (function(superClass) {
 BrowseTitle = (function(superClass) {
   extend(BrowseTitle, superClass);
 
+  BrowseTitle.defaultProps = {
+    title: null,
+    perc: 0,
+    color: '#aaaaaa',
+    size: '1.2em'
+  };
+
   function BrowseTitle(props) {
     BrowseTitle.__super__.constructor.call(this, props);
   }
 
   BrowseTitle.prototype.render = function() {
     var title;
-    if (this.props.perc === -1) {
-      title = "Ignored";
+    if (this.props.title) {
+      title = this.props.title;
+    } else if (this.props.perc === -1) {
+      title = "Ignored:";
     } else if (this.props.perc === 100) {
-      title = "Completed";
+      title = "Completed:";
     } else if (this.props.perc === 0) {
-      title = "Unread";
+      title = "Unread:";
     } else {
-      title = "Reading";
+      title = "Reading:";
     }
     return div({
       style: {
-        color: '#aaaaaa',
-        fontSize: '1.2em',
+        color: this.props.color,
+        fontSize: this.props.size,
         fontStyle: 'italic'
       }
-    }, title + ":");
+    }, title);
   };
 
   return BrowseTitle;
@@ -41105,6 +41174,7 @@ BrowseView = (function(superClass) {
   extend(BrowseView, superClass);
 
   function BrowseView(props) {
+    var k, ref1, v;
     BrowseView.__super__.constructor.call(this, props);
     this.state = {
       sort: 'alphabetical',
@@ -41115,6 +41185,11 @@ BrowseView = (function(superClass) {
         ignored: false
       }
     };
+    ref1 = this.state.show;
+    for (k in ref1) {
+      v = ref1[k];
+      this.state.show[k] = Settings.getBool("show." + k, v);
+    }
     if (this.props.progressEnabled) {
       this.state.sort = 'interest';
     }
@@ -41122,8 +41197,29 @@ BrowseView = (function(superClass) {
 
   BrowseView.prototype.click = function(info) {};
 
+  BrowseView.prototype.componentWillUpdate = function(nextProps, nextState) {
+    var k, ref1, ref2, results, storeShow, v;
+    storeShow = false;
+    ref1 = nextState.show;
+    for (k in ref1) {
+      v = ref1[k];
+      if (this.state.show[k] !== v) {
+        storeShow = true;
+      }
+    }
+    if (storeShow) {
+      ref2 = nextState.show;
+      results = [];
+      for (k in ref2) {
+        v = ref2[k];
+        results.push(Settings.set("show." + k, v));
+      }
+      return results;
+    }
+  };
+
   BrowseView.prototype.render = function() {
-    var addDivider, enabledValues, entries, entry, entryElement, i, lastPerc, len, list, sorts, spacing, toolbar, toolbarItems, view;
+    var addDivider, enabledValues, entries, entry, entryElement, filteredListSize, i, lastPerc, len, list, sawOneEntry, sorts, spacing, toolbar, toolbarItems, unfilteredListSize, view;
     if (!this.props.manifest.children.hasOwnProperty(this.props.arg)) {
       return div({
         style: {
@@ -41167,7 +41263,6 @@ BrowseView = (function(superClass) {
           return _this.state.show[e];
         };
       })(this));
-      console.log("enabledValues", enabledValues);
       toolbarItems.push(el(ToolbarGroup, {
         float: 'right'
       }, [
@@ -41234,6 +41329,7 @@ BrowseView = (function(superClass) {
     });
     entries = [toolbar, spacing];
     list = this.props.manifest.children[this.props.arg];
+    unfilteredListSize = list.length;
     if (this.props.progressEnabled) {
       if (!this.state.show.reading) {
         list = list.filter(function(e) {
@@ -41256,6 +41352,7 @@ BrowseView = (function(superClass) {
         });
       }
     }
+    filteredListSize = list.length;
     switch (this.state.sort) {
       case 'interest':
         list.sort(function(a, b) {
@@ -41315,6 +41412,7 @@ BrowseView = (function(superClass) {
         });
     }
     lastPerc = null;
+    sawOneEntry = false;
     for (i = 0, len = list.length; i < len; i++) {
       entry = list[i];
       if (this.props.progressEnabled && (this.state.sort === 'interest')) {
@@ -41347,6 +41445,7 @@ BrowseView = (function(superClass) {
         }
         lastPerc = entry.perc;
       }
+      sawOneEntry = true;
       entryElement = React.createElement(BrowseEntry, {
         key: entry.dir,
         info: entry,
@@ -41354,6 +41453,24 @@ BrowseView = (function(superClass) {
         redirect: this.props.redirect
       });
       entries.push(entryElement);
+    }
+    if (sawOneEntry) {
+      if (filteredListSize !== unfilteredListSize) {
+        entries.push(hr({
+          size: 1,
+          style: {
+            borderColor: '#777777'
+          }
+        }));
+        entries.push(el(BrowseTitle, {
+          title: "Filtered " + (unfilteredListSize - filteredListSize) + " item(s).",
+          size: '0.7em'
+        }));
+      }
+    } else {
+      entries.push(el(BrowseTitle, {
+        title: "Showing none of the " + unfilteredListSize + " item(s) here. Please adjust your filter."
+      }));
     }
     view = div({
       style: {
@@ -41373,7 +41490,7 @@ BrowseView = (function(superClass) {
 module.exports = BrowseView;
 
 
-},{"../tags":317,"material-ui/lib/DropDownMenu":3,"material-ui/lib/flat-button":12,"material-ui/lib/icon-button":14,"material-ui/lib/menus/icon-menu":23,"material-ui/lib/menus/menu-item":24,"material-ui/lib/toolbar/toolbar":63,"material-ui/lib/toolbar/toolbar-group":60,"material-ui/lib/toolbar/toolbar-separator":61,"material-ui/lib/toolbar/toolbar-title":62,"react":308,"react-dom":125}],319:[function(require,module,exports){
+},{"../Settings":315,"../tags":318,"material-ui/lib/DropDownMenu":3,"material-ui/lib/flat-button":12,"material-ui/lib/icon-button":14,"material-ui/lib/menus/icon-menu":23,"material-ui/lib/menus/menu-item":24,"material-ui/lib/toolbar/toolbar":63,"material-ui/lib/toolbar/toolbar-group":60,"material-ui/lib/toolbar/toolbar-separator":61,"material-ui/lib/toolbar/toolbar-title":62,"react":308,"react-dom":125}],320:[function(require,module,exports){
 var ComicRenderer, ComicView, DOM, Loader, React, div, el, img, loadMetadata, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41488,7 +41605,7 @@ ComicView = (function(superClass) {
 module.exports = ComicView;
 
 
-},{"../ComicRenderer":310,"../MetadataCache":314,"../tags":317,"react":308,"react-dom":125,"react-loader":126}],320:[function(require,module,exports){
+},{"../ComicRenderer":310,"../MetadataCache":314,"../tags":318,"react":308,"react-dom":125,"react-loader":126}],321:[function(require,module,exports){
 var DOM, HelpView, Loader, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41523,7 +41640,7 @@ HelpView = (function(superClass) {
 module.exports = HelpView;
 
 
-},{"../tags":317,"react":308,"react-dom":125,"react-loader":126}],321:[function(require,module,exports){
+},{"../tags":318,"react":308,"react-dom":125,"react-loader":126}],322:[function(require,module,exports){
 var DOM, HomeView, Loader, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41558,7 +41675,7 @@ HomeView = (function(superClass) {
 module.exports = HomeView;
 
 
-},{"../tags":317,"react":308,"react-dom":125,"react-loader":126}],322:[function(require,module,exports){
+},{"../tags":318,"react":308,"react-dom":125,"react-loader":126}],323:[function(require,module,exports){
 var DOM, Loader, LoadingView, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41598,7 +41715,7 @@ LoadingView = (function(superClass) {
 module.exports = LoadingView;
 
 
-},{"../tags":317,"react":308,"react-dom":125,"react-loader":126}],323:[function(require,module,exports){
+},{"../tags":318,"react":308,"react-dom":125,"react-loader":126}],324:[function(require,module,exports){
 var DOM, Loader, React, SearchView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41633,7 +41750,7 @@ SearchView = (function(superClass) {
 module.exports = SearchView;
 
 
-},{"../tags":317,"react":308,"react-dom":125,"react-loader":126}],324:[function(require,module,exports){
+},{"../tags":318,"react":308,"react-dom":125,"react-loader":126}],325:[function(require,module,exports){
 var DOM, Loader, React, SettingsView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41668,7 +41785,7 @@ SettingsView = (function(superClass) {
 module.exports = SettingsView;
 
 
-},{"../tags":317,"react":308,"react-dom":125,"react-loader":126}],325:[function(require,module,exports){
+},{"../tags":318,"react":308,"react-dom":125,"react-loader":126}],326:[function(require,module,exports){
 var DOM, Loader, React, UpdatesView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -41703,4 +41820,4 @@ UpdatesView = (function(superClass) {
 module.exports = UpdatesView;
 
 
-},{"../tags":317,"react":308,"react-dom":125,"react-loader":126}]},{},[316]);
+},{"../tags":318,"react":308,"react-dom":125,"react-loader":126}]},{},[317]);

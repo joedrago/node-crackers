@@ -14,6 +14,7 @@ ToolbarSeparator = require 'material-ui/lib/toolbar/toolbar-separator'
 ToolbarTitle = require 'material-ui/lib/toolbar/toolbar-title'
 
 # Local requires
+Settings = require '../Settings'
 {a, div, el, img, hr, span} = require '../tags'
 
 COVER_WIDTH = '150px'
@@ -161,25 +162,33 @@ class BrowseEntry extends React.Component
     return entry
 
 class BrowseTitle extends React.Component
+  @defaultProps:
+    title: null
+    perc: 0
+    color: '#aaaaaa'
+    size: '1.2em'
+
   constructor: (props) ->
     super props
 
   render: ->
-    if @props.perc == -1
-      title = "Ignored"
+    if @props.title
+      title = @props.title
+    else if @props.perc == -1
+      title = "Ignored:"
     else if @props.perc == 100
-      title = "Completed"
+      title = "Completed:"
     else if @props.perc == 0
-      title = "Unread"
+      title = "Unread:"
     else
-      title = "Reading"
+      title = "Reading:"
 
     return div {
       style:
-        color: '#aaaaaa'
-        fontSize: '1.2em'
+        color: @props.color
+        fontSize: @props.size
         fontStyle: 'italic'
-    }, "#{title}:"
+    }, title
 
 class BrowseView extends React.Component
   constructor: (props) ->
@@ -191,12 +200,23 @@ class BrowseView extends React.Component
         unread: true
         completed: true
         ignored: false
+    for k, v of @state.show
+      @state.show[k] = Settings.getBool("show.#{k}", v)
     if @props.progressEnabled
       @state.sort = 'interest'
 
   click: (info) ->
     # if @props.onChangeDir
     #   @props.onChangeDir(info.dir)
+
+  componentWillUpdate: (nextProps, nextState) ->
+    storeShow = false
+    for k, v of nextState.show
+      if @state.show[k] != v
+        storeShow = true
+    if storeShow
+      for k, v of nextState.show
+        Settings.set("show.#{k}", v)
 
   render: ->
     # ------------------------------------------------------------------------
@@ -247,7 +267,7 @@ class BrowseView extends React.Component
 
     if @props.progressEnabled
       enabledValues = Object.keys(@state.show).filter (e) => @state.show[e]
-      console.log "enabledValues", enabledValues
+      # console.log "enabledValues", enabledValues
       toolbarItems.push el ToolbarGroup, {
         float: 'right'
       }, [
@@ -310,6 +330,7 @@ class BrowseView extends React.Component
     # Filter comics list based on current show filters, then sort what is left
 
     list = @props.manifest.children[@props.arg]
+    unfilteredListSize = list.length
     if @props.progressEnabled
       if not @state.show.reading
         list = list.filter (e) -> (e.perc <= 0) or (e.perc >= 100)
@@ -319,6 +340,8 @@ class BrowseView extends React.Component
         list = list.filter (e) -> e.perc != 100
       if not @state.show.ignored
         list = list.filter (e) -> e.perc != -1
+
+    filteredListSize = list.length
 
     switch @state.sort
       when 'interest'
@@ -351,6 +374,7 @@ class BrowseView extends React.Component
     # Create view entries
 
     lastPerc = null
+    sawOneEntry = false
     for entry in list
       if @props.progressEnabled and (@state.sort == 'interest')
         if lastPerc == null
@@ -372,6 +396,7 @@ class BrowseView extends React.Component
             entries.push el BrowseTitle, { perc: entry.perc }
         lastPerc = entry.perc
 
+      sawOneEntry = true
       entryElement = React.createElement BrowseEntry, {
         key: entry.dir
         info: entry
@@ -379,6 +404,17 @@ class BrowseView extends React.Component
         redirect: @props.redirect
       }
       entries.push entryElement
+
+    if sawOneEntry
+      if filteredListSize != unfilteredListSize
+        entries.push hr {
+          size: 1
+          style:
+            borderColor: '#777777'
+        }
+        entries.push el BrowseTitle, { title: "Filtered #{unfilteredListSize - filteredListSize} item(s).", size: '0.7em' }
+    else
+      entries.push el BrowseTitle, { title: "Showing none of the #{unfilteredListSize} item(s) here. Please adjust your filter." }
 
     # ------------------------------------------------------------------------
     # Create view
