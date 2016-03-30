@@ -39753,8 +39753,17 @@ ComicRenderer = (function(superClass) {
     return this.imageCache.flush();
   };
 
+  ComicRenderer.prototype.componentWillReceiveProps = function(nextProps) {
+    if ((this.props.width !== nextProps.width) || (this.props.height !== nextProps.height)) {
+      return this.setScale(1, false);
+    }
+  };
+
   ComicRenderer.prototype.onKeyPress = function(event) {
     switch (event.keyCode) {
+      case 48:
+        this.setScale(1, false);
+        break;
       case 49:
         this.setScale(1.5);
         break;
@@ -41326,7 +41335,6 @@ ComicView = (function(superClass) {
   }
 
   ComicView.prototype.componentWillReceiveProps = function(nextProps) {
-    console.log("componentWillReceiveProps", nextProps);
     return this.changeDir(nextProps.arg);
   };
 
@@ -41335,7 +41343,6 @@ ComicView = (function(superClass) {
     if (fromConstructor == null) {
       fromConstructor = false;
     }
-    console.log("changeDir(" + dir + "), current state " + this.state.dir);
     comicExists = false;
     if (this.props.manifest.hasOwnProperty('exists') && this.props.manifest.exists[dir]) {
       comicExists = true;

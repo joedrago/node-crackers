@@ -61,9 +61,16 @@ class ComicRenderer extends React.Component
     @keySubscription = null
     @imageCache.flush()
 
+  componentWillReceiveProps: (nextProps) ->
+    if (@props.width != nextProps.width) or (@props.height != nextProps.height)
+      # Size of screen changed. Unzoom and recenter.
+      @setScale(1, false)
+
   onKeyPress: (event) ->
     # console.log "onKeyPress #{event.keyCode}"
     switch event.keyCode
+      when 48 # 0
+        @setScale(1, false)
       when 49 # 1
         @setScale(1.5)
       when 50 # 2

@@ -17,11 +17,11 @@ class ComicView extends React.Component
     @changeDir(props.arg, true)
 
   componentWillReceiveProps: (nextProps) ->
-    console.log "componentWillReceiveProps", nextProps
+    # console.log "componentWillReceiveProps", nextProps
     @changeDir(nextProps.arg)
 
   changeDir: (dir, fromConstructor = false) ->
-    console.log "changeDir(#{dir}), current state #{@state.dir}"
+    # console.log "changeDir(#{dir}), current state #{@state.dir}"
     comicExists = false
     if @props.manifest.hasOwnProperty('exists') and @props.manifest.exists[dir]
       comicExists = true
