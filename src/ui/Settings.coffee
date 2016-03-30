@@ -1,10 +1,14 @@
 class Settings
   constructor: ->
+    @cache = {}
 
   get: (key, defaultValue) ->
-    value = window.localStorage.getItem(key)
-    if (value == null) or (value == undefined)
-      value = defaultValue
+    if @cache.hasOwnProperty(key)
+      value = @cache[key]
+    else
+      value = window.localStorage.getItem(key)
+      if (value == null) or (value == undefined)
+        value = defaultValue
     # console.log "Settings.get(#{key}): '#{value}'"
     return value
 
@@ -19,6 +23,7 @@ class Settings
 
   set: (key, value) ->
     # console.log "Settings.set(#{key}, '#{value}')"
+    @cache[key] = String(value)
     window.localStorage.setItem(key, value)
     return
 

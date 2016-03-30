@@ -40566,13 +40566,19 @@ module.exports = function(dir, cb) {
 var Settings, ensureInstanceExists, instance;
 
 Settings = (function() {
-  function Settings() {}
+  function Settings() {
+    this.cache = {};
+  }
 
   Settings.prototype.get = function(key, defaultValue) {
     var value;
-    value = window.localStorage.getItem(key);
-    if ((value === null) || (value === void 0)) {
-      value = defaultValue;
+    if (this.cache.hasOwnProperty(key)) {
+      value = this.cache[key];
+    } else {
+      value = window.localStorage.getItem(key);
+      if ((value === null) || (value === void 0)) {
+        value = defaultValue;
+      }
     }
     return value;
   };
@@ -40589,6 +40595,7 @@ Settings = (function() {
   };
 
   Settings.prototype.set = function(key, value) {
+    this.cache[key] = String(value);
     window.localStorage.setItem(key, value);
   };
 
@@ -41197,25 +41204,23 @@ BrowseView = (function(superClass) {
 
   BrowseView.prototype.click = function(info) {};
 
-  BrowseView.prototype.componentWillUpdate = function(nextProps, nextState) {
-    var k, ref1, ref2, results, storeShow, v;
-    storeShow = false;
-    ref1 = nextState.show;
-    for (k in ref1) {
-      v = ref1[k];
-      if (this.state.show[k] !== v) {
-        storeShow = true;
-      }
+  BrowseView.prototype.updateShowFilter = function(enabledList) {
+    var i, k, len, show, v;
+    show = {};
+    for (k in this.state.show) {
+      show[k] = false;
     }
-    if (storeShow) {
-      ref2 = nextState.show;
-      results = [];
-      for (k in ref2) {
-        v = ref2[k];
-        results.push(Settings.set("show." + k, v));
-      }
-      return results;
+    for (i = 0, len = enabledList.length; i < len; i++) {
+      v = enabledList[i];
+      show[v] = true;
     }
+    for (k in show) {
+      v = show[k];
+      Settings.set("show." + k, v);
+    }
+    return this.setState({
+      show: show
+    });
   };
 
   BrowseView.prototype.render = function() {
@@ -41282,18 +41287,7 @@ BrowseView = (function(superClass) {
           multiple: true,
           onChange: (function(_this) {
             return function(event, values) {
-              var i, k, len, show, v;
-              show = {};
-              for (k in _this.state.show) {
-                show[k] = false;
-              }
-              for (i = 0, len = values.length; i < len; i++) {
-                v = values[i];
-                show[v] = true;
-              }
-              return _this.setState({
-                show: show
-              });
+              return _this.updateShowFilter(values);
             };
           })(this)
         }, [

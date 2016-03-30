@@ -206,17 +206,16 @@ class BrowseView extends React.Component
       @state.sort = 'interest'
 
   click: (info) ->
-    # if @props.onChangeDir
-    #   @props.onChangeDir(info.dir)
 
-  componentWillUpdate: (nextProps, nextState) ->
-    storeShow = false
-    for k, v of nextState.show
-      if @state.show[k] != v
-        storeShow = true
-    if storeShow
-      for k, v of nextState.show
-        Settings.set("show.#{k}", v)
+  updateShowFilter: (enabledList) ->
+    show = {}
+    for k of @state.show
+      show[k] = false
+    for v in enabledList
+      show[v] = true
+    for k, v of show
+      Settings.set("show.#{k}", v)
+    @setState { show: show }
 
   render: ->
     # ------------------------------------------------------------------------
@@ -279,13 +278,7 @@ class BrowseView extends React.Component
           targetOrigin: { horizontal: 'right', vertical: 'top' }
           value: enabledValues
           multiple: true
-          onChange: (event, values) =>
-            show = {}
-            for k of @state.show
-              show[k] = false
-            for v in values
-              show[v] = true
-            @setState { show: show }
+          onChange: (event, values) => @updateShowFilter(values)
         }, [
           el MenuItem, {
             primaryText: "Show:"
