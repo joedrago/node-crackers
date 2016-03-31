@@ -8,7 +8,6 @@ wrench = require 'wrench'
 
 ComicGenerator = require './ComicGenerator'
 IndexGenerator = require './IndexGenerator'
-MobileGenerator = require './MobileGenerator'
 Unpacker = require './Unpacker'
 
 class Crackers
@@ -90,9 +89,6 @@ class Crackers
     for indexDir in indexDirs
       indexGenerator = new IndexGenerator(@rootDir, indexDir, @force, @download)
       indexGenerator.generate()
-
-    mobileGenerator = new MobileGenerator(@rootDir)
-    mobileGenerator.generate()
 
     # All done!
     return true

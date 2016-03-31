@@ -92,7 +92,7 @@
     IndexGenerator.prototype.ensureFileExists = function(filename) {};
 
     IndexGenerator.prototype.generate = function() {
-      var cover, coverGenerator, endpoint, i, ieTemplate, images, len, listText, manifestGenerator, md, mdList, metadata, outputText, progressEnabled, recent, recentcover, timestamp, totalCount;
+      var cover, coverGenerator, endpoint, i, ieTemplate, images, len, listText, manifestGenerator, md, mdList, metadata, outputText, progressEnabled, recent, recentcover, timestamp, totalCount, updates;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing index");
@@ -116,6 +116,8 @@
       if (this.isRoot) {
         manifestGenerator = new ManifestGenerator(this.rootDir);
         manifestGenerator.generate();
+        updates = new UpdatesGenerator(this.rootDir).getUpdates();
+        fs.writeFileSync(cfs.join(this.dir, constants.UPDATES_FILENAME), JSON.stringify(updates, null, 2));
       }
       timestamp = 0;
       recent = "";

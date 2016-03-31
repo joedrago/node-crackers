@@ -402,7 +402,7 @@ class BrowseView extends React.Component
     for entry in list
       if @props.progressEnabled and (@state.sort == 'interest')
         if lastPerc == null
-          entries.push el BrowseTitle, { key: 'browsetitle.perc#{entry.perc}', perc: entry.perc }
+          entries.push el BrowseTitle, { key: "browsetitle.perc#{entry.perc}", perc: entry.perc }
         else
           addDivider = false
           if ((lastPerc != -1) and (entry.perc == -1))
@@ -413,11 +413,12 @@ class BrowseView extends React.Component
             addDivider = true
           if addDivider
             entries.push hr {
+              key: "hr.perc#{entry.perc}"
               size: 1
               style:
                 borderColor: '#777777'
             }
-            entries.push el BrowseTitle, { key: 'browsetitle.perc#{entry.perc}', perc: entry.perc }
+            entries.push el BrowseTitle, { key: "browsetitle.perc#{entry.perc}", perc: entry.perc }
         lastPerc = entry.perc
 
       sawOneEntry = true
@@ -432,6 +433,7 @@ class BrowseView extends React.Component
     if sawOneEntry
       if filteredListSize != unfilteredListSize
         entries.push hr {
+          key: "hr.filtered"
           size: 1
           style:
             borderColor: '#777777'
@@ -444,6 +446,7 @@ class BrowseView extends React.Component
     # Create view
 
     view = div {
+      key: 'browseview'
       style:
         width: '100%'
         height: '100%'

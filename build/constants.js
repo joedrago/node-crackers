@@ -3,22 +3,22 @@
   var constants;
 
   module.exports = constants = {
-    DEFAULT_TITLE: "Crackers",
-    ROOT_FILENAME: "root.crackers",
-    META_FILENAME: 'meta.crackers',
-    MANIFEST_SERVER_FILENAME: 'server.crackers',
-    MANIFEST_CLIENT_FILENAME: 'client.crackers',
-    INDEX_FILENAME: 'index.html',
-    COVER_FILENAME: 'cover.png',
-    RECENT_COVER_FILENAME: 'recentcover.png',
-    MOBILE_FILENAME: 'mobile.html',
-    UPDATES_FILENAME: 'updates.html',
-    IMAGES_DIR: 'images',
     ARCHIVES_DIR: 'archives',
-    TEMP_UNPACK_DIR: 'unpackTmp',
+    COVER_FILENAME: 'cover.png',
     COVER_WIDTH: 150,
+    DEFAULT_TITLE: "Crackers",
+    IMAGES_DIR: 'images',
+    INDEX_FILENAME: 'index.html',
+    MANIFEST_CLIENT_FILENAME: 'client.crackers',
+    MANIFEST_SERVER_FILENAME: 'server.crackers',
+    MAX_TERSE_UPDATES: 6,
+    META_FILENAME: 'meta.crackers',
+    MOBILE_FILENAME: 'mobile.html',
+    RECENT_COVER_FILENAME: 'recentcover.png',
+    ROOT_FILENAME: "root.crackers",
     SPAM_SIZE_TOLERANCE: 0.25,
-    MAX_TERSE_UPDATES: 6
+    TEMP_UNPACK_DIR: 'unpackTmp',
+    UPDATES_FILENAME: 'updates.crackers'
   };
 
   constants.COVER_HEIGHT = constants.COVER_WIDTH * 1.5;

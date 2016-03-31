@@ -67,21 +67,10 @@ class IndexGenerator
     listText = ""
     totalCount = 0
     if @isRoot
-      # cfs.ensureFileExists(cfs.join(@rootDir, "local.js"))
-      # cfs.ensureFileExists(cfs.join(@rootDir, "local.comic.js"))
-      # cfs.ensureFileExists(cfs.join(@rootDir, "local.index.js"))
-      # cfs.ensureFileExists(cfs.join(@rootDir, "local.css"))
       manifestGenerator = new ManifestGenerator(@rootDir)
       manifestGenerator.generate()
-      # updates = new UpdatesGenerator(@rootDir).getUpdates()
-      # ueText = @generateUpdateList(updates)
-      # ueTerseText = @generateUpdateList(updates, constants.MAX_TERSE_UPDATES)
-      # updatesText = template('updates_html', { title: @title, updates: ueText })
-      # fs.writeFileSync @updatesFilename, updatesText
-      # listText += template('ie_sort_html', {
-      #   title: @title
-      #   updates: ueTerseText
-      # })
+      updates = new UpdatesGenerator(@rootDir).getUpdates()
+      fs.writeFileSync cfs.join(@dir, constants.UPDATES_FILENAME), JSON.stringify(updates, null, 2)
 
     timestamp = 0
     recent = ""
