@@ -32,11 +32,12 @@ class UpdateDay extends React.Component
             color: '#aaffff'
         }, " #{e.start}-#{e.end}"
 
-      link = a {
+      link = div {
         key: "day.link.#{@props.day.date}.#{index}"
+      }, a {
+        key: "link"
         href: "##{action}/" + encodeURIComponent("#{e.dir}").replace("%2F", "/")
         style:
-          display: 'block'
           color: '#ffffaa'
           marginLeft: '20px'
       }, text

@@ -41743,15 +41743,16 @@ UpdateDay = (function(superClass) {
           }
         }, " " + e.start + "-" + e.end));
       }
-      link = a({
-        key: "day.link." + this.props.day.date + "." + index,
+      link = div({
+        key: "day.link." + this.props.day.date + "." + index
+      }, a({
+        key: "link",
         href: ("#" + action + "/") + encodeURIComponent("" + e.dir).replace("%2F", "/"),
         style: {
-          display: 'block',
           color: '#ffffaa',
           marginLeft: '20px'
         }
-      }, text);
+      }, text));
       links.push(link);
     }
     return div({
