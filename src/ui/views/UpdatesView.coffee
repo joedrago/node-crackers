@@ -26,11 +26,14 @@ class UpdateDay extends React.Component
       ]
       if e.hasOwnProperty('start')
         action = 'browse'
+        rangeText = " #{e.start}"
+        if e.start != e.end
+          rangeText += "-#{e.end}"
         text.push span {
           key: 'range'
           style:
             color: '#aaffff'
-        }, " #{e.start}-#{e.end}"
+        }, rangeText
 
       link = div {
         key: "day.link.#{@props.day.date}.#{index}"

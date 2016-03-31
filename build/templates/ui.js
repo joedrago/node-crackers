@@ -41716,7 +41716,7 @@ UpdateDay = (function(superClass) {
   }
 
   UpdateDay.prototype.render = function() {
-    var action, e, i, index, len, link, links, ref1, text, title;
+    var action, e, i, index, len, link, links, rangeText, ref1, text, title;
     title = div({
       key: "day.title." + this.props.day.date,
       style: {
@@ -41736,12 +41736,16 @@ UpdateDay = (function(superClass) {
       ];
       if (e.hasOwnProperty('start')) {
         action = 'browse';
+        rangeText = " " + e.start;
+        if (e.start !== e.end) {
+          rangeText += "-" + e.end;
+        }
         text.push(span({
           key: 'range',
           style: {
             color: '#aaffff'
           }
-        }, " " + e.start + "-" + e.end));
+        }, rangeText));
       }
       link = div({
         key: "day.link." + this.props.day.date + "." + index
