@@ -41,6 +41,15 @@ getMuiTheme = require 'material-ui/lib/styles/getMuiTheme'
 injectTapEventPlugin = require "react-tap-event-plugin"
 injectTapEventPlugin()
 
+# I guess Safari doesn't have Math.sign. So weird.
+Math.sign = Math.sign || (x) ->
+  x = +x # convert to a number
+  if (x == 0) || isNaN(x)
+    return x
+  if x > 0
+    return 1
+  return -1
+
 class App extends React.Component
   # Enables the "Dark" theme
   @childContextTypes: { muiTheme: React.PropTypes.object }
@@ -88,7 +97,7 @@ class App extends React.Component
       dataType: 'json'
       data: null
       success: (manifest, status) =>
-        console.log manifest
+        # console.log manifest
         @setState {
           manifest: manifest
         }
@@ -253,7 +262,8 @@ class App extends React.Component
         key: "menu.home"
         primaryText: "Home"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
-        onTouchTap: =>
+        onTouchTap: (e) =>
+          e.preventDefault()
           @redirect('#home')
           @setState { navOpen: false }
       }
@@ -261,7 +271,8 @@ class App extends React.Component
         key: "menu.browse"
         primaryText: "Browse"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'grid_on'
-        onTouchTap: =>
+        onTouchTap: (e) =>
+          e.preventDefault()
           @redirect('#browse')
           @setState { navOpen: false }
       }
@@ -269,7 +280,8 @@ class App extends React.Component
         key: "menu.updates"
         primaryText: "Updates"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
-        onTouchTap: =>
+        onTouchTap: (e) =>
+          e.preventDefault()
           @redirect('#updates')
           @setState { navOpen: false }
       }
@@ -277,7 +289,8 @@ class App extends React.Component
         key: "menu.search"
         primaryText: "Search"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
-        onTouchTap: =>
+        onTouchTap: (e) =>
+          e.preventDefault()
           @redirect('#search')
           @setState { navOpen: false }
       }
@@ -285,7 +298,8 @@ class App extends React.Component
         key: "menu.settings"
         primaryText: "Settings"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'settings'
-        onTouchTap: =>
+        onTouchTap: (e) =>
+          e.preventDefault()
           @redirect('#settings')
           @setState { navOpen: false }
       }
@@ -293,7 +307,8 @@ class App extends React.Component
         key: "menu.help"
         primaryText: "Help"
         leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
-        onTouchTap: =>
+        onTouchTap: (e) =>
+          e.preventDefault()
           @redirect('#help')
           @setState { navOpen: false }
       }

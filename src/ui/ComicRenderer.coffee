@@ -8,6 +8,7 @@ PubSub = require 'pubsub-js'
 # Local requires
 ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
+Settings = require './Settings'
 {div, el, img} = require './tags'
 
 Auto =
@@ -243,11 +244,19 @@ class ComicRenderer extends React.Component
         imageSwipeX: 0
       }
       if @state.loaded
-        if Math.abs(@state.imageSwipeX) > (@props.width / 8)
+        if Math.abs(@state.imageSwipeX) > (@props.width / 10)
           direction = Math.sign(@state.imageSwipeX)
           @setIndex(@state.index - direction)
           return
       @setState { imageSwipeX: 0 }
+
+    autoZoomOutThreshold = 1.1
+    if Settings.getBool("comic.autoZoomOut", false)
+      console.log "comic.autoZoomOut is true"
+      autoZoomOutThreshold = 10 # zoom out when the person lets go, no matter what
+    if (@state.imageScale > 1) and (@state.imageScale < autoZoomOutThreshold)
+      # Too close to unzoomed, just force it
+      @setScale(1, false)
 
   onTouchCount: (touchCount) ->
     # console.log "onTouchCount(#{touchCount})"
@@ -260,9 +269,7 @@ class ComicRenderer extends React.Component
     if not @state.loaded
       return
     if @state.imageScale == 1
-      if dragOriginX > 50
-        # Don't interfere with opening the left panel
-        @setState { imageSwipeX: @state.imageSwipeX + dx }
+      @setState { imageSwipeX: @state.imageSwipeX + dx }
       return
     newX = @state.imageX + dx
     newY = @state.imageY + dy
@@ -341,7 +348,8 @@ class ComicRenderer extends React.Component
             top: 0
             width: @props.width
             height: @props.height
-            background: "url(\"#{@props.metadata.images[@state.index]}\")"
+            backgroundColor: '#111111'
+            backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
             backgroundRepeat: 'no-repeat'
             backgroundPosition: "#{values.imageX}px #{values.imageY}px"
             backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"

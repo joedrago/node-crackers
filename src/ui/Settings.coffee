@@ -7,6 +7,7 @@ class Settings
       value = @cache[key]
     else
       value = window.localStorage.getItem(key)
+      @cache[key] = String(value)
       if (value == null) or (value == undefined)
         value = defaultValue
     # console.log "Settings.get(#{key}): '#{value}'"

@@ -292,6 +292,7 @@ class BrowseView extends React.Component
           iconButtonElement: el IconButton, {
               iconClassName: 'material-icons'
             }, 'filter_list'
+          iconStyle: {}
           anchorOrigin: { horizontal: 'right', vertical: 'top' }
           targetOrigin: { horizontal: 'right', vertical: 'top' }
           value: enabledValues

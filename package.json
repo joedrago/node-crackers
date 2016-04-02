@@ -29,7 +29,7 @@
     "browserify": "^13.0.0",
     "coffee-script": "1.9.3",
     "coffeeify": "^2.0.1",
-    "material-ui": "^0.14.4",
+    "material-ui": "0.15.0-alpha.1",
     "pubsub-js": "^1.5.3",
     "react": "^0.14.7",
     "react-dimensions": "^1.0.2",

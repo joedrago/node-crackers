@@ -5,7 +5,6 @@ Dimensions = require 'react-dimensions'
 PubSub = require 'pubsub-js'
 
 # Material UI components
-React = require 'react'
 Dialog = require 'material-ui/lib/dialog'
 FlatButton = require 'material-ui/lib/flat-button'
 RaisedButton = require 'material-ui/lib/raised-button'

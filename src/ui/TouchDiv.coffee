@@ -48,7 +48,7 @@ class TouchDiv extends React.Component
       @onTouchesBegan event.originalEvent.changedTouches
     $(node).on 'touchend', (event) =>
       event.preventDefault()
-      @onTouchesEnded event.originalEvent.changedTouches
+      @onTouchesEnded event.originalEvent.changedTouches, event.originalEvent.touches.length
     $(node).on 'touchmove', (event) =>
       event.preventDefault()
       @onTouchesMoved event.originalEvent.changedTouches
@@ -142,6 +142,7 @@ class TouchDiv extends React.Component
     if @trackedTouches.length > 1
       # They're pinching, don't even bother to emit a click
       @dragging = true
+    # console.log "onTouchesBegan: #{JSON.stringify(touches)} touches, trackedTouches now #{JSON.stringify(@trackedTouches)}"
     return
 
   onTouchesMoved: (touches) ->
@@ -152,6 +153,7 @@ class TouchDiv extends React.Component
       prevX = @trackedTouches[0].x
       prevY = @trackedTouches[0].y
 
+    # console.log "onTouchesMoved: #{touches.length} touches"
     for t in touches
       @updateTouch(t.identifier, t.clientX, t.clientY)
 
@@ -177,13 +179,19 @@ class TouchDiv extends React.Component
 
     return
 
-  onTouchesEnded: (touches) ->
+  onTouchesEnded: (touches, touchesRemaining) ->
     if @trackedTouches.length == 1
       if not @dragging
         @props.listener.onClick(touches[0].clientX, touches[0].clientY)
       @props.listener.onNoTouches()
     for t in touches
       @removeTouch t.identifier, t.clientX, t.clientY
+    if touchesRemaining == 0
+      # Remove the rest. Thanks iOS!
+      toRemove = @trackedTouches.slice(0)
+      for t in toRemove
+        @removeTouch t.id, t.x, t.y
+    # console.log "onTouchesEnded[rem:#{touchesRemaining}]: #{JSON.stringify(touches)} touches, trackedTouches now #{JSON.stringify(@trackedTouches)}"
     return
 
 module.exports = TouchDiv
