@@ -7,6 +7,7 @@ PubSub = require 'pubsub-js'
 # Local requires
 LRUCache = require './LRUCache'
 ConfirmDialog = require './ConfirmDialog'
+fullscreen = require './fullscreen'
 {div, el} = require './tags'
 
 # Views
@@ -70,6 +71,7 @@ class App extends React.Component
       comicMetadata: null
       indexList: null
       confirmCB: null
+      fullscreen: fullscreen.available() and fullscreen.active()
 
     @views =
       home: HomeView
@@ -81,6 +83,8 @@ class App extends React.Component
       updates: UpdatesView
 
     @loadManifest()
+
+    # TODO: hook up fullscreenchange event
 
     $(document).keydown (event) =>
       @onKeyDown(event)
@@ -241,7 +245,7 @@ class App extends React.Component
             setTimeout =>
               @setState { navOpen: !@state.navOpen }
             , 0
-        }, 'keyboard_arrow_right'
+        }, 'menu'
 
         el ConfirmDialog, {
           key: "confirmdialog"
@@ -256,17 +260,37 @@ class App extends React.Component
         }
     ]
 
+    if fullscreen.available() and fullscreen.active()
+      # Fake back button
+      elements.push el IconButton, {
+          key: "fakebackbutton"
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'fixed'
+            left: 40
+            top: 0
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              window.history.back()
+            , 0
+        }, 'keyboard_arrow_left'
+
     # Left navigation panel
     navMenuItems = [
-      el MenuItem, {
-        key: "menu.home"
-        primaryText: "Home"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
-        onTouchTap: (e) =>
-          e.preventDefault()
-          @redirect('#home')
-          @setState { navOpen: false }
-      }
+      # el MenuItem, {
+      #   key: "menu.home"
+      #   primaryText: "Home"
+      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
+      #   onTouchTap: (e) =>
+      #     e.preventDefault()
+      #     @redirect('#home')
+      #     @setState { navOpen: false }
+      # }
       el MenuItem, {
         key: "menu.browse"
         primaryText: "Browse"
@@ -285,15 +309,15 @@ class App extends React.Component
           @redirect('#updates')
           @setState { navOpen: false }
       }
-      el MenuItem, {
-        key: "menu.search"
-        primaryText: "Search"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
-        onTouchTap: (e) =>
-          e.preventDefault()
-          @redirect('#search')
-          @setState { navOpen: false }
-      }
+      # el MenuItem, {
+      #   key: "menu.search"
+      #   primaryText: "Search"
+      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
+      #   onTouchTap: (e) =>
+      #     e.preventDefault()
+      #     @redirect('#search')
+      #     @setState { navOpen: false }
+      # }
       el MenuItem, {
         key: "menu.settings"
         primaryText: "Settings"
@@ -303,26 +327,43 @@ class App extends React.Component
           @redirect('#settings')
           @setState { navOpen: false }
       }
-      el MenuItem, {
-        key: "menu.help"
-        primaryText: "Help"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
-        onTouchTap: (e) =>
-          e.preventDefault()
-          @redirect('#help')
-          @setState { navOpen: false }
-      }
+      # el MenuItem, {
+      #   key: "menu.help"
+      #   primaryText: "Help"
+      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
+      #   onTouchTap: (e) =>
+      #     e.preventDefault()
+      #     @redirect('#help')
+      #     @setState { navOpen: false }
+      # }
     ]
 
-    if false
-      navMenuItems.push(el Divider)
-      navMenuItems.push(
-        el MenuItem, {
-          key: "menu.nextissue"
-          primaryText: "Next Issue in Series"
-          leftIcon: el FontIcon, { className: 'material-icons' }, 'skip_next'
-        }
-      )
+    if fullscreen.available()
+      fullscreenText = 'Enter Fullscreen'
+      fullscreenIcon = 'fullscreen'
+      if fullscreen.active()
+        fullscreenText = 'Leave Fullscreen'
+        fullscreenIcon = 'fullscreen_exit'
+      navMenuItems.push el Divider
+      navMenuItems.push el MenuItem, {
+        key: "menu.fullscreen"
+        primaryText: fullscreenText
+        leftIcon: el FontIcon, { className: 'material-icons' }, fullscreenIcon
+        onTouchTap: (e) =>
+          e.preventDefault()
+          fullscreen.toggle()
+          @setState { navOpen: false, fullscreen: fullscreen.active() }
+      }
+
+    # if false
+    #   navMenuItems.push(el Divider)
+    #   navMenuItems.push(
+    #     el MenuItem, {
+    #       key: "menu.nextissue"
+    #       primaryText: "Next Issue in Series"
+    #       leftIcon: el FontIcon, { className: 'material-icons' }, 'skip_next'
+    #     }
+    #   )
 
     elements.push(el LeftNav, {
         key: 'leftnav'

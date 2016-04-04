@@ -41774,7 +41774,7 @@ module.exports = warning;
 module.exports = require('./lib/React');
 
 },{"./lib/React":209}],348:[function(require,module,exports){
-var App, AppBar, BrowseView, ComicView, ConfirmDialog, DOM, DarkTheme, Dimensions, Divider, FlatButton, FontIcon, HelpView, HomeView, IconButton, LRUCache, LeftNav, LoadingView, MenuItem, PubSub, RaisedButton, React, SearchView, SettingsView, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, UpdatesView, div, el, getMuiTheme, injectTapEventPlugin, ref,
+var App, AppBar, BrowseView, ComicView, ConfirmDialog, DOM, DarkTheme, Dimensions, Divider, FlatButton, FontIcon, HelpView, HomeView, IconButton, LRUCache, LeftNav, LoadingView, MenuItem, PubSub, RaisedButton, React, SearchView, SettingsView, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, UpdatesView, div, el, fullscreen, getMuiTheme, injectTapEventPlugin, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -41789,6 +41789,8 @@ PubSub = require('pubsub-js');
 LRUCache = require('./LRUCache');
 
 ConfirmDialog = require('./ConfirmDialog');
+
+fullscreen = require('./fullscreen');
 
 ref = require('./tags'), div = ref.div, el = ref.el;
 
@@ -41877,7 +41879,8 @@ App = (function(superClass) {
       dir: '',
       comicMetadata: null,
       indexList: null,
-      confirmCB: null
+      confirmCB: null,
+      fullscreen: fullscreen.available() && fullscreen.active()
     };
     this.views = {
       home: HomeView,
@@ -42080,7 +42083,7 @@ App = (function(superClass) {
   };
 
   App.prototype.render = function() {
-    var elements, navMenuItems, view;
+    var elements, fullscreenIcon, fullscreenText, navMenuItems, view;
     elements = [
       el(IconButton, {
         key: "opennavbutton",
@@ -42105,7 +42108,7 @@ App = (function(superClass) {
             }, 0);
           };
         })(this)
-      }, 'keyboard_arrow_right'), el(ConfirmDialog, {
+      }, 'menu'), el(ConfirmDialog, {
         key: "confirmdialog",
         open: this.state.confirmCB !== null,
         yes: this.state.confirmYes,
@@ -42123,23 +42126,33 @@ App = (function(superClass) {
         })(this)
       })
     ];
-    navMenuItems = [
-      el(MenuItem, {
-        key: "menu.home",
-        primaryText: "Home",
-        leftIcon: el(FontIcon, {
-          className: 'material-icons'
-        }, 'home'),
+    console.log("rendering, checking fullscreen [" + (fullscreen.available()) + ", " + (fullscreen.active()) + "]");
+    if (fullscreen.available() && fullscreen.active()) {
+      elements.push(el(IconButton, {
+        key: "fakebackbutton",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 40,
+          top: 0,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
         onTouchTap: (function(_this) {
-          return function(e) {
-            e.preventDefault();
-            _this.redirect('#home');
-            return _this.setState({
-              navOpen: false
-            });
+          return function() {
+            return setTimeout(function() {
+              return window.history.back();
+            }, 0);
           };
         })(this)
-      }), el(MenuItem, {
+      }, 'keyboard_arrow_left'));
+    }
+    navMenuItems = [
+      el(MenuItem, {
         key: "menu.browse",
         primaryText: "Browse",
         leftIcon: el(FontIcon, {
@@ -42170,21 +42183,6 @@ App = (function(superClass) {
           };
         })(this)
       }), el(MenuItem, {
-        key: "menu.search",
-        primaryText: "Search",
-        leftIcon: el(FontIcon, {
-          className: 'material-icons'
-        }, 'search'),
-        onTouchTap: (function(_this) {
-          return function(e) {
-            e.preventDefault();
-            _this.redirect('#search');
-            return _this.setState({
-              navOpen: false
-            });
-          };
-        })(this)
-      }), el(MenuItem, {
         key: "menu.settings",
         primaryText: "Settings",
         leftIcon: el(FontIcon, {
@@ -42199,31 +42197,32 @@ App = (function(superClass) {
             });
           };
         })(this)
-      }), el(MenuItem, {
-        key: "menu.help",
-        primaryText: "Help",
+      })
+    ];
+    if (fullscreen.available()) {
+      fullscreenText = 'Enter Fullscreen';
+      fullscreenIcon = 'fullscreen';
+      if (fullscreen.active()) {
+        fullscreenText = 'Leave Fullscreen';
+        fullscreenIcon = 'fullscreen_exit';
+      }
+      navMenuItems.push(el(Divider));
+      navMenuItems.push(el(MenuItem, {
+        key: "menu.fullscreen",
+        primaryText: fullscreenText,
         leftIcon: el(FontIcon, {
           className: 'material-icons'
-        }, 'help'),
+        }, fullscreenIcon),
         onTouchTap: (function(_this) {
           return function(e) {
             e.preventDefault();
-            _this.redirect('#help');
+            fullscreen.toggle();
             return _this.setState({
-              navOpen: false
+              navOpen: false,
+              fullscreen: fullscreen.active()
             });
           };
         })(this)
-      })
-    ];
-    if (false) {
-      navMenuItems.push(el(Divider));
-      navMenuItems.push(el(MenuItem, {
-        key: "menu.nextissue",
-        primaryText: "Next Issue in Series",
-        leftIcon: el(FontIcon, {
-          className: 'material-icons'
-        }, 'skip_next')
       }));
     }
     elements.push(el(LeftNav, {
@@ -42281,7 +42280,7 @@ App = (function(superClass) {
 module.exports = Dimensions()(App);
 
 
-},{"./ConfirmDialog":350,"./LRUCache":352,"./tags":357,"./views/BrowseView":358,"./views/ComicView":359,"./views/HelpView":360,"./views/HomeView":361,"./views/LoadingView":362,"./views/SearchView":363,"./views/SettingsView":364,"./views/UpdatesView":365,"material-ui/lib/app-bar":7,"material-ui/lib/divider":13,"material-ui/lib/flat-button":16,"material-ui/lib/font-icon":17,"material-ui/lib/icon-button":18,"material-ui/lib/left-nav":19,"material-ui/lib/menus/menu-item":24,"material-ui/lib/raised-button":32,"material-ui/lib/styles/baseThemes/darkBaseTheme":38,"material-ui/lib/styles/getMuiTheme":41,"material-ui/lib/toolbar/toolbar":60,"material-ui/lib/toolbar/toolbar-group":57,"material-ui/lib/toolbar/toolbar-separator":58,"material-ui/lib/toolbar/toolbar-title":59,"pubsub-js":162,"react":347,"react-dimensions":163,"react-dom":164,"react-tap-event-plugin":185}],349:[function(require,module,exports){
+},{"./ConfirmDialog":350,"./LRUCache":352,"./fullscreen":356,"./tags":358,"./views/BrowseView":359,"./views/ComicView":360,"./views/HelpView":361,"./views/HomeView":362,"./views/LoadingView":363,"./views/SearchView":364,"./views/SettingsView":365,"./views/UpdatesView":366,"material-ui/lib/app-bar":7,"material-ui/lib/divider":13,"material-ui/lib/flat-button":16,"material-ui/lib/font-icon":17,"material-ui/lib/icon-button":18,"material-ui/lib/left-nav":19,"material-ui/lib/menus/menu-item":24,"material-ui/lib/raised-button":32,"material-ui/lib/styles/baseThemes/darkBaseTheme":38,"material-ui/lib/styles/getMuiTheme":41,"material-ui/lib/toolbar/toolbar":60,"material-ui/lib/toolbar/toolbar-group":57,"material-ui/lib/toolbar/toolbar-separator":58,"material-ui/lib/toolbar/toolbar-title":59,"pubsub-js":162,"react":347,"react-dimensions":163,"react-dom":164,"react-tap-event-plugin":185}],349:[function(require,module,exports){
 var Auto, ComicRenderer, Corner, DOM, ImageCache, Loader, Motion, PubSub, React, Settings, TouchDiv, div, el, img, ref, ref1, spring,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -42740,7 +42739,7 @@ ComicRenderer = (function(superClass) {
 module.exports = ComicRenderer;
 
 
-},{"./ImageCache":351,"./Settings":354,"./TouchDiv":355,"./tags":357,"pubsub-js":162,"react":347,"react-dom":164,"react-loader":165,"react-motion":173}],350:[function(require,module,exports){
+},{"./ImageCache":351,"./Settings":354,"./TouchDiv":355,"./tags":358,"pubsub-js":162,"react":347,"react-dom":164,"react-loader":165,"react-motion":173}],350:[function(require,module,exports){
 var ConfirmDialog, DOM, Dialog, Dimensions, FlatButton, PubSub, RaisedButton, React, div, el, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -42842,7 +42841,7 @@ ConfirmDialog = (function(superClass) {
 module.exports = ConfirmDialog;
 
 
-},{"./tags":357,"material-ui/lib/dialog":12,"material-ui/lib/flat-button":16,"material-ui/lib/raised-button":32,"pubsub-js":162,"react":347,"react-dimensions":163,"react-dom":164}],351:[function(require,module,exports){
+},{"./tags":358,"material-ui/lib/dialog":12,"material-ui/lib/flat-button":16,"material-ui/lib/raised-button":32,"pubsub-js":162,"react":347,"react-dimensions":163,"react-dom":164}],351:[function(require,module,exports){
 var ImageCache, LRUCache;
 
 LRUCache = require('./LRUCache');
@@ -43523,7 +43522,83 @@ TouchDiv = (function(superClass) {
 module.exports = TouchDiv;
 
 
-},{"./tags":357,"react":347,"react-dom":164}],356:[function(require,module,exports){
+},{"./tags":358,"react":347,"react-dom":164}],356:[function(require,module,exports){
+var fullscreenActive, fullscreenAvailable, fullscreenDisable, fullscreenEnable, fullscreenToggle;
+
+fullscreenAvailable = function() {
+  var available;
+  available = false;
+  if (document.documentElement.requestFullScreen) {
+    return true;
+  }
+  if (document.documentElement.mozRequestFullScreen) {
+    return true;
+  }
+  if (document.documentElement.webkitRequestFullScreen) {
+    return true;
+  }
+  return false;
+};
+
+fullscreenActive = function() {
+  var active;
+  active = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+  return active !== void 0;
+};
+
+fullscreenEnable = function(enabled) {
+  if (enabled == null) {
+    enabled = true;
+  }
+  if (!fullscreenAvailable()) {
+    return;
+  }
+  if (enabled === fullscreenActive()) {
+    return;
+  }
+  if (enabled) {
+    if (document.documentElement.requestFullScreen) {
+      return document.documentElement.requestFullScreen();
+    }
+    if (document.documentElement.mozRequestFullScreen) {
+      return document.documentElement.mozRequestFullScreen();
+    }
+    if (document.documentElement.webkitRequestFullScreen) {
+      return document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+    }
+  } else {
+    if (document.cancelFullScreen) {
+      return document.cancelFullScreen();
+    }
+    if (document.mozCancelFullScreen) {
+      return document.mozCancelFullScreen();
+    }
+    if (document.webkitCancelFullScreen) {
+      return document.webkitCancelFullScreen();
+    }
+  }
+};
+
+fullscreenDisable = function() {
+  return fullscreenEnable(false);
+};
+
+fullscreenToggle = function() {
+  var active;
+  active = fullscreenActive();
+  return fullscreenEnable(!active);
+};
+
+module.exports = {
+  available: fullscreenAvailable,
+  active: fullscreenActive,
+  enable: fullscreenEnable,
+  disable: fullscreenDisable,
+  toggle: fullscreenToggle
+};
+
+
+},{}],357:[function(require,module,exports){
 var App, DOM, React;
 
 React = require('react');
@@ -43535,7 +43610,7 @@ App = require('./App');
 DOM.render(React.createElement(App), document.getElementById('appcontainer'));
 
 
-},{"./App":348,"react":347,"react-dom":164}],357:[function(require,module,exports){
+},{"./App":348,"react":347,"react-dom":164}],358:[function(require,module,exports){
 var React, elementName, i, len, tags;
 
 React = require('react');
@@ -43552,7 +43627,7 @@ for (i = 0, len = tags.length; i < len; i++) {
 module.exports.el = React.createElement;
 
 
-},{"react":347}],358:[function(require,module,exports){
+},{"react":347}],359:[function(require,module,exports){
 var BrowseEntry, BrowseTitle, BrowseView, COVER_HEIGHT, COVER_WIDTH, DOM, DropDownMenu, FlatButton, IconButton, IconMenu, MenuItem, PlaceholderImage, React, Settings, Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle, a, div, el, hr, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44151,7 +44226,7 @@ BrowseView = (function(superClass) {
 module.exports = BrowseView;
 
 
-},{"../Settings":354,"../tags":357,"material-ui/lib/DropDownMenu":4,"material-ui/lib/flat-button":16,"material-ui/lib/icon-button":18,"material-ui/lib/menus/icon-menu":23,"material-ui/lib/menus/menu-item":24,"material-ui/lib/toolbar/toolbar":60,"material-ui/lib/toolbar/toolbar-group":57,"material-ui/lib/toolbar/toolbar-separator":58,"material-ui/lib/toolbar/toolbar-title":59,"react":347,"react-dom":164}],359:[function(require,module,exports){
+},{"../Settings":354,"../tags":358,"material-ui/lib/DropDownMenu":4,"material-ui/lib/flat-button":16,"material-ui/lib/icon-button":18,"material-ui/lib/menus/icon-menu":23,"material-ui/lib/menus/menu-item":24,"material-ui/lib/toolbar/toolbar":60,"material-ui/lib/toolbar/toolbar-group":57,"material-ui/lib/toolbar/toolbar-separator":58,"material-ui/lib/toolbar/toolbar-title":59,"react":347,"react-dom":164}],360:[function(require,module,exports){
 var ComicRenderer, ComicView, DOM, Loader, React, div, el, img, loadMetadata, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44266,7 +44341,7 @@ ComicView = (function(superClass) {
 module.exports = ComicView;
 
 
-},{"../ComicRenderer":349,"../MetadataCache":353,"../tags":357,"react":347,"react-dom":164,"react-loader":165}],360:[function(require,module,exports){
+},{"../ComicRenderer":349,"../MetadataCache":353,"../tags":358,"react":347,"react-dom":164,"react-loader":165}],361:[function(require,module,exports){
 var DOM, HelpView, Loader, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44301,7 +44376,7 @@ HelpView = (function(superClass) {
 module.exports = HelpView;
 
 
-},{"../tags":357,"react":347,"react-dom":164,"react-loader":165}],361:[function(require,module,exports){
+},{"../tags":358,"react":347,"react-dom":164,"react-loader":165}],362:[function(require,module,exports){
 var DOM, HomeView, Loader, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44336,7 +44411,7 @@ HomeView = (function(superClass) {
 module.exports = HomeView;
 
 
-},{"../tags":357,"react":347,"react-dom":164,"react-loader":165}],362:[function(require,module,exports){
+},{"../tags":358,"react":347,"react-dom":164,"react-loader":165}],363:[function(require,module,exports){
 var DOM, Loader, LoadingView, React, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44376,7 +44451,7 @@ LoadingView = (function(superClass) {
 module.exports = LoadingView;
 
 
-},{"../tags":357,"react":347,"react-dom":164,"react-loader":165}],363:[function(require,module,exports){
+},{"../tags":358,"react":347,"react-dom":164,"react-loader":165}],364:[function(require,module,exports){
 var DOM, Loader, React, SearchView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44411,7 +44486,7 @@ SearchView = (function(superClass) {
 module.exports = SearchView;
 
 
-},{"../tags":357,"react":347,"react-dom":164,"react-loader":165}],364:[function(require,module,exports){
+},{"../tags":358,"react":347,"react-dom":164,"react-loader":165}],365:[function(require,module,exports){
 var Checkbox, DOM, Loader, React, Settings, SettingsView, div, el, img, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44487,7 +44562,7 @@ SettingsView = (function(superClass) {
 module.exports = SettingsView;
 
 
-},{"../Settings":354,"../tags":357,"material-ui/lib/checkbox":10,"react":347,"react-dom":164,"react-loader":165}],365:[function(require,module,exports){
+},{"../Settings":354,"../tags":358,"material-ui/lib/checkbox":10,"react":347,"react-dom":164,"react-loader":165}],366:[function(require,module,exports){
 var DOM, Loader, React, UpdateDay, UpdatesView, a, div, el, img, ref, span,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -44636,4 +44711,4 @@ UpdatesView = (function(superClass) {
 module.exports = UpdatesView;
 
 
-},{"../tags":357,"react":347,"react-dom":164,"react-loader":165}]},{},[356]);
+},{"../tags":358,"react":347,"react-dom":164,"react-loader":165}]},{},[357]);
