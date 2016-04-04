@@ -3,8 +3,11 @@ React = require 'react'
 DOM = require 'react-dom'
 {div, el, img} = require './tags'
 
-# # how many pixels can you drag before it is actually considered a drag
+# how many pixels can you drag before it is actually considered a drag
 ENGAGE_DRAG_DISTANCE = 10
+
+# How fast you must double tap for it to count as a double tap
+DOUBLE_CLICK_MS = 400
 
 class TouchDiv extends React.Component
   constructor: (props) ->
@@ -15,6 +18,7 @@ class TouchDiv extends React.Component
     @dragX = 0
     @dragY = 0
     @dragging = false
+    @dblclickTime = null
 
   componentDidMount: ->
     # console.log "TouchDiv componentDidMount"
@@ -43,6 +47,9 @@ class TouchDiv extends React.Component
           clientX: event.clientX
           clientY: event.clientY
         }]
+    # $(node).on 'dblclick', (event) =>
+    #   event.preventDefault()
+    #   @onDoubleTap(event.clientX, event.clientY)
     $(node).on 'touchstart', (event) =>
       event.preventDefault()
       @onTouchesBegan event.originalEvent.changedTouches
@@ -62,6 +69,7 @@ class TouchDiv extends React.Component
     $(node).off 'mousedown'
     $(node).off 'mouseup'
     $(node).off 'mousemove'
+    # $(node).off 'dblclick'
     $(node).off 'touchstart'
     $(node).off 'touchend'
     $(node).off 'touchmove'
@@ -131,6 +139,10 @@ class TouchDiv extends React.Component
       @trackedTouches[index].x = x
       @trackedTouches[index].y = y
 
+  onDoubleTap: (x, y) ->
+    # console.log "onDoubleTap(#{x}, #{y})"
+    @props.listener.onDoubleTap(x, y)
+
   onTouchesBegan: (touches) ->
     if @trackedTouches.length == 0
       @dragging = false
@@ -142,6 +154,21 @@ class TouchDiv extends React.Component
     if @trackedTouches.length > 1
       # They're pinching, don't even bother to emit a click
       @dragging = true
+      @dblclickTime = null
+    else if not @dragging
+      # Track double clicks
+      now = new Date().getTime()
+      if @dblclickTime != null
+        # second click, if the first click was recent
+        clickDelta = now - @dblclickTime
+        # console.log "clickdelta #{clickDelta}"
+        if clickDelta < DOUBLE_CLICK_MS
+          @dblclickTime = null # require a full new pair of taps to emit a second one
+          @onDoubleTap(@trackedTouches[0].x, @trackedTouches[0].y)
+          return
+      # Remember this click's time in case another comes soon
+      @dblclickTime = now
+
     # console.log "onTouchesBegan: #{JSON.stringify(touches)} touches, trackedTouches now #{JSON.stringify(@trackedTouches)}"
     return
 

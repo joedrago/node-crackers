@@ -238,6 +238,27 @@ class ComicRenderer extends React.Component
   onClick: (x, y) ->
     # console.log "onClick #{x} #{y}"
 
+  onDoubleTap: (x, y) ->
+    scaleTiers = [1]
+    if (zoom1 = Settings.getFloat("comic.dblzoom1", 2)) > 1
+      scaleTiers.push zoom1
+      if (zoom2 = Settings.getFloat("comic.dblzoom2", 3)) > 1
+        scaleTiers.push zoom2
+        if (zoom3 = Settings.getFloat("comic.dblzoom3", 0)) > 1
+          scaleTiers.push zoom3
+    # console.log "scaleTiers", scaleTiers
+
+    scaleIndex = 0
+    for s, index in scaleTiers
+      if @state.imageScale < s
+        break
+      scaleIndex = index
+    # scaleIndex is now the closest scale to something in scaleTiers
+    # Now advance to the 'next' tier
+    scaleIndex = (scaleIndex + 1) % scaleTiers.length
+    # console.log "onDoubleTap(#{x}, #{y}), scaling to index #{scaleIndex} (#{scaleTiers[scaleIndex]})"
+    @zoomTo(x, y, scaleTiers[scaleIndex])
+
   onNoTouches: ->
     if @state.imageSwipeX != 0
       newState = {
@@ -252,7 +273,7 @@ class ComicRenderer extends React.Component
 
     autoZoomOutThreshold = 1.1
     if Settings.getBool("comic.autoZoomOut", false)
-      console.log "comic.autoZoomOut is true"
+      # console.log "comic.autoZoomOut is true"
       autoZoomOutThreshold = 10 # zoom out when the person lets go, no matter what
     if (@state.imageScale > 1) and (@state.imageScale < autoZoomOutThreshold)
       # Too close to unzoomed, just force it
@@ -286,6 +307,9 @@ class ComicRenderer extends React.Component
     if imageScale > @MAX_SCALE
       imageScale = @MAX_SCALE
 
+    @zoomTo(x, y, imageScale)
+
+  zoomTo: (x, y, imageScale) ->
     # calculate the cursor position in normalized image coords
     normalizedImagePosX = (x - @state.imageX) / @state.imageWidth
     normalizedImagePosY = (y - @state.imageY) / @state.imageHeight

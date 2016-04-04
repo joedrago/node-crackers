@@ -7,7 +7,7 @@ class Settings
       value = @cache[key]
     else
       value = window.localStorage.getItem(key)
-      @cache[key] = String(value)
+      @cache[key] = value
       if (value == null) or (value == undefined)
         value = defaultValue
     # console.log "Settings.get(#{key}): '#{value}'"
@@ -20,6 +20,15 @@ class Settings
     else
       value = (value == 'true')
     # console.log "Settings.getBool(#{key}): '#{value}'"
+    return value
+
+  getFloat: (key, defaultValue) ->
+    value = @get(key, null)
+    if value == null
+      value = defaultValue
+    else
+      value = parseFloat(value)
+    # console.log "Settings.getFloat(#{key}): '#{value}'"
     return value
 
   set: (key, value) ->
@@ -41,6 +50,9 @@ module.exports =
   getBool: (key, defaultValue) ->
     ensureInstanceExists()
     return instance.getBool(key, defaultValue)
+  getFloat: (key, defaultValue) ->
+    ensureInstanceExists()
+    return instance.getFloat(key, defaultValue)
   set: (key, value) ->
     ensureInstanceExists()
     return instance.set(key, value)
