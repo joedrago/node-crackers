@@ -48,7 +48,7 @@ class SettingsView extends React.Component
         el MenuItem, { value:   3, primaryText: '3x' }
       ]
 
-    return selectField
+    return div {}, [selectField]
 
   render: ->
     elements = []
