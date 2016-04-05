@@ -42,6 +42,9 @@ getMuiTheme = require 'material-ui/lib/styles/getMuiTheme'
 injectTapEventPlugin = require "react-tap-event-plugin"
 injectTapEventPlugin()
 
+# Uncomment to enable profiling
+# require './Profiling'
+
 # I guess Safari doesn't have Math.sign. So weird.
 Math.sign = Math.sign || (x) ->
   x = +x # convert to a number
@@ -50,33 +53,6 @@ Math.sign = Math.sign || (x) ->
   if x > 0
     return 1
   return -1
-
-# -------------------------------------------------------------------------
-# Perf code
-##PERF Perf = require 'react-addons-perf'
-##PERF START = ->
-##PERF   console.log "starting perf"
-##PERF   Perf.start()
-##PERF
-##PERF STOP = ->
-##PERF   Perf.stop()
-##PERF   console.log "stopping perf"
-##PERF   measurements = Perf.getLastMeasurements()
-##PERF   Perf.printInclusive(measurements)
-##PERF   Perf.printExclusive(measurements)
-##PERF   # Perf.printDOM(measurements)
-##PERF   Perf.printWasted(measurements)
-##PERF
-##PERF PERFING = false
-##PERF PERFBUTTON = ->
-##PERF   if not PERFING
-##PERF     START()
-##PERF   else
-##PERF     STOP()
-##PERF   PERFING = !PERFING
-##PERF   return
-# -------------------------------------------------------------------------
-
 
 class App extends React.Component
   # Enables the "Dark" theme
@@ -188,9 +164,6 @@ class App extends React.Component
 
     $(document).keydown (event) =>
       @onKeyDown(event)
-##PERF       switch event.keyCode
-##PERF         when 32
-##PERF           PERFBUTTON()
       return true
 
     @navigate(true)
