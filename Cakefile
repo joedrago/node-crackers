@@ -1,5 +1,7 @@
 browserify = require 'browserify'
 coffeeify = require 'coffeeify'
+uglifyify = require 'uglifyify'
+
 fs = require 'fs'
 {spawn} = require 'child_process'
 util = require 'util'
@@ -12,10 +14,11 @@ buildUI = (callback) ->
   # equal of command line $ "browserify --debug -t coffeeify ./src/main.coffee > bundle.js "
   b = browserify {
     # debug: true
-    transform: coffeeify
     extensions: ['.coffee']
   }
   b.add './src/ui/main.coffee'
+  b.transform coffeeify
+  b.transform { global: true }, uglifyify
   b.bundle (err, result) ->
     if not err
       fs.writeFile "build/templates/ui.js", result, (err) ->
