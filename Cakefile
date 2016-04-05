@@ -18,7 +18,7 @@ buildUI = (callback) ->
   }
   b.add './src/ui/main.coffee'
   b.transform coffeeify
-  b.transform { global: true }, uglifyify
+  # b.transform { global: true }, uglifyify
   b.bundle (err, result) ->
     if not err
       fs.writeFile "build/templates/ui.js", result, (err) ->
