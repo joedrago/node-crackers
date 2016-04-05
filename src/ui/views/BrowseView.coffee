@@ -5,6 +5,8 @@ DOM = require 'react-dom'
 # Material UI components
 DropDownMenu = require 'material-ui/lib/DropDownMenu'
 FlatButton = require 'material-ui/lib/flat-button'
+FontIcon = require 'material-ui/lib/font-icon'
+LeftNav = require 'material-ui/lib/left-nav'
 IconButton = require 'material-ui/lib/icon-button'
 IconMenu = require 'material-ui/lib/menus/icon-menu'
 MenuItem = require 'material-ui/lib/menus/menu-item'
@@ -117,42 +119,13 @@ class BrowseEntry extends React.Component
         fontSize: '0.7em'
     }, subtitleText
 
-    menuItems = [
-      el MenuItem, {
-        key: 'menu.open'
-        primaryText: "Open"
-        onTouchTap: => @props.redirect(href)
-      }
-    ]
-
-    if hasProgress
-      menuItems.push el MenuItem, {
-        key: 'menu.read'
-        primaryText: "Mark as Read"
-        onTouchTap: => @props.dirAction(@props.info.dir, 'mark')
-      }
-      menuItems.push el MenuItem, {
-        key: 'menu.unread'
-        primaryText: "Mark as Unread"
-        onTouchTap: => @props.dirAction(@props.info.dir, 'unmark')
-      }
-      menuItems.push el MenuItem, {
-        key: 'menu.ignore'
-        primaryText: "Toggle Ignore"
-        onTouchTap: => @props.dirAction(@props.info.dir, 'ignore')
-      }
-
-    menu = el IconMenu, {
-      key: 'menu'
-      iconButtonElement: el FlatButton, {
-        label: title
-        style:
-          lineHeight: '16px'
-          textTransform: 'none'
-      }
-      anchorOrigin: { horizontal: 'left', vertical: 'top' }
-      targetOrigin: { horizontal: 'left', vertical: 'top' }
-    }, menuItems
+    menu = div {
+      key: 'contextmenutext'
+      style:
+        cursor: 'pointer'
+      onClick: =>
+        @props.contextMenu(@props.info.dir)
+    }, title
 
     entry = div {
       key: "BrowseEntry"
@@ -202,6 +175,8 @@ class BrowseView extends React.Component
   constructor: (props) ->
     super props
     @state =
+      contextMenuOpen: false
+      contextMenuDir: ''
       sort: 'alphabetical'
       show:
         reading: true
@@ -214,6 +189,9 @@ class BrowseView extends React.Component
       @state.sort = 'interest'
 
   click: (info) ->
+
+  contextMenu: (dir) ->
+    @setState { contextMenuOpen: true, contextMenuDir: dir }
 
   updateShowFilter: (enabledList) ->
     show = {}
@@ -349,7 +327,65 @@ class BrowseView extends React.Component
         height: '60px'
     }
 
+    # ------------------------------------------------------------------------
+    # Create base entries array
+
     entries = [toolbar, spacing]
+
+    # ------------------------------------------------------------------------
+    # Context Menu (right nav popout for progress stuff)
+
+    if @props.progressEnabled
+      contextMenuItems = [
+        el MenuItem, {
+          key: "contextmenu.dir"
+          primaryText: @state.contextMenuDir
+          disabled: true
+        }
+        el MenuItem, {
+          key: "contextmenu.markread"
+          primaryText: "Mark as Read"
+          rightIcon: el FontIcon, { className: 'material-icons' }, 'done'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'mark')
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.markunread"
+          primaryText: "Mark as Unread"
+          rightIcon: el FontIcon, { className: 'material-icons' }, 'done_all'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'unmark')
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.ignore"
+          primaryText: "Toggle Ignore"
+          rightIcon: el FontIcon, { className: 'material-icons' }, 'do_not_disturb'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'ignore')
+            , 0
+        }
+      ]
+
+      entries.push el LeftNav, {
+          key: 'contextmenu'
+          docked: false
+          openRight: true
+          open: @state.contextMenuOpen
+          disableSwipeToOpen: true
+          onRequestChange: (open) => @setState { contextMenuOpen: open }
+        }, contextMenuItems
+
 
     # ------------------------------------------------------------------------
     # Filter comics list based on current show filters, then sort what is left
@@ -423,10 +459,10 @@ class BrowseView extends React.Component
         lastPerc = entry.perc
 
       sawOneEntry = true
-      entryElement = React.createElement BrowseEntry, {
+      entryElement = el BrowseEntry, {
         key: entry.dir
         info: entry
-        dirAction: @props.dirAction
+        contextMenu: @contextMenu.bind(this)
         redirect: @props.redirect
       }
       entries.push entryElement

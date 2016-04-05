@@ -51,6 +51,33 @@ Math.sign = Math.sign || (x) ->
     return 1
   return -1
 
+# -------------------------------------------------------------------------
+# Perf code
+##PERF Perf = require 'react-addons-perf'
+##PERF START = ->
+##PERF   console.log "starting perf"
+##PERF   Perf.start()
+##PERF
+##PERF STOP = ->
+##PERF   Perf.stop()
+##PERF   console.log "stopping perf"
+##PERF   measurements = Perf.getLastMeasurements()
+##PERF   Perf.printInclusive(measurements)
+##PERF   Perf.printExclusive(measurements)
+##PERF   # Perf.printDOM(measurements)
+##PERF   Perf.printWasted(measurements)
+##PERF
+##PERF PERFING = false
+##PERF PERFBUTTON = ->
+##PERF   if not PERFING
+##PERF     START()
+##PERF   else
+##PERF     STOP()
+##PERF   PERFING = !PERFING
+##PERF   return
+# -------------------------------------------------------------------------
+
+
 class App extends React.Component
   # Enables the "Dark" theme
   @childContextTypes: { muiTheme: React.PropTypes.object }
@@ -84,10 +111,86 @@ class App extends React.Component
 
     @loadManifest()
 
+    # Left navigation panel
+    @navMenuItems = [
+      # el MenuItem, {
+      #   key: "menu.home"
+      #   primaryText: "Home"
+      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
+      #   onTouchTap: (e) =>
+      #     e.preventDefault()
+      #     @redirect('#home')
+      #     @setState { navOpen: false }
+      # }
+      el MenuItem, {
+        key: "menu.browse"
+        primaryText: "Browse"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'grid_on'
+        onTouchTap: (e) =>
+          e.preventDefault()
+          @redirect('#browse')
+          @setState { navOpen: false }
+      }
+      el MenuItem, {
+        key: "menu.updates"
+        primaryText: "Updates"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
+        onTouchTap: (e) =>
+          e.preventDefault()
+          @redirect('#updates')
+          @setState { navOpen: false }
+      }
+      # el MenuItem, {
+      #   key: "menu.search"
+      #   primaryText: "Search"
+      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
+      #   onTouchTap: (e) =>
+      #     e.preventDefault()
+      #     @redirect('#search')
+      #     @setState { navOpen: false }
+      # }
+      el MenuItem, {
+        key: "menu.settings"
+        primaryText: "Settings"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'settings'
+        onTouchTap: (e) =>
+          e.preventDefault()
+          @redirect('#settings')
+          @setState { navOpen: false }
+      }
+      # el MenuItem, {
+      #   key: "menu.help"
+      #   primaryText: "Help"
+      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
+      #   onTouchTap: (e) =>
+      #     e.preventDefault()
+      #     @redirect('#help')
+      #     @setState { navOpen: false }
+      # }
+    ]
+
+    if fullscreen.available()
+      @navMenuItems.push el Divider, {
+        key: 'fulscreen_divider'
+      }
+      @navMenuItems.push el MenuItem, {
+        key: "menu.fullscreen"
+        primaryText: "Toggle Fullscreen"
+        leftIcon: el FontIcon, { className: 'material-icons' }, 'fullscreen'
+        onTouchTap: (e) =>
+          e.preventDefault()
+          fullscreen.toggle()
+          @setState { navOpen: false, fullscreen: fullscreen.active() }
+      }
+
+
     # TODO: hook up fullscreenchange event
 
     $(document).keydown (event) =>
       @onKeyDown(event)
+##PERF       switch event.keyCode
+##PERF         when 32
+##PERF           PERFBUTTON()
       return true
 
     @navigate(true)
@@ -280,83 +383,6 @@ class App extends React.Component
             , 0
         }, 'keyboard_arrow_left'
 
-    # Left navigation panel
-    navMenuItems = [
-      # el MenuItem, {
-      #   key: "menu.home"
-      #   primaryText: "Home"
-      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
-      #   onTouchTap: (e) =>
-      #     e.preventDefault()
-      #     @redirect('#home')
-      #     @setState { navOpen: false }
-      # }
-      el MenuItem, {
-        key: "menu.browse"
-        primaryText: "Browse"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'grid_on'
-        onTouchTap: (e) =>
-          e.preventDefault()
-          @redirect('#browse')
-          @setState { navOpen: false }
-      }
-      el MenuItem, {
-        key: "menu.updates"
-        primaryText: "Updates"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
-        onTouchTap: (e) =>
-          e.preventDefault()
-          @redirect('#updates')
-          @setState { navOpen: false }
-      }
-      # el MenuItem, {
-      #   key: "menu.search"
-      #   primaryText: "Search"
-      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
-      #   onTouchTap: (e) =>
-      #     e.preventDefault()
-      #     @redirect('#search')
-      #     @setState { navOpen: false }
-      # }
-      el MenuItem, {
-        key: "menu.settings"
-        primaryText: "Settings"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'settings'
-        onTouchTap: (e) =>
-          e.preventDefault()
-          @redirect('#settings')
-          @setState { navOpen: false }
-      }
-      # el MenuItem, {
-      #   key: "menu.help"
-      #   primaryText: "Help"
-      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
-      #   onTouchTap: (e) =>
-      #     e.preventDefault()
-      #     @redirect('#help')
-      #     @setState { navOpen: false }
-      # }
-    ]
-
-    if fullscreen.available()
-      fullscreenText = 'Enter Fullscreen'
-      fullscreenIcon = 'fullscreen'
-      if fullscreen.active()
-        fullscreenText = 'Leave Fullscreen'
-        fullscreenIcon = 'fullscreen_exit'
-      navMenuItems.push el Divider, {
-        key: 'fulscreen_divider'
-      }
-      navMenuItems.push el MenuItem, {
-        key: "menu.fullscreen"
-        primaryText: fullscreenText
-        leftIcon: el FontIcon, { className: 'material-icons' }, fullscreenIcon
-        onTouchTap: (e) =>
-          e.preventDefault()
-          fullscreen.toggle()
-          @setState { navOpen: false, fullscreen: fullscreen.active() }
-      }
-
     # if false
     #   navMenuItems.push(el Divider)
     #   navMenuItems.push(
@@ -373,7 +399,7 @@ class App extends React.Component
         open: @state.navOpen
         disableSwipeToOpen: true
         onRequestChange: (open) => @setState { navOpen: open }
-      }, navMenuItems
+      }, @navMenuItems
     )
 
     if @state.manifest
