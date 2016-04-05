@@ -50,6 +50,29 @@ class SettingsView extends React.Component
 
     return div {}, [selectField]
 
+  createAutotouch: ->
+    selectField = el SelectField, {
+        value: Settings.getFloat('comic.autotouch', 0)
+        onChange: (event, index, value) =>
+          Settings.set('comic.autotouch', value)
+          @kick()
+      }, [
+        el MenuItem, { value:   0, primaryText: 'Disabled' }
+        el MenuItem, { value: 1.5, primaryText: '1.5x' }
+        el MenuItem, { value:   2, primaryText: '2x' }
+      ]
+
+    return div {}, [selectField]
+
+  pulldownStyle: ->
+    return {
+      color: '#aaaaaa'
+      fontSize: '1.1em'
+      fontStyle: 'italic'
+      marginTop: '20px'
+      marginBottom: '5px'
+    }
+
   render: ->
     elements = []
 
@@ -66,12 +89,7 @@ class SettingsView extends React.Component
 
     elements.push div {
       key: 'settings.zoomlevelstitle'
-      style:
-        color: '#aaaaaa'
-        fontSize: '1.1em'
-        fontStyle: 'italic'
-        marginTop: '20px'
-        marginBottom: '5px'
+      style: @pulldownStyle()
     }, "Zoom levels when double clicked:"
 
     zoom1 = Settings.getFloat("comic.dblzoom1", 2)
@@ -86,6 +104,12 @@ class SettingsView extends React.Component
     elements.push @createZoombox('comic.dblzoom1', zoom1, true, "zoom1")
     elements.push @createZoombox('comic.dblzoom2', zoom2, (zoom1 > 0), "zoom2")
     elements.push @createZoombox('comic.dblzoom3', zoom3, (zoom2 > 0), "zoom3")
+
+    elements.push div {
+      key: 'settings.autotouchtitle'
+      style: @pulldownStyle()
+    }, "Enable autoread on tablets in landscape mode (choose scale):"
+    elements.push @createAutotouch()
 
     view = div {
       style:

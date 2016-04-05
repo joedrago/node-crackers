@@ -5,6 +5,9 @@ Loader = require 'react-loader'
 {Motion, spring} = require 'react-motion'
 PubSub = require 'pubsub-js'
 
+# Material UI components
+IconButton = require 'material-ui/lib/icon-button'
+
 # Local requires
 ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
@@ -344,39 +347,165 @@ class ComicRenderer extends React.Component
       y: (@props.height - imageHeight) >> 1
     }
 
+  inLandscape: ->
+    return (@props.width > @props.height)
+
   render: ->
     if @state.error
       return el Loader, {
         color: '#ff0000'
       }
-    if not @state.loaded
-      return el Loader, {
-        color: '#222222'
-      }
 
-    return el Motion, {
-        style:
-          imageX: spring(@state.imageX, @springConfig)
-          imageY: spring(@state.imageY, @springConfig)
-          imageWidth: spring(@state.imageWidth, @springConfig)
-          imageHeight: spring(@state.imageHeight, @springConfig)
-      }, (values) =>
-        el TouchDiv, {
-          listener: this
-          width: @props.width
-          height: @props.height
+    elements = []
+
+    autotouch = Settings.getFloat('comic.autotouch', 0)
+    if @inLandscape() and (autotouch > 0)
+      # Autoread!
+      elements.push el IconButton, {
+          key: "autoread_back"
+          iconClassName: 'material-icons'
+          touch: true
           style:
-            id: 'page'
-            position: 'absolute'
+            opacity: 0.5
+            position: 'fixed'
             left: 0
-            top: 0
+            top: 40
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              @autoScale = autotouch
+              @autoPrev()
+            , 0
+        }, 'call_missed'
+
+      elements.push el IconButton, {
+          key: "autoread_forward"
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'fixed'
+            left: 0
+            top: 80
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              @autoScale = autotouch
+              @autoNext()
+            , 0
+        }, 'call_missed_outgoing'
+
+      elements.push el IconButton, {
+          key: "zoomtocorner_q"
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'fixed'
+            left: 0
+            bottom: 30
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              @autoScale = autotouch
+              @zoomToCorner(Corner.TopLeft)
+            , 0
+        }, 'check_box_outline_blank'
+
+      elements.push el IconButton, {
+          key: "zoomtocorner_w"
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'fixed'
+            left: 30
+            bottom: 30
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              @autoScale = autotouch
+              @zoomToCorner(Corner.TopRight)
+            , 0
+        }, 'check_box_outline_blank'
+
+      elements.push el IconButton, {
+          key: "zoomtocorner_a"
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'fixed'
+            left: 0
+            bottom: 0
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              @autoScale = autotouch
+              @zoomToCorner(Corner.BottomLeft)
+            , 0
+        }, 'check_box_outline_blank'
+
+      elements.push el IconButton, {
+          key: "zoomtocorner_s"
+          iconClassName: 'material-icons'
+          touch: true
+          style:
+            opacity: 0.5
+            position: 'fixed'
+            left: 30
+            bottom: 0
+            zIndex: 2
+          iconStyle:
+            color: '#ffffff'
+          onTouchTap: =>
+            setTimeout =>
+              @autoScale = autotouch
+              @zoomToCorner(Corner.BottomRight)
+            , 0
+        }, 'check_box_outline_blank'
+
+    if @state.loaded
+      elements.push el Motion, {
+          key: 'animimage'
+          style:
+            imageX: spring(@state.imageX, @springConfig)
+            imageY: spring(@state.imageY, @springConfig)
+            imageWidth: spring(@state.imageWidth, @springConfig)
+            imageHeight: spring(@state.imageHeight, @springConfig)
+        }, (values) =>
+          el TouchDiv, {
+            listener: this
             width: @props.width
             height: @props.height
-            backgroundColor: '#111111'
-            backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
-            backgroundRepeat: 'no-repeat'
-            backgroundPosition: "#{values.imageX}px #{values.imageY}px"
-            backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
-        }
+            style:
+              id: 'page'
+              position: 'absolute'
+              left: 0
+              top: 0
+              width: @props.width
+              height: @props.height
+              backgroundColor: '#111111'
+              backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
+              backgroundRepeat: 'no-repeat'
+              backgroundPosition: "#{values.imageX}px #{values.imageY}px"
+              backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
+          }
+    else
+      elements.push el Loader, {
+        key: 'loader'
+        color: '#222222'
+      }
+    return div {}, elements
 
 module.exports = ComicRenderer

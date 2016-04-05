@@ -344,7 +344,9 @@ class App extends React.Component
       if fullscreen.active()
         fullscreenText = 'Leave Fullscreen'
         fullscreenIcon = 'fullscreen_exit'
-      navMenuItems.push el Divider
+      navMenuItems.push el Divider, {
+        key: 'fulscreen_divider'
+      }
       navMenuItems.push el MenuItem, {
         key: "menu.fullscreen"
         primaryText: fullscreenText

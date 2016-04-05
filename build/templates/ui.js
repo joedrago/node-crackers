@@ -43840,7 +43840,9 @@ App = (function(superClass) {
         fullscreenText = 'Leave Fullscreen';
         fullscreenIcon = 'fullscreen_exit';
       }
-      navMenuItems.push(el(Divider));
+      navMenuItems.push(el(Divider, {
+        key: 'fulscreen_divider'
+      }));
       navMenuItems.push(el(MenuItem, {
         key: "menu.fullscreen",
         primaryText: fullscreenText,
@@ -43915,7 +43917,7 @@ module.exports = Dimensions()(App);
 
 
 },{"./ConfirmDialog":360,"./LRUCache":362,"./fullscreen":366,"./tags":368,"./views/BrowseView":369,"./views/ComicView":370,"./views/HelpView":371,"./views/HomeView":372,"./views/LoadingView":373,"./views/SearchView":374,"./views/SettingsView":375,"./views/UpdatesView":376,"material-ui/lib/app-bar":14,"material-ui/lib/divider":20,"material-ui/lib/flat-button":24,"material-ui/lib/font-icon":25,"material-ui/lib/icon-button":26,"material-ui/lib/left-nav":27,"material-ui/lib/menus/menu-item":32,"material-ui/lib/raised-button":40,"material-ui/lib/styles/baseThemes/darkBaseTheme":47,"material-ui/lib/styles/getMuiTheme":50,"material-ui/lib/toolbar/toolbar":70,"material-ui/lib/toolbar/toolbar-group":67,"material-ui/lib/toolbar/toolbar-separator":68,"material-ui/lib/toolbar/toolbar-title":69,"pubsub-js":172,"react":357,"react-dimensions":173,"react-dom":174,"react-tap-event-plugin":195}],359:[function(require,module,exports){
-var Auto, ComicRenderer, Corner, DOM, ImageCache, Loader, Motion, PubSub, React, Settings, TouchDiv, div, el, img, ref, ref1, spring,
+var Auto, ComicRenderer, Corner, DOM, IconButton, ImageCache, Loader, Motion, PubSub, React, Settings, TouchDiv, div, el, img, ref, ref1, spring,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -43928,6 +43930,8 @@ Loader = require('react-loader');
 ref = require('react-motion'), Motion = ref.Motion, spring = ref.spring;
 
 PubSub = require('pubsub-js');
+
+IconButton = require('material-ui/lib/icon-button');
 
 ImageCache = require('./ImageCache');
 
@@ -44352,46 +44356,197 @@ ComicRenderer = (function(superClass) {
     };
   };
 
+  ComicRenderer.prototype.inLandscape = function() {
+    return this.props.width > this.props.height;
+  };
+
   ComicRenderer.prototype.render = function() {
+    var autotouch, elements;
     if (this.state.error) {
       return el(Loader, {
         color: '#ff0000'
       });
     }
-    if (!this.state.loaded) {
-      return el(Loader, {
-        color: '#222222'
-      });
+    elements = [];
+    autotouch = Settings.getFloat('comic.autotouch', 0);
+    if (this.inLandscape() && (autotouch > 0)) {
+      elements.push(el(IconButton, {
+        key: "autoread_back",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 0,
+          top: 40,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return setTimeout(function() {
+              _this.autoScale = autotouch;
+              return _this.autoPrev();
+            }, 0);
+          };
+        })(this)
+      }, 'call_missed'));
+      elements.push(el(IconButton, {
+        key: "autoread_forward",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 0,
+          top: 80,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return setTimeout(function() {
+              _this.autoScale = autotouch;
+              return _this.autoNext();
+            }, 0);
+          };
+        })(this)
+      }, 'call_missed_outgoing'));
+      elements.push(el(IconButton, {
+        key: "zoomtocorner_q",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 0,
+          bottom: 30,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return setTimeout(function() {
+              _this.autoScale = autotouch;
+              return _this.zoomToCorner(Corner.TopLeft);
+            }, 0);
+          };
+        })(this)
+      }, 'check_box_outline_blank'));
+      elements.push(el(IconButton, {
+        key: "zoomtocorner_w",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 30,
+          bottom: 30,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return setTimeout(function() {
+              _this.autoScale = autotouch;
+              return _this.zoomToCorner(Corner.TopRight);
+            }, 0);
+          };
+        })(this)
+      }, 'check_box_outline_blank'));
+      elements.push(el(IconButton, {
+        key: "zoomtocorner_a",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 0,
+          bottom: 0,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return setTimeout(function() {
+              _this.autoScale = autotouch;
+              return _this.zoomToCorner(Corner.BottomLeft);
+            }, 0);
+          };
+        })(this)
+      }, 'check_box_outline_blank'));
+      elements.push(el(IconButton, {
+        key: "zoomtocorner_s",
+        iconClassName: 'material-icons',
+        touch: true,
+        style: {
+          opacity: 0.5,
+          position: 'fixed',
+          left: 30,
+          bottom: 0,
+          zIndex: 2
+        },
+        iconStyle: {
+          color: '#ffffff'
+        },
+        onTouchTap: (function(_this) {
+          return function() {
+            return setTimeout(function() {
+              _this.autoScale = autotouch;
+              return _this.zoomToCorner(Corner.BottomRight);
+            }, 0);
+          };
+        })(this)
+      }, 'check_box_outline_blank'));
     }
-    return el(Motion, {
-      style: {
-        imageX: spring(this.state.imageX, this.springConfig),
-        imageY: spring(this.state.imageY, this.springConfig),
-        imageWidth: spring(this.state.imageWidth, this.springConfig),
-        imageHeight: spring(this.state.imageHeight, this.springConfig)
-      }
-    }, (function(_this) {
-      return function(values) {
-        return el(TouchDiv, {
-          listener: _this,
-          width: _this.props.width,
-          height: _this.props.height,
-          style: {
-            id: 'page',
-            position: 'absolute',
-            left: 0,
-            top: 0,
+    if (this.state.loaded) {
+      elements.push(el(Motion, {
+        key: 'animimage',
+        style: {
+          imageX: spring(this.state.imageX, this.springConfig),
+          imageY: spring(this.state.imageY, this.springConfig),
+          imageWidth: spring(this.state.imageWidth, this.springConfig),
+          imageHeight: spring(this.state.imageHeight, this.springConfig)
+        }
+      }, (function(_this) {
+        return function(values) {
+          return el(TouchDiv, {
+            listener: _this,
             width: _this.props.width,
             height: _this.props.height,
-            backgroundColor: '#111111',
-            backgroundImage: "url(\"" + _this.props.metadata.images[_this.state.index] + "\")",
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: values.imageX + "px " + values.imageY + "px",
-            backgroundSize: values.imageWidth + "px " + values.imageHeight + "px"
-          }
-        });
-      };
-    })(this));
+            style: {
+              id: 'page',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: _this.props.width,
+              height: _this.props.height,
+              backgroundColor: '#111111',
+              backgroundImage: "url(\"" + _this.props.metadata.images[_this.state.index] + "\")",
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: values.imageX + "px " + values.imageY + "px",
+              backgroundSize: values.imageWidth + "px " + values.imageHeight + "px"
+            }
+          });
+        };
+      })(this)));
+    } else {
+      elements.push(el(Loader, {
+        key: 'loader',
+        color: '#222222'
+      }));
+    }
+    return div({}, elements);
   };
 
   return ComicRenderer;
@@ -44401,7 +44556,7 @@ ComicRenderer = (function(superClass) {
 module.exports = ComicRenderer;
 
 
-},{"./ImageCache":361,"./Settings":364,"./TouchDiv":365,"./tags":368,"pubsub-js":172,"react":357,"react-dom":174,"react-loader":175,"react-motion":183}],360:[function(require,module,exports){
+},{"./ImageCache":361,"./Settings":364,"./TouchDiv":365,"./tags":368,"material-ui/lib/icon-button":26,"pubsub-js":172,"react":357,"react-dom":174,"react-loader":175,"react-motion":183}],360:[function(require,module,exports){
 var ConfirmDialog, DOM, Dialog, Dimensions, FlatButton, PubSub, RaisedButton, React, div, el, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
@@ -46267,7 +46422,42 @@ SettingsView = (function(superClass) {
         primaryText: '3x'
       })
     ]);
-    return selectField;
+    return div({}, [selectField]);
+  };
+
+  SettingsView.prototype.createAutotouch = function() {
+    var selectField;
+    selectField = el(SelectField, {
+      value: Settings.getFloat('comic.autotouch', 0),
+      onChange: (function(_this) {
+        return function(event, index, value) {
+          Settings.set('comic.autotouch', value);
+          return _this.kick();
+        };
+      })(this)
+    }, [
+      el(MenuItem, {
+        value: 0,
+        primaryText: 'Disabled'
+      }), el(MenuItem, {
+        value: 1.5,
+        primaryText: '1.5x'
+      }), el(MenuItem, {
+        value: 2,
+        primaryText: '2x'
+      })
+    ]);
+    return div({}, [selectField]);
+  };
+
+  SettingsView.prototype.pulldownStyle = function() {
+    return {
+      color: '#aaaaaa',
+      fontSize: '1.1em',
+      fontStyle: 'italic',
+      marginTop: '20px',
+      marginBottom: '5px'
+    };
   };
 
   SettingsView.prototype.render = function() {
@@ -46285,13 +46475,7 @@ SettingsView = (function(superClass) {
     elements.push(this.createCheckbox('comic.autoZoomOut', false, "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)"));
     elements.push(div({
       key: 'settings.zoomlevelstitle',
-      style: {
-        color: '#aaaaaa',
-        fontSize: '1.1em',
-        fontStyle: 'italic',
-        marginTop: '20px',
-        marginBottom: '5px'
-      }
+      style: this.pulldownStyle()
     }, "Zoom levels when double clicked:"));
     zoom1 = Settings.getFloat("comic.dblzoom1", 2);
     zoom2 = Settings.getFloat("comic.dblzoom2", 3);
@@ -46306,6 +46490,11 @@ SettingsView = (function(superClass) {
     elements.push(this.createZoombox('comic.dblzoom1', zoom1, true, "zoom1"));
     elements.push(this.createZoombox('comic.dblzoom2', zoom2, zoom1 > 0, "zoom2"));
     elements.push(this.createZoombox('comic.dblzoom3', zoom3, zoom2 > 0, "zoom3"));
+    elements.push(div({
+      key: 'settings.autotouchtitle',
+      style: this.pulldownStyle()
+    }, "Enable autoread on tablets in landscape mode (choose scale):"));
+    elements.push(this.createAutotouch());
     view = div({
       style: {
         marginTop: '10px',
