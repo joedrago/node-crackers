@@ -88,7 +88,7 @@ https://github.com/joedrago/node-crackers/raw/master/tutorial/Awesome.cbz
 
 (It should have 3, really bland, programmer-art pages in it. You can see for yourself, if you're curious. Simply make a copy of it, change the extension to .zip and open it up.)
 
-Make yourself a new directory to be the "crackers root directory": the main home for all of your comics. Either do this in your OS's user interface, or switch into your favorite temporary directory and run `mkdir comics`. Then simply copy your new `Awesome.cbz` you just downloaded directly into that new directory.
+Make yourself a new directory to be the the main home for all of your comics; in this tutorial, we'll use the name `comics`. Either do this in your OS's user interface, or switch into your favorite temporary directory and run `mkdir comics`. Then simply copy your new `Awesome.cbz` you just downloaded directly into that new directory.
 
 **Note:** I'm going to assume from now on that any commands I have you type will act on a directory named `comics`. Please adjust your commands accordingly. You may even use `.` instead of `comics` if you are inside of the directory itself.
 
