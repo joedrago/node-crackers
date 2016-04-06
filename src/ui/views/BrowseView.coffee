@@ -78,8 +78,7 @@ class BrowseEntry extends React.Component
 
     linkContents = []
 
-    hasProgress = @props.info.hasOwnProperty('perc')
-    if hasProgress
+    if @props.progressEnabled
       percent = @props.info.perc
       if percent < 0
         percent = 0
@@ -118,13 +117,18 @@ class BrowseEntry extends React.Component
         fontSize: '0.7em'
     }, subtitleText
 
-    menu = div {
-      key: 'contextmenutext'
-      style:
-        cursor: 'pointer'
-      onClick: =>
-        @props.contextMenu(@props.info.dir)
-    }, title
+    if @props.progressEnabled
+      menu = div {
+        key: 'contextmenutext'
+        style:
+          cursor: 'pointer'
+        onClick: =>
+          @props.contextMenu(@props.info.dir)
+      }, title
+    else
+      menu = div {
+        key: 'contextmenutext'
+      }, title
 
     entry = div {
       key: "BrowseEntry"
@@ -463,6 +467,7 @@ class BrowseView extends React.Component
         info: entry
         contextMenu: @contextMenu.bind(this)
         redirect: @props.redirect
+        progressEnabled: @props.progressEnabled
       }
       entries.push entryElement
 
