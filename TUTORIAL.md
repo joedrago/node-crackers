@@ -115,7 +115,7 @@ If you look in the `comics` directory, you should see a handful of files, such a
 * `server.crackers` - The server manifest (unused unless you enable 'progress' support)
 * `updates.crackers` - Another manifest file, downloaded and used by the Updates UI
 
-_But ... how do I see my gallery?_ In its basic form, Crackers only requires a basic, static web server to work. Unfortunately, simply double clicking on `index.html` is going to work, as modern browsers won't let you read files next to the index when served directly from the disk. If you already have a favorite way to serve up a static directory, fire it up, point it at `comics`, and move onto the next section.
+_But ... how do I see my gallery?_ In its basic form, Crackers only requires a static web server to work. Unfortunately, simply double clicking on `index.html` isn't going to work, as modern browsers won't let you read files next to the index when served directly from the disk. If you already have a favorite way to serve up a static directory, fire it up, point it at `comics`, and move onto the next section.
 
 Still here? Alright, since you already have node.js installed, let's use another really simple tool via `npm` to pull this off. Try these commands (Linux and OSX users should prefix all `npm install -g ____` commands with `sudo`):
 
