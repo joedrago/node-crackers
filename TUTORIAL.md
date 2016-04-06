@@ -88,23 +88,23 @@ https://github.com/joedrago/node-crackers/raw/master/tutorial/Awesome.cbz
 
 (It should have 3, really bland, programmer-art pages in it. You can see for yourself, if you're curious. Simply make a copy of it, change the extension to .zip and open it up.)
 
-Make yourself a new directory to be the the main home for all of your comics; in this tutorial, we'll use the name `comics`. Either do this in your OS's user interface, or switch into your favorite temporary directory and run `mkdir comics`. Then simply copy your new `Awesome.cbz` you just downloaded directly into that new directory.
+Make yourself a new directory to be the the main home for all of your comics; in this tutorial, we'll use the name `MyFirstReader`. Either do this in your OS's user interface, or switch into your favorite temporary directory and run `mkdir MyFirstReader`. Then simply copy your new `Awesome.cbz` you just downloaded directly into that new directory.
 
-**Note:** I'm going to assume from now on that any commands I have you type will act on a directory named `comics`. Please adjust your commands accordingly. You may even use `.` instead of `comics` if you are inside of the directory itself.
+**Note:** I'm going to assume from now on that any commands I have you type will act on a directory named `MyFirstReader`. Please adjust your commands accordingly. You may even use `.` instead of `MyFirstReader` if you are inside of the directory itself.
 
 Now type the following:
 
-    crackers update comics
+    crackers update MyFirstReader
 
 You should get something similar to the following:
 
-    $ crackers update comics
+    $ crackers update MyFirstReader
     5 Apr 21:06:51 - [warning] crackers root not found (root.crackers not detected in parents).
-    5 Apr 21:06:51 - [progress] Unpacking /tmp/comics/Awesome.cbz into /tmp/comics/Awesome
+    5 Apr 21:06:51 - [progress] Unpacking /tmp/MyFirstReader/Awesome.cbz into /tmp/MyFirstReader/Awesome
     5 Apr 21:06:54 - [progress] Updated comic: Awesome (3 pages)
     5 Apr 21:06:54 - [progress] Updated metadata: Crackers
 
-If you look in the `comics` directory, you should see a handful of files, such as:
+If you look in the `MyFirstReader` directory, you should see a handful of files, such as:
 
 * `archives` - Empty dir that will contain comic book archives you generate with `crackers archive`
 * `Awesome` - Extracted comic, organized in a way Crackers understands, along with some metadata
@@ -115,17 +115,17 @@ If you look in the `comics` directory, you should see a handful of files, such a
 * `server.crackers` - The server manifest (unused unless you enable 'progress' support)
 * `updates.crackers` - Another manifest file, downloaded and used by the Updates UI
 
-_But ... how do I see my gallery?_ In its basic form, Crackers only requires a static web server to work. Unfortunately, simply double clicking on `index.html` isn't going to work, as modern browsers won't let you read files next to the index when served directly from the disk. If you already have a favorite way to serve up a static directory, fire it up, point it at `comics`, and move onto the next section.
+_But ... how do I see my gallery?_ In its basic form, Crackers only requires a static web server to work. Unfortunately, simply double clicking on `index.html` isn't going to work, as modern browsers won't let you read files next to the index when served directly from the disk. If you already have a favorite way to serve up a static directory, fire it up, point it at `MyFirstReader`, and move onto the next section.
 
 Still here? Alright, since you already have node.js installed, let's use another really simple tool via `npm` to pull this off. Try these commands (Linux and OSX users should prefix all `npm install -g ____` commands with `sudo`):
 
     npm install -g http-server
-    http-server comics
+    http-server MyFirstReader
 
 It should say something like:
 
-    $ http-server comics
-    Starting up http-server, serving comics
+    $ http-server MyFirstReader
+    Starting up http-server, serving MyFirstReader
     Available on:
       http://127.0.0.1:8080
     Hit CTRL-C to stop the server
