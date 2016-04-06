@@ -130,7 +130,7 @@ It should say something like:
       http://127.0.0.1:8080
     Hit CTRL-C to stop the server
 
-Open up your favorite browser and visit the URL it offers, then (assuming you see cool things), move onto the next section.
+Open up your favorite browser and visit any of the URLs it offers, then (assuming you see cool things), move onto the next section.
 
 Quick Tour
 ----------
