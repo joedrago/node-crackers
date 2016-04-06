@@ -90,6 +90,9 @@ class Crackers
       indexGenerator = new IndexGenerator(@rootDir, indexDir, @force, @download)
       indexGenerator.generate()
 
+    if indexDirs.length == 0
+      @error "No comics found. Please add at least one .cbr, .cbt, .cbz to a subdirectory and run this command again."
+
     # All done!
     return true
 
