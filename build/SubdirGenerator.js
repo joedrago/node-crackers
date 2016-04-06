@@ -20,9 +20,7 @@
       this.force = force;
       this.download = download;
       this.rootDir = this.rootDir.replace(path.sep + "$", "");
-      this.path = this.dir.substr(this.rootDir.length + 1);
-      this.title = this.path;
-      pieces = this.title.split(path.sep);
+      pieces = this.dir.substr(this.rootDir.length + 1).split(path.sep);
       this.title = pieces.join(" | ");
     }
 
