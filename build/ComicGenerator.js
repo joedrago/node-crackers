@@ -24,7 +24,6 @@
       this.prevDir = prevDir;
       this.nextDir = nextDir;
       this.force = force;
-      this.indexFilename = cfs.join(this.dir, constants.INDEX_FILENAME);
       this.imagesDir = cfs.join(this.dir, constants.IMAGES_DIR);
       this.images = cfs.listImages(this.imagesDir);
       this.relativeRoot = path.relative(this.dir, this.rootDir);
@@ -40,8 +39,7 @@
     ComicGenerator.prototype.generate = function() {
       var coverGenerator, i, image, imageUrls, len, parsed, ref, url;
       if (this.images.length === 0) {
-        log.error("No images in '" + this.dir + "', removing index");
-        fs.unlinkSync(this.indexFilename);
+        log.error("No images in '" + this.dir + "', removing metadata");
         cfs.removeMetadata(this.dir);
         return false;
       }
@@ -61,8 +59,8 @@
         title: this.title,
         pages: this.images.length,
         count: 1,
-        cover: constants.COVER_FILENAME,
-        recentcover: constants.RECENT_COVER_FILENAME,
+        prev: this.prevDir,
+        next: this.nextDir,
         timestamp: cfs.dirTime(this.imagesDir),
         images: imageUrls
       });

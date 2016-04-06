@@ -7,7 +7,8 @@ path = require 'path'
 wrench = require 'wrench'
 
 ComicGenerator = require './ComicGenerator'
-IndexGenerator = require './IndexGenerator'
+RootGenerator = require './RootGenerator'
+SubdirGenerator = require './SubdirGenerator'
 Unpacker = require './Unpacker'
 
 class Crackers
@@ -47,7 +48,8 @@ class Crackers
       log.verbose "Processing #{unpackFile} ..."
       @unpack(unpackFile, unpackDir, @force)
 
-    # Regenerate index.html for all comics
+    # regenerate all comic metadata/covers
+    sawOneComic = false
     imageDirs = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/images$/))
     prevDir = ""
     for imageDir, i in imageDirs
@@ -66,6 +68,7 @@ class Crackers
               nextDir = path.relative(@rootDir, absoluteNextDir).replace(/\\/g, "/")
         comicGenerator = new ComicGenerator(@rootDir, comicDir, prevDir, nextDir, @force)
         comicGenerator.generate()
+        sawOneComic = true
         if (nextDir.length > 0) and (comicName.length > 0)
           # The comic we just generated had a nextDir, therefore the next comic should
           # have this comic as the prevdir
@@ -76,25 +79,28 @@ class Crackers
         else
           prevDir = ""
 
-    # Find directories that need indexing
-    indexDirSeen = {}
+    # Find subdirs containing comics
+    subdirSeen = {}
     for imageDir in imageDirs
       imageDirPieces = imageDir.split(path.sep)
       imageDirPieces.pop() # pop "images"
       imageDirPieces.pop() # pop comic dir
       while imageDirPieces.length > 1
-        indexDir = cfs.join.apply(null, imageDirPieces)
-        indexDirSeen[indexDir] = true
-        break if indexDir == @rootDir
+        subdir = cfs.join.apply(null, imageDirPieces)
+        break if subdir == @rootDir
+        subdirSeen[subdir] = true
         imageDirPieces.pop()
 
-    # regenerate all indices
-    indexDirs = Object.keys(indexDirSeen).sort().reverse()
-    for indexDir in indexDirs
-      indexGenerator = new IndexGenerator(@rootDir, indexDir, @force, @download)
-      indexGenerator.generate()
+    # regenerate all subdir metadata/covers
+    subdirs = Object.keys(subdirSeen).sort().reverse()
+    for subdir in subdirs
+      subdirGenerator = new SubdirGenerator(@rootDir, subdir, @force, @download)
+      subdirGenerator.generate()
 
-    if indexDirs.length == 0
+    rootGenerator = new RootGenerator(@rootDir, @rootDir, @force, @download)
+    rootGenerator.generate()
+
+    if not sawOneComic
       @error "No comics found. Please add at least one .cbr, .cbt, .cbz to a subdirectory and run this command again."
 
     # All done!

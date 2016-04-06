@@ -9,7 +9,7 @@ CoverGenerator = require './CoverGenerator'
 ManifestGenerator = require './ManifestGenerator'
 UpdatesGenerator = require './UpdatesGenerator'
 
-class IndexGenerator
+class SubdirGenerator
   constructor: (@rootDir, @dir, @force, @download) ->
     @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
     @rootDir = @rootDir.replace("#{path.sep}$", "")
@@ -73,4 +73,4 @@ class IndexGenerator
     }
     log.progress "Updated metadata: #{@title}"
 
-module.exports = IndexGenerator
+module.exports = SubdirGenerator
