@@ -132,6 +132,9 @@
         indexGenerator = new IndexGenerator(this.rootDir, indexDir, this.force, this.download);
         indexGenerator.generate();
       }
+      if (indexDirs.length === 0) {
+        this.error("No comics found. Please add at least one .cbr, .cbt, .cbz to a subdirectory and run this command again.");
+      }
       return true;
     };
 

@@ -45644,7 +45644,7 @@ BrowseEntry = (function(superClass) {
   }
 
   BrowseEntry.prototype.render = function() {
-    var cover, entry, hasProgress, href, link, linkContents, menu, percent, progressBar, subtitle, subtitleText, title;
+    var cover, entry, href, link, linkContents, menu, percent, progressBar, subtitle, subtitleText, title;
     cover = el(PlaceholderImage, {
       key: 'cover',
       src: this.props.info.dir + "/cover.png"
@@ -45666,8 +45666,7 @@ BrowseEntry = (function(superClass) {
       }
     }, this.props.info.dir.replace(/\//g, " | "));
     linkContents = [];
-    hasProgress = this.props.info.hasOwnProperty('perc');
-    if (hasProgress) {
+    if (this.props.progressEnabled) {
       percent = this.props.info.perc;
       if (percent < 0) {
         percent = 0;
@@ -45708,17 +45707,23 @@ BrowseEntry = (function(superClass) {
         fontSize: '0.7em'
       }
     }, subtitleText);
-    menu = div({
-      key: 'contextmenutext',
-      style: {
-        cursor: 'pointer'
-      },
-      onClick: (function(_this) {
-        return function() {
-          return _this.props.contextMenu(_this.props.info.dir);
-        };
-      })(this)
-    }, title);
+    if (this.props.progressEnabled) {
+      menu = div({
+        key: 'contextmenutext',
+        style: {
+          cursor: 'pointer'
+        },
+        onClick: (function(_this) {
+          return function() {
+            return _this.props.contextMenu(_this.props.info.dir);
+          };
+        })(this)
+      }, title);
+    } else {
+      menu = div({
+        key: 'contextmenutext'
+      }, title);
+    }
     entry = div({
       key: "BrowseEntry",
       style: {
@@ -46142,7 +46147,8 @@ BrowseView = (function(superClass) {
         key: entry.dir,
         info: entry,
         contextMenu: this.contextMenu.bind(this),
-        redirect: this.props.redirect
+        redirect: this.props.redirect,
+        progressEnabled: this.props.progressEnabled
       });
       entries.push(entryElement);
     }
