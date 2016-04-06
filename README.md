@@ -10,7 +10,7 @@ Tutorial!
 
 For a guided tour of how to use all of crackers' features (including installation, first time setup, updating, lesser known features), please consult the TUTORIAL.md file here:
 
-https://github.com/joedrago/node-crackers/blob/master/README.md
+https://github.com/joedrago/node-crackers/blob/master/TUTORIAL.md
 
 Installation:
 -------------
