@@ -62,13 +62,17 @@ class Crackers
           if nextParsed.dir
             nextParent = path.parse(nextParsed.dir)
             if nextParent.name and (parent.dir == nextParent.dir)
-              nextDir = "../#{nextParent.name}"
+              absoluteNextDir = path.resolve(comicDir, "../#{nextParent.name}")
+              nextDir = path.relative(@rootDir, absoluteNextDir).replace(/\\/g, "/")
         comicGenerator = new ComicGenerator(@rootDir, comicDir, prevDir, nextDir, @force)
         comicGenerator.generate()
         if (nextDir.length > 0) and (comicName.length > 0)
           # The comic we just generated had a nextDir, therefore the next comic should
           # have this comic as the prevdir
-          prevDir = "../#{comicName}"
+          relativeComicDir = path.relative(@rootDir, comicDir)
+          relativeComicDir = '.' if relativeComicDir.length == 0
+          relativeComicDir = relativeComicDir.replace(/\\/g, "/")
+          prevDir = relativeComicDir
         else
           prevDir = ""
 
