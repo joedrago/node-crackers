@@ -5,7 +5,6 @@ DOM = require 'react-dom'
 # Material UI components
 DropDownMenu = require 'material-ui/lib/DropDownMenu'
 FlatButton = require 'material-ui/lib/flat-button'
-FontIcon = require 'material-ui/lib/font-icon'
 LeftNav = require 'material-ui/lib/left-nav'
 IconButton = require 'material-ui/lib/icon-button'
 IconMenu = require 'material-ui/lib/menus/icon-menu'
@@ -17,7 +16,7 @@ ToolbarTitle = require 'material-ui/lib/toolbar/toolbar-title'
 
 # Local requires
 Settings = require '../Settings'
-{a, div, el, img, hr, span} = require '../tags'
+{a, div, el, icon, img, hr, span} = require '../tags'
 
 COVER_WIDTH = '150px'
 COVER_HEIGHT = '231px' # placeholder height, the real images are auto-height
@@ -345,7 +344,7 @@ class BrowseView extends React.Component
         el MenuItem, {
           key: "contextmenu.markread"
           primaryText: "Mark as Read"
-          rightIcon: el FontIcon, { className: 'material-icons' }, 'done'
+          rightIcon: icon 'done'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }
@@ -356,7 +355,7 @@ class BrowseView extends React.Component
         el MenuItem, {
           key: "contextmenu.markunread"
           primaryText: "Mark as Unread"
-          rightIcon: el FontIcon, { className: 'material-icons' }, 'done_all'
+          rightIcon: icon 'done_all'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }
@@ -367,7 +366,7 @@ class BrowseView extends React.Component
         el MenuItem, {
           key: "contextmenu.ignore"
           primaryText: "Toggle Ignore"
-          rightIcon: el FontIcon, { className: 'material-icons' }, 'do_not_disturb'
+          rightIcon: icon 'do_not_disturb'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }

@@ -8,7 +8,7 @@ PubSub = require 'pubsub-js'
 LRUCache = require './LRUCache'
 ConfirmDialog = require './ConfirmDialog'
 fullscreen = require './fullscreen'
-{div, el} = require './tags'
+{div, el, icon} = require './tags'
 
 # Views
 BrowseView = require './views/BrowseView'
@@ -24,7 +24,6 @@ UpdatesView = require './views/UpdatesView'
 AppBar = require 'material-ui/lib/app-bar'
 FlatButton = require 'material-ui/lib/flat-button'
 Divider = require 'material-ui/lib/divider'
-FontIcon = require 'material-ui/lib/font-icon'
 IconButton = require 'material-ui/lib/icon-button'
 LeftNav = require 'material-ui/lib/left-nav'
 MenuItem = require 'material-ui/lib/menus/menu-item'
@@ -45,7 +44,9 @@ injectTapEventPlugin()
 # Uncomment to enable profiling
 # require './Profiling'
 
+# ------------------------------------------------------------------------
 # I guess Safari doesn't have Math.sign. So weird.
+
 Math.sign = Math.sign || (x) ->
   x = +x # convert to a number
   if (x == 0) || isNaN(x)
@@ -53,6 +54,9 @@ Math.sign = Math.sign || (x) ->
   if x > 0
     return 1
   return -1
+
+# ------------------------------------------------------------------------
+# App
 
 class App extends React.Component
   # Enables the "Dark" theme
@@ -89,19 +93,10 @@ class App extends React.Component
 
     # Left navigation panel
     @navMenuItems = [
-      # el MenuItem, {
-      #   key: "menu.home"
-      #   primaryText: "Home"
-      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'home'
-      #   onTouchTap: (e) =>
-      #     e.preventDefault()
-      #     @redirect('#home')
-      #     @setState { navOpen: false }
-      # }
       el MenuItem, {
         key: "menu.browse"
         primaryText: "Browse"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'grid_on'
+        leftIcon: icon 'grid_on'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#browse')
@@ -110,39 +105,21 @@ class App extends React.Component
       el MenuItem, {
         key: "menu.updates"
         primaryText: "Updates"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'event_note'
+        leftIcon: icon 'event_note'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#updates')
           @setState { navOpen: false }
       }
-      # el MenuItem, {
-      #   key: "menu.search"
-      #   primaryText: "Search"
-      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'search'
-      #   onTouchTap: (e) =>
-      #     e.preventDefault()
-      #     @redirect('#search')
-      #     @setState { navOpen: false }
-      # }
       el MenuItem, {
         key: "menu.settings"
         primaryText: "Settings"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'settings'
+        leftIcon: icon 'settings'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#settings')
           @setState { navOpen: false }
       }
-      # el MenuItem, {
-      #   key: "menu.help"
-      #   primaryText: "Help"
-      #   leftIcon: el FontIcon, { className: 'material-icons' }, 'help'
-      #   onTouchTap: (e) =>
-      #     e.preventDefault()
-      #     @redirect('#help')
-      #     @setState { navOpen: false }
-      # }
     ]
 
     if fullscreen.available()
@@ -152,15 +129,12 @@ class App extends React.Component
       @navMenuItems.push el MenuItem, {
         key: "menu.fullscreen"
         primaryText: "Toggle Fullscreen"
-        leftIcon: el FontIcon, { className: 'material-icons' }, 'fullscreen'
+        leftIcon: icon 'fullscreen'
         onTouchTap: (e) =>
           e.preventDefault()
           fullscreen.toggle()
           @setState { navOpen: false, fullscreen: fullscreen.active() }
       }
-
-
-    # TODO: hook up fullscreenchange event
 
     $(document).keydown (event) =>
       @onKeyDown(event)
@@ -355,16 +329,6 @@ class App extends React.Component
               window.history.back()
             , 0
         }, 'keyboard_arrow_left'
-
-    # if false
-    #   navMenuItems.push(el Divider)
-    #   navMenuItems.push(
-    #     el MenuItem, {
-    #       key: "menu.nextissue"
-    #       primaryText: "Next Issue in Series"
-    #       leftIcon: el FontIcon, { className: 'material-icons' }, 'skip_next'
-    #     }
-    #   )
 
     elements.push(el LeftNav, {
         key: 'leftnav'
