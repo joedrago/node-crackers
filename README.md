@@ -5,6 +5,13 @@ A commandline tool for organizing a directory of .cbr, .cbt, and .cbz files into
 
 Released under the Boost Software License (Version 1.0).
 
+Tutorial!
+---------
+
+For a guided tour of how to use all of crackers' features (including installation, first time setup, updating, lesser known features), please consult the TUTORIAL.md file here:
+
+https://github.com/joedrago/node-crackers/blob/master/README.md
+
 Installation:
 -------------
 
