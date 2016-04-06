@@ -5,72 +5,41 @@ log = require './log'
 path = require 'path'
 template = require './template'
 
-CoverGenerator = require './CoverGenerator'
 ManifestGenerator = require './ManifestGenerator'
 UpdatesGenerator = require './UpdatesGenerator'
 
 class RootGenerator
-  constructor: (@rootDir, @dir, @force, @download) ->
-    @indexFilename = cfs.join(@dir, constants.INDEX_FILENAME)
+  constructor: (@rootDir, @force, @download) ->
+    @indexFilename = cfs.join(@rootDir, constants.INDEX_FILENAME)
     @rootDir = @rootDir.replace("#{path.sep}$", "")
-    @isRoot = (@rootDir == @dir)
-    @path = @dir.substr(@rootDir.length + 1)
-    @title = @path
-    if @title.length == 0
-      @title = cfs.getRootTitle(@rootDir)
-    else
-      pieces = @title.split(path.sep)
-      @title = pieces.join(" | ")
+    @title = cfs.getRootTitle(@rootDir)
 
   generate: ->
-    mdList = cfs.gatherMetadata(@dir)
-    if mdList.length == 0
-      log.error "Nothing in '#{@dir}', removing index"
-      fs.unlinkSync(@indexFilename)
-      cfs.removeMetadata(@dir)
-      return false
+    # Generate client and server manifests
+    manifestGenerator = new ManifestGenerator(@rootDir)
+    manifestGenerator.generate()
+    log.progress "Updated client and server manifests"
 
-    if @isRoot
-      manifestGenerator = new ManifestGenerator(@rootDir)
-      manifestGenerator.generate()
-      updates = new UpdatesGenerator(@rootDir).getUpdates()
-      fs.writeFileSync cfs.join(@dir, constants.UPDATES_FILENAME), JSON.stringify(updates, null, 2)
+    # Generate updates manifest
+    updates = new UpdatesGenerator(@rootDir).getUpdates()
+    fs.writeFileSync cfs.join(@rootDir, constants.UPDATES_FILENAME), JSON.stringify(updates, null, 2)
+    log.progress "Updated updates manifest"
 
-      if endpoint = cfs.getProgressEndpoint(@rootDir)
-        progressEnabled = "true"
-      else
-        progressEnabled = "false"
-        endpoint = constants.MANIFEST_CLIENT_FILENAME
+    # See if the user enabled the progress endpoint in root.crackers
+    if endpoint = cfs.getProgressEndpoint(@rootDir)
+      progressEnabled = "true"
+    else
+      progressEnabled = "false"
+      endpoint = constants.MANIFEST_CLIENT_FILENAME
 
-      outputText = template('index_html', {
-        title: @title
-        endpoint: endpoint
-        progress: progressEnabled
-      })
-      fs.writeFileSync @indexFilename, outputText
-      log.verbose "Wrote #{@indexFilename}"
-
-    if not @isRoot
-      images = (path.join(@dir, md.path, constants.COVER_FILENAME) for md in mdList)
-      coverGenerator = new CoverGenerator(@rootDir, @dir, images, @force)
-      coverGenerator.generate()
-
-    totalCount = 0
-    timestamp = 0
-    recent = ""
-    for metadata in mdList
-      if timestamp < metadata.timestamp
-        timestamp = metadata.timestamp
-        recent = metadata.path
-      totalCount += metadata.count
-
-    cfs.writeMetadata @dir, {
-      type:  'index'
+    # Write out the client webapp into index.html
+    outputText = template('index_html', {
       title: @title
-      count: totalCount
-      timestamp: timestamp
-      recent: recent
-    }
-    log.progress "Updated metadata: #{@title}"
+      endpoint: endpoint
+      progress: progressEnabled
+    })
+    fs.writeFileSync @indexFilename, outputText
+    log.verbose "Wrote #{@indexFilename}"
+    log.progress "Updated app (index.html)"
 
 module.exports = RootGenerator

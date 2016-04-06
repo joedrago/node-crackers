@@ -74,7 +74,6 @@
         log.verbose("Processing " + unpackFile + " ...");
         this.unpack(unpackFile, unpackDir, this.force);
       }
-      sawOneComic = false;
       imageDirs = (function() {
         var k, len1, ref, results;
         ref = cfs.listDir(this.updateDir);
@@ -88,6 +87,7 @@
         return results;
       }).call(this);
       prevDir = "";
+      sawOneComic = false;
       for (i = k = 0, len1 = imageDirs.length; k < len1; i = ++k) {
         imageDir = imageDirs[i];
         parsed = path.parse(imageDir);
@@ -137,13 +137,12 @@
         }
       }
       subdirs = Object.keys(subdirSeen).sort().reverse();
-      console.log("subdirs", subdirs);
       for (m = 0, len3 = subdirs.length; m < len3; m++) {
         subdir = subdirs[m];
         subdirGenerator = new SubdirGenerator(this.rootDir, subdir, this.force, this.download);
         subdirGenerator.generate();
       }
-      rootGenerator = new RootGenerator(this.rootDir, this.rootDir, this.force, this.download);
+      rootGenerator = new RootGenerator(this.rootDir, this.force, this.download);
       rootGenerator.generate();
       if (!sawOneComic) {
         this.error("No comics found. Please add at least one .cbr, .cbt, .cbz to a subdirectory and run this command again.");

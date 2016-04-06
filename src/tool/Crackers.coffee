@@ -49,9 +49,9 @@ class Crackers
       @unpack(unpackFile, unpackDir, @force)
 
     # regenerate all comic metadata/covers
-    sawOneComic = false
     imageDirs = (path.resolve(@updateDir, file) for file in cfs.listDir(@updateDir) when file.match(/images$/))
     prevDir = ""
+    sawOneComic = false
     for imageDir, i in imageDirs
       parsed = path.parse(imageDir)
       if parsed.dir
@@ -97,7 +97,7 @@ class Crackers
       subdirGenerator = new SubdirGenerator(@rootDir, subdir, @force, @download)
       subdirGenerator.generate()
 
-    rootGenerator = new RootGenerator(@rootDir, @rootDir, @force, @download)
+    rootGenerator = new RootGenerator(@rootDir, @force, @download)
     rootGenerator.generate()
 
     if not sawOneComic
