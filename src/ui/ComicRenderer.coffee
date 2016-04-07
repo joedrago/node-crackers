@@ -98,15 +98,24 @@ class ComicRenderer extends React.Component
       when 35 # End
         @setIndex 1000000
 
-      when 37 # Left
+      when 37, 90  # Left, Z
         @setIndex @state.index-1
-      when 39 # Right
+      when 39, 88  # Right, X
         @setIndex @state.index+1
 
       when 68 # D
         @autoPrev()
       when 70 # F
         @autoNext()
+
+      when 78 # N
+        if @props.metadata.next
+          hash = "#comic/"+encodeURIComponent("#{@props.metadata.next}").replace("%2F", "/")
+          @props.redirect hash
+      when 80 # P
+        if @props.metadata.prev
+          hash = "#comic/"+encodeURIComponent("#{@props.metadata.prev}").replace("%2F", "/")
+          @props.redirect hash
     return
 
   setIndex: (index, initial) ->

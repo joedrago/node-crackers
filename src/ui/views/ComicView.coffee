@@ -72,6 +72,7 @@ class ComicView extends React.Component
       height: @props.height
       dir: @state.dir
       page: page
+      redirect: @props.redirect
       onViewPage: @props.onViewPage
     }
 

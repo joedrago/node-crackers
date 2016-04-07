@@ -43737,6 +43737,8 @@ ComicRenderer = (function(superClass) {
   };
 
   ComicRenderer.prototype.onKeyPress = function(event) {
+    var hash;
+    console.log("onKeyPress " + event.keyCode);
     switch (event.keyCode) {
       case 48:
         this.setScale(1, false);
@@ -43772,9 +43774,11 @@ ComicRenderer = (function(superClass) {
         this.setIndex(1000000);
         break;
       case 37:
+      case 90:
         this.setIndex(this.state.index - 1);
         break;
       case 39:
+      case 88:
         this.setIndex(this.state.index + 1);
         break;
       case 68:
@@ -43782,6 +43786,18 @@ ComicRenderer = (function(superClass) {
         break;
       case 70:
         this.autoNext();
+        break;
+      case 78:
+        if (this.props.metadata.next) {
+          hash = "#comic/" + encodeURIComponent("" + this.props.metadata.next).replace("%2F", "/");
+          this.props.redirect(hash);
+        }
+        break;
+      case 80:
+        if (this.props.metadata.prev) {
+          hash = "#comic/" + encodeURIComponent("" + this.props.metadata.prev).replace("%2F", "/");
+          this.props.redirect(hash);
+        }
     }
   };
 
@@ -45947,6 +45963,7 @@ ComicView = (function(superClass) {
       height: this.props.height,
       dir: this.state.dir,
       page: page,
+      redirect: this.props.redirect,
       onViewPage: this.props.onViewPage
     });
   };
