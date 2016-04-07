@@ -28,12 +28,13 @@ class SettingsView extends React.Component
     return el Checkbox, {
       key: "settings.#{name}"
       checked: Settings.getBool(name, defaultValue)
-      label: "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)"
+      label: description
       onCheck: => @toggle(name, defaultValue)
     }
 
   createZoombox: (name, value, enabled, description) ->
     selectField = el SelectField, {
+        key: "zoombox.#{name}"
         value: value
         disabled: !enabled
         onChange: (event, index, value) =>
@@ -86,6 +87,7 @@ class SettingsView extends React.Component
     }, "Settings"
 
     elements.push @createCheckbox('comic.autoZoomOut', false, "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)")
+    elements.push @createCheckbox('comic.confirmBinge', true, "Display confirmation dialog when auto-switching to the next/previous issue")
 
     elements.push div {
       key: 'settings.zoomlevelstitle'

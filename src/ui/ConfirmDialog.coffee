@@ -16,6 +16,7 @@ class ConfirmDialog extends React.Component
   @defaultProps: {
     title: ''
     label: ''
+    no: 'Cancel'
     yes: 'Confirm'
   }
 
@@ -38,7 +39,7 @@ class ConfirmDialog extends React.Component
   render: ->
     actions = [
       el FlatButton, {
-        label: "Cancel"
+        label: @props.no
         secondary: true
         onTouchTap: => @handleClose()
       }

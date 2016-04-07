@@ -9,6 +9,7 @@ PubSub = require 'pubsub-js'
 IconButton = require 'material-ui/lib/icon-button'
 
 # Local requires
+ConfirmDialog = require './ConfirmDialog'
 ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
 Settings = require './Settings'
@@ -41,6 +42,7 @@ class ComicRenderer extends React.Component
       loaded: false
       error: false
       touchCount: false
+      confirmCB: null
     @imageCache = new ImageCache()
     @preloadImageCount = 3
     @auto = Auto.None
@@ -50,7 +52,7 @@ class ComicRenderer extends React.Component
     index = 0
     if @props.page != null
       index = @props.page - 1
-    @setIndex(index, true)
+    @setIndex(index, { initial: true })
 
   componentDidMount: ->
     console.log "ComicRenderer componentDidMount"
@@ -99,9 +101,9 @@ class ComicRenderer extends React.Component
         @setIndex 1000000
 
       when 37, 90  # Left, Z
-        @setIndex @state.index-1
+        @setIndex @state.index-1, { offer: true }
       when 39, 88  # Right, X
-        @setIndex @state.index+1
+        @setIndex @state.index+1, { offer: true }
 
       when 68 # D
         @autoPrev()
@@ -118,13 +120,17 @@ class ComicRenderer extends React.Component
           @props.redirect hash
     return
 
-  setIndex: (index, initial) ->
-    console.log "setIndex(#{index}, #{initial})"
+  setIndex: (index, opts={}) ->
+    console.log "setIndex(#{index}, #{opts.initial})"
+    # whether or not we're attempting to step 'out of bounds' (swipe before first page or after last page)
+    outOfBounds = false
     if index >= @props.metadata.pages
       index = @props.metadata.pages - 1
+      outOfBounds = 'next'
     if index < 0
       index = 0
-    if initial
+      outOfBounds = 'prev'
+    if opts.initial
       @state.index = index
     else
       @setState {
@@ -159,6 +165,35 @@ class ComicRenderer extends React.Component
             imageScale: 1
             imageSwipeX: 0
           }
+
+    if outOfBounds and opts.offer
+      # We're attempting to scroll outside of the comic via direct user action
+      offerIssue = null
+      switch outOfBounds
+        when 'next'
+          if @props.metadata.next
+            offerIssue = @props.metadata.next
+            offerTitle = 'Binge detected! Keep going?'
+            offerAdjective = 'next'
+        when 'prev'
+          if @props.metadata.prev
+            offerIssue = @props.metadata.prev
+            offerTitle = 'Leave this issue?'
+            offerAdjective = 'previous'
+
+      if offerIssue and (offerIssue.length > 0)
+        offerHash = "#comic/"+encodeURIComponent("#{offerIssue}").replace("%2F", "/")
+        if Settings.getBool("comic.confirmBinge", true)
+          @setState {
+            confirmTitle: offerTitle
+            confirmText: "Would you like to go to the #{offerAdjective} issue? (#{offerIssue})"
+            confirmCB: (confirmed) =>
+              if not confirmed
+                return
+              @props.redirect(offerHash)
+          }
+        else
+          @props.redirect(offerHash)
 
   moveImage: (x, y, width, height, scale) ->
     centerPos = @calcImageCenterPos(width, height)
@@ -196,7 +231,7 @@ class ComicRenderer extends React.Component
   autoPrev: ->
     switch @auto
       when Auto.None
-        @setIndex @state.index-1
+        @setIndex @state.index-1, { offer: true }
         # TODO: zoom to bottom right and set @auto to Auto.BottomRight after loading previous index
         # @zoomToCorner(Corner.BottomRight)
       when Auto.TopLeft
@@ -213,7 +248,7 @@ class ComicRenderer extends React.Component
       when Auto.TopLeft
         @zoomToCorner(Corner.BottomRight)
       when Auto.BottomRight
-        @setIndex @state.index+1
+        @setIndex @state.index+1, { offer: true }
     return
 
   zoomToCorner: (corner) ->
@@ -279,7 +314,7 @@ class ComicRenderer extends React.Component
       if @state.loaded
         if Math.abs(@state.imageSwipeX) > (@props.width / 10)
           direction = Math.sign(@state.imageSwipeX)
-          @setIndex(@state.index - direction)
+          @setIndex(@state.index - direction, { offer: true })
           return
       @setState { imageSwipeX: 0 }
 
@@ -366,6 +401,19 @@ class ComicRenderer extends React.Component
       }
 
     elements = []
+
+    elements.push el ConfirmDialog, {
+        key: "confirmdialog"
+        open: (@state.confirmCB != null)
+        yes: 'Yes'
+        no: 'No'
+        title: @state.confirmTitle
+        text: @state.confirmText
+        cb: (confirmed) =>
+          if @state.confirmCB
+            @state.confirmCB(confirmed)
+            @setState { confirmCB: null }
+      }
 
     autotouch = Settings.getFloat('comic.autotouch', 0)
     if @inLandscape() and (autotouch > 0)
