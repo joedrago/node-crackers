@@ -21,11 +21,8 @@ Auto =
   TopLeft: 1
   BottomRight: 2
 
-Corner =
-  TopLeft: 0
-  TopRight: 1
-  BottomRight: 2
-  BottomLeft: 3
+Number.prototype.clamp = (min, max) ->
+  return Math.min(Math.max(this, min), max)
 
 # How long to show the page number after a page change
 PAGE_NUMBER_DISPLAY_MS = 700
@@ -53,20 +50,20 @@ class ComicRenderer extends React.Component
     @autoScale = 1.5
     @pageNumberTimer = null
 
-    console.log "ComicRenderer", @props
+    # console.log "ComicRenderer", @props
     index = 0
     if @props.page != null
       index = @props.page - 1
     @setIndex(index, { initial: true })
 
   componentDidMount: ->
-    console.log "ComicRenderer componentDidMount"
+    # console.log "ComicRenderer componentDidMount"
     @setState { touchCount: 0 }
     @keySubscription = PubSub.subscribe 'key', (msg, event) =>
       @onKeyPress(event)
 
   componentWillUnmount: ->
-    console.log "ComicRenderer componentWillUnmount"
+    # console.log "ComicRenderer componentWillUnmount"
     PubSub.unsubscribe @keySubscription
     @setState { touchCount: 0 }
     @keySubscription = null
@@ -95,13 +92,13 @@ class ComicRenderer extends React.Component
         @setScale(4)
 
       when 81 # Q
-        @zoomToCorner(Corner.TopLeft)
+        @zoomToCorner(0, 0)
       when 87 # W
-        @zoomToCorner(Corner.TopRight)
+        @zoomToCorner(1, 0)
       when 65 # A
-        @zoomToCorner(Corner.BottomLeft)
+        @zoomToCorner(0, 1)
       when 83 # S
-        @zoomToCorner(Corner.BottomRight)
+        @zoomToCorner(1, 1)
 
       when 36 # Home
         @setIndex 0
@@ -129,7 +126,7 @@ class ComicRenderer extends React.Component
     return
 
   setIndex: (index, opts={}) ->
-    console.log "setIndex(#{index}, #{opts.initial})"
+    # console.log "setIndex(#{index}, #{opts.initial})"
     # whether or not we're attempting to step 'out of bounds' (swipe before first page or after last page)
     outOfBounds = false
     if index >= @props.metadata.pages
@@ -221,6 +218,7 @@ class ComicRenderer extends React.Component
           @props.redirect(offerHash)
 
   moveImage: (x, y, width, height, scale) ->
+    # console.log("moveImage(#{x}, #{y}, #{width}, #{height}, #{scale})")
     centerPos = @calcImageCenterPos(width, height)
 
     if width < @props.width
@@ -257,46 +255,41 @@ class ComicRenderer extends React.Component
       when Auto.None
         @setIndex @state.index-1, { offer: true }
         # TODO: zoom to bottom right and set @auto to Auto.BottomRight after loading previous index
-        # @zoomToCorner(Corner.BottomRight)
+        # @zoomToCorner(1, 1)
       when Auto.TopLeft
         @setScale(1, false)
         @auto = Auto.None
       when Auto.BottomRight
-        @zoomToCorner(Corner.TopLeft)
+        @zoomToCorner(0, 0)
     return
 
   autoNext: ->
     switch @auto
       when Auto.None
-        @zoomToCorner(Corner.TopLeft)
+        @zoomToCorner(0, 0)
       when Auto.TopLeft
-        @zoomToCorner(Corner.BottomRight)
+        @zoomToCorner(1, 1)
       when Auto.BottomRight
         @setIndex @state.index+1, { offer: true }
     return
 
-  zoomToCorner: (corner) ->
+  zoomToCorner: (zoomX, zoomY, useFirstZoomLevel=false) ->
     imageScale = @state.imageScale
     if imageScale == 1
-      imageScale = @autoScale
+      if useFirstZoomLevel
+        imageScale = Settings.getFloat("comic.dblzoom1", 2)
+      else
+        imageScale = @autoScale
+    # console.log("zoomToCorner(#{zoomX}, #{zoomY}, #{useFirstZoomLevel}) scale: #{imageScale}")
     imageSize = @calcImageSize(@state.originalImageWidth, @state.originalImageHeight, imageScale)
-    x = 0
-    y = 0
-    switch corner
-      when Corner.TopLeft
-        x = 0
-        y = 0
-        @auto = Auto.TopLeft
-      when Corner.TopRight
-        x = -imageSize.width
-        y = 0
-      when Corner.BottomRight
-        x = -imageSize.width
-        y = -imageSize.height
-        @auto = Auto.BottomRight
-      when Corner.BottomLeft
-        x = 0
-        y = -imageSize.height
+    if (zoomX == 0) and (zoomY == 0)
+      @auto = Auto.TopLeft
+    if (zoomX == 1) and (zoomY == 1)
+      @auto = Auto.BottomRight
+    maxScrollX = @props.width - imageSize.width
+    maxScrollY = @props.height - imageSize.height
+    x = zoomX * maxScrollX
+    y = zoomY * maxScrollY
     @moveImage(x, y, imageSize.width, imageSize.height, imageScale)
 
   setScale: (scale, setAutoScale = true) ->
@@ -418,6 +411,33 @@ class ComicRenderer extends React.Component
   inLandscape: ->
     return (@props.width > @props.height)
 
+  updateZoomGrid: (t) ->
+    zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1)
+    zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1)
+    zX = Math.min(1, Math.floor(zoomX * 3) / 2)
+    zY = Math.min(1, Math.floor(zoomY * 3) / 2)
+    if (zX == 0.5) and (zY == 0.5)
+      zoomX = Math.max(0, zoomX - (1/4)) * 2
+      zoomY = Math.max(0, zoomY - (1/4)) * 2
+    else
+      zoomX = zX
+      zoomY = zY
+    @zoomToCorner(zoomX, zoomY, true)
+
+  onZoomGridStart: (t) ->
+    $('#zoomgrid').finish().fadeTo(100, 0.5)
+    @zoomgridStartTime = new Date().getTime()
+    @updateZoomGrid(t)
+  onZoomGridMove: (t) ->
+    @updateZoomGrid(t)
+  onZoomGridEnd: (t) ->
+    $('#zoomgrid').delay(250).fadeTo(250, 0)
+    endTouchTimestamp = new Date().getTime()
+    diff = endTouchTimestamp - @zoomgridStartTime
+    if diff < 100
+      # Tap ends the zoom
+      @setScale(1, false)
+
   render: ->
     if @state.error
       return el Loader, {
@@ -469,6 +489,26 @@ class ComicRenderer extends React.Component
       transitionEnterTimeout: 100
       transitionLeaveTimeout: 300
     }, pageNumber
+
+    # ZoomGrid
+    if Settings.getBool("comic.zoomgrid", false)
+      elements.push div {
+        id: 'zoomgrid'
+        className: 'zoomgrid'
+        onTouchStart: (e) =>
+          e.preventDefault()
+          @onZoomGridStart(e.changedTouches[0])
+        onTouchMove: (e) =>
+          e.preventDefault()
+          @onZoomGridMove(e.changedTouches[0])
+        onTouchEnd: (e) =>
+          e.preventDefault()
+          @onZoomGridEnd(e.changedTouches[0])
+      }, [
+        div {
+          className: 'zoomgridinner'
+        }
+      ]
 
     autotouch = Settings.getFloat('comic.autotouch', 0)
     if @inLandscape() and (autotouch > 0)
@@ -526,7 +566,7 @@ class ComicRenderer extends React.Component
           onTouchTap: =>
             setTimeout =>
               @autoScale = autotouch
-              @zoomToCorner(Corner.TopLeft)
+              @zoomToCorner(0, 0)
             , 0
         }, 'check_box_outline_blank'
 
@@ -545,7 +585,7 @@ class ComicRenderer extends React.Component
           onTouchTap: =>
             setTimeout =>
               @autoScale = autotouch
-              @zoomToCorner(Corner.TopRight)
+              @zoomToCorner(1, 0)
             , 0
         }, 'check_box_outline_blank'
 
@@ -564,7 +604,7 @@ class ComicRenderer extends React.Component
           onTouchTap: =>
             setTimeout =>
               @autoScale = autotouch
-              @zoomToCorner(Corner.BottomLeft)
+              @zoomToCorner(0, 1)
             , 0
         }, 'check_box_outline_blank'
 
@@ -583,7 +623,7 @@ class ComicRenderer extends React.Component
           onTouchTap: =>
             setTimeout =>
               @autoScale = autotouch
-              @zoomToCorner(Corner.BottomRight)
+              @zoomToCorner(1, 1)
             , 0
         }, 'check_box_outline_blank'
 

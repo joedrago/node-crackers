@@ -44099,7 +44099,7 @@ module.exports = Dimensions()(App);
 
 
 },{"./ConfirmDialog":365,"./LRUCache":367,"./fullscreen":371,"./tags":373,"./views/BrowseView":374,"./views/ComicView":375,"./views/HelpView":376,"./views/HomeView":377,"./views/LoadingView":378,"./views/SearchView":379,"./views/SettingsView":380,"./views/UpdatesView":381,"material-ui/lib/app-bar":14,"material-ui/lib/divider":20,"material-ui/lib/flat-button":24,"material-ui/lib/icon-button":26,"material-ui/lib/left-nav":27,"material-ui/lib/menus/menu-item":32,"material-ui/lib/raised-button":40,"material-ui/lib/styles/baseThemes/darkBaseTheme":47,"material-ui/lib/styles/getMuiTheme":50,"material-ui/lib/toolbar/toolbar":70,"material-ui/lib/toolbar/toolbar-group":67,"material-ui/lib/toolbar/toolbar-separator":68,"material-ui/lib/toolbar/toolbar-title":69,"pubsub-js":172,"react":362,"react-dimensions":174,"react-dom":175,"react-tap-event-plugin":196}],364:[function(require,module,exports){
-var Auto, ComicRenderer, ConfirmDialog, Corner, DOM, IconButton, ImageCache, Loader, Motion, PAGE_NUMBER_DISPLAY_MS, PubSub, React, ReactCSSTransitionGroup, Settings, TouchDiv, div, el, img, ref, ref1, span, spring,
+var Auto, ComicRenderer, ConfirmDialog, DOM, IconButton, ImageCache, Loader, Motion, PAGE_NUMBER_DISPLAY_MS, PubSub, React, ReactCSSTransitionGroup, Settings, TouchDiv, div, el, img, ref, ref1, span, spring,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -44133,11 +44133,8 @@ Auto = {
   BottomRight: 2
 };
 
-Corner = {
-  TopLeft: 0,
-  TopRight: 1,
-  BottomRight: 2,
-  BottomLeft: 3
+Number.prototype.clamp = function(min, max) {
+  return Math.min(Math.max(this, min), max);
 };
 
 PAGE_NUMBER_DISPLAY_MS = 700;
@@ -44170,7 +44167,6 @@ ComicRenderer = (function(superClass) {
     this.auto = Auto.None;
     this.autoScale = 1.5;
     this.pageNumberTimer = null;
-    console.log("ComicRenderer", this.props);
     index = 0;
     if (this.props.page !== null) {
       index = this.props.page - 1;
@@ -44181,7 +44177,6 @@ ComicRenderer = (function(superClass) {
   }
 
   ComicRenderer.prototype.componentDidMount = function() {
-    console.log("ComicRenderer componentDidMount");
     this.setState({
       touchCount: 0
     });
@@ -44193,7 +44188,6 @@ ComicRenderer = (function(superClass) {
   };
 
   ComicRenderer.prototype.componentWillUnmount = function() {
-    console.log("ComicRenderer componentWillUnmount");
     PubSub.unsubscribe(this.keySubscription);
     this.setState({
       touchCount: 0
@@ -44231,16 +44225,16 @@ ComicRenderer = (function(superClass) {
         this.setScale(4);
         break;
       case 81:
-        this.zoomToCorner(Corner.TopLeft);
+        this.zoomToCorner(0, 0);
         break;
       case 87:
-        this.zoomToCorner(Corner.TopRight);
+        this.zoomToCorner(1, 0);
         break;
       case 65:
-        this.zoomToCorner(Corner.BottomLeft);
+        this.zoomToCorner(0, 1);
         break;
       case 83:
-        this.zoomToCorner(Corner.BottomRight);
+        this.zoomToCorner(1, 1);
         break;
       case 36:
         this.setIndex(0);
@@ -44285,7 +44279,6 @@ ComicRenderer = (function(superClass) {
     if (opts == null) {
       opts = {};
     }
-    console.log("setIndex(" + index + ", " + opts.initial + ")");
     outOfBounds = false;
     if (index >= this.props.metadata.pages) {
       index = this.props.metadata.pages - 1;
@@ -44445,17 +44438,17 @@ ComicRenderer = (function(superClass) {
         this.auto = Auto.None;
         break;
       case Auto.BottomRight:
-        this.zoomToCorner(Corner.TopLeft);
+        this.zoomToCorner(0, 0);
     }
   };
 
   ComicRenderer.prototype.autoNext = function() {
     switch (this.auto) {
       case Auto.None:
-        this.zoomToCorner(Corner.TopLeft);
+        this.zoomToCorner(0, 0);
         break;
       case Auto.TopLeft:
-        this.zoomToCorner(Corner.BottomRight);
+        this.zoomToCorner(1, 1);
         break;
       case Auto.BottomRight:
         this.setIndex(this.state.index + 1, {
@@ -44464,34 +44457,30 @@ ComicRenderer = (function(superClass) {
     }
   };
 
-  ComicRenderer.prototype.zoomToCorner = function(corner) {
-    var imageScale, imageSize, x, y;
+  ComicRenderer.prototype.zoomToCorner = function(zoomX, zoomY, useFirstZoomLevel) {
+    var imageScale, imageSize, maxScrollX, maxScrollY, x, y;
+    if (useFirstZoomLevel == null) {
+      useFirstZoomLevel = false;
+    }
     imageScale = this.state.imageScale;
     if (imageScale === 1) {
-      imageScale = this.autoScale;
+      if (useFirstZoomLevel) {
+        imageScale = Settings.getFloat("comic.dblzoom1", 2);
+      } else {
+        imageScale = this.autoScale;
+      }
     }
     imageSize = this.calcImageSize(this.state.originalImageWidth, this.state.originalImageHeight, imageScale);
-    x = 0;
-    y = 0;
-    switch (corner) {
-      case Corner.TopLeft:
-        x = 0;
-        y = 0;
-        this.auto = Auto.TopLeft;
-        break;
-      case Corner.TopRight:
-        x = -imageSize.width;
-        y = 0;
-        break;
-      case Corner.BottomRight:
-        x = -imageSize.width;
-        y = -imageSize.height;
-        this.auto = Auto.BottomRight;
-        break;
-      case Corner.BottomLeft:
-        x = 0;
-        y = -imageSize.height;
+    if ((zoomX === 0) && (zoomY === 0)) {
+      this.auto = Auto.TopLeft;
     }
+    if ((zoomX === 1) && (zoomY === 1)) {
+      this.auto = Auto.BottomRight;
+    }
+    maxScrollX = this.props.width - imageSize.width;
+    maxScrollY = this.props.height - imageSize.height;
+    x = zoomX * maxScrollX;
+    y = zoomY * maxScrollY;
     return this.moveImage(x, y, imageSize.width, imageSize.height, imageScale);
   };
 
@@ -44645,6 +44634,42 @@ ComicRenderer = (function(superClass) {
     return this.props.width > this.props.height;
   };
 
+  ComicRenderer.prototype.updateZoomGrid = function(t) {
+    var zX, zY, zoomX, zoomY;
+    zoomX = ((t.clientX - t.target.offsetLeft) / t.target.clientWidth).clamp(0, 1);
+    zoomY = ((t.clientY - t.target.offsetTop) / t.target.clientHeight).clamp(0, 1);
+    zX = Math.min(1, Math.floor(zoomX * 3) / 2);
+    zY = Math.min(1, Math.floor(zoomY * 3) / 2);
+    if ((zX === 0.5) && (zY === 0.5)) {
+      zoomX = Math.max(0, zoomX - (1 / 4)) * 2;
+      zoomY = Math.max(0, zoomY - (1 / 4)) * 2;
+    } else {
+      zoomX = zX;
+      zoomY = zY;
+    }
+    return this.zoomToCorner(zoomX, zoomY, true);
+  };
+
+  ComicRenderer.prototype.onZoomGridStart = function(t) {
+    $('#zoomgrid').finish().fadeTo(100, 0.5);
+    this.zoomgridStartTime = new Date().getTime();
+    return this.updateZoomGrid(t);
+  };
+
+  ComicRenderer.prototype.onZoomGridMove = function(t) {
+    return this.updateZoomGrid(t);
+  };
+
+  ComicRenderer.prototype.onZoomGridEnd = function(t) {
+    var diff, endTouchTimestamp;
+    $('#zoomgrid').delay(250).fadeTo(250, 0);
+    endTouchTimestamp = new Date().getTime();
+    diff = endTouchTimestamp - this.zoomgridStartTime;
+    if (diff < 100) {
+      return this.setScale(1, false);
+    }
+  };
+
   ComicRenderer.prototype.render = function() {
     var autotouch, elements, pageNumber;
     if (this.state.error) {
@@ -44704,6 +44729,34 @@ ComicRenderer = (function(superClass) {
       transitionEnterTimeout: 100,
       transitionLeaveTimeout: 300
     }, pageNumber));
+    if (Settings.getBool("comic.zoomgrid", false)) {
+      elements.push(div({
+        id: 'zoomgrid',
+        className: 'zoomgrid',
+        onTouchStart: (function(_this) {
+          return function(e) {
+            e.preventDefault();
+            return _this.onZoomGridStart(e.changedTouches[0]);
+          };
+        })(this),
+        onTouchMove: (function(_this) {
+          return function(e) {
+            e.preventDefault();
+            return _this.onZoomGridMove(e.changedTouches[0]);
+          };
+        })(this),
+        onTouchEnd: (function(_this) {
+          return function(e) {
+            e.preventDefault();
+            return _this.onZoomGridEnd(e.changedTouches[0]);
+          };
+        })(this)
+      }, [
+        div({
+          className: 'zoomgridinner'
+        })
+      ]));
+    }
     autotouch = Settings.getFloat('comic.autotouch', 0);
     if (this.inLandscape() && (autotouch > 0)) {
       elements.push(el(IconButton, {
@@ -44770,7 +44823,7 @@ ComicRenderer = (function(superClass) {
           return function() {
             return setTimeout(function() {
               _this.autoScale = autotouch;
-              return _this.zoomToCorner(Corner.TopLeft);
+              return _this.zoomToCorner(0, 0);
             }, 0);
           };
         })(this)
@@ -44793,7 +44846,7 @@ ComicRenderer = (function(superClass) {
           return function() {
             return setTimeout(function() {
               _this.autoScale = autotouch;
-              return _this.zoomToCorner(Corner.TopRight);
+              return _this.zoomToCorner(1, 0);
             }, 0);
           };
         })(this)
@@ -44816,7 +44869,7 @@ ComicRenderer = (function(superClass) {
           return function() {
             return setTimeout(function() {
               _this.autoScale = autotouch;
-              return _this.zoomToCorner(Corner.BottomLeft);
+              return _this.zoomToCorner(0, 1);
             }, 0);
           };
         })(this)
@@ -44839,7 +44892,7 @@ ComicRenderer = (function(superClass) {
           return function() {
             return setTimeout(function() {
               _this.autoScale = autotouch;
-              return _this.zoomToCorner(Corner.BottomRight);
+              return _this.zoomToCorner(1, 1);
             }, 0);
           };
         })(this)
@@ -46880,6 +46933,7 @@ SettingsView = (function(superClass) {
       }
     }, "Settings"));
     elements.push(this.createCheckbox('comic.autoZoomOut', false, "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)"));
+    elements.push(this.createCheckbox('comic.zoomgrid', false, "Use the zoomgrid (only use on touch devices)"));
     elements.push(this.createCheckbox('comic.confirmBinge', true, "Display confirmation dialog when auto-switching to the next/previous issue"));
     elements.push(this.createCheckbox('comic.showPageNumber', true, "Display the page number when switching pages"));
     elements.push(this.createCheckbox('comic.animation', true, "Animate comic page motion/zoom"));

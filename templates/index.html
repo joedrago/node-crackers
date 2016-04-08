@@ -31,23 +31,43 @@
       color: white;
     }
 
+    /* It is unfortunate that I had to add classes for fading with ReactCSSTransitionGroup */
     .fademe-enter {
       opacity: 0.01;
     }
-
     .fademe-enter.fademe-enter-active {
       opacity: 1;
       transition: opacity 100ms ease-in;
     }
-
     .fademe-leave {
       opacity: 1;
     }
-
     .fademe-leave.fademe-leave-active {
       opacity: 0.01;
       transition: opacity 300ms ease-in;
     }
+
+    .zoomgrid {
+      display: block;
+      position:absolute;
+      z-index:100;
+      opacity: 0;
+      border: 1px solid black;
+      left: 30vw;
+      right: 30vw;
+      bottom: 0;
+      height: 40vw;
+    }
+    .zoomgridinner {
+      border: 1px dashed black;
+      width: 33%;
+      height: 33%;
+      margin-left: 33%;
+      margin-top: 33%;
+      pointer-events: none;
+      position: relative;
+    }
+
   </style>
 </head>
 
