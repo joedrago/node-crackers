@@ -30,6 +30,24 @@
       text-decoration: none;
       color: white;
     }
+
+    .fademe-enter {
+      opacity: 0.01;
+    }
+
+    .fademe-enter.fademe-enter-active {
+      opacity: 1;
+      transition: opacity 100ms ease-in;
+    }
+
+    .fademe-leave {
+      opacity: 1;
+    }
+
+    .fademe-leave.fademe-leave-active {
+      opacity: 0.01;
+      transition: opacity 300ms ease-in;
+    }
   </style>
 </head>
 

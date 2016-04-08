@@ -88,6 +88,7 @@ class SettingsView extends React.Component
 
     elements.push @createCheckbox('comic.autoZoomOut', false, "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)")
     elements.push @createCheckbox('comic.confirmBinge', true, "Display confirmation dialog when auto-switching to the next/previous issue")
+    elements.push @createCheckbox('comic.showPageNumber', true, "Display the page number when switching pages")
 
     elements.push div {
       key: 'settings.zoomlevelstitle'

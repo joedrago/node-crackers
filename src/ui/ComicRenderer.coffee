@@ -2,6 +2,7 @@
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
+ReactCSSTransitionGroup = require 'react-addons-css-transition-group'
 {Motion, spring} = require 'react-motion'
 PubSub = require 'pubsub-js'
 
@@ -13,7 +14,7 @@ ConfirmDialog = require './ConfirmDialog'
 ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
 Settings = require './Settings'
-{div, el, img} = require './tags'
+{div, el, img, span} = require './tags'
 
 Auto =
   None: 0
@@ -25,6 +26,9 @@ Corner =
   TopRight: 1
   BottomRight: 2
   BottomLeft: 3
+
+# How long to show the page number after a page change
+PAGE_NUMBER_DISPLAY_MS = 700
 
 class ComicRenderer extends React.Component
   @defaultProps:
@@ -38,7 +42,7 @@ class ComicRenderer extends React.Component
       precision: 1
     @MAX_SCALE = 3
     @state =
-      index: 0
+      index: -1
       loaded: false
       error: false
       touchCount: false
@@ -47,6 +51,7 @@ class ComicRenderer extends React.Component
     @preloadImageCount = 3
     @auto = Auto.None
     @autoScale = 1.5
+    @pageNumberTimer = null
 
     console.log "ComicRenderer", @props
     index = 0
@@ -66,6 +71,9 @@ class ComicRenderer extends React.Component
     @setState { touchCount: 0 }
     @keySubscription = null
     @imageCache.flush()
+    if @pageNumberTimer != null
+      clearTimeout(@pageNumberTimer)
+      @pageNumberTimer = null
 
   componentWillReceiveProps: (nextProps) ->
     if (@props.width != nextProps.width) or (@props.height != nextProps.height)
@@ -130,41 +138,58 @@ class ComicRenderer extends React.Component
     if index < 0
       index = 0
       outOfBounds = 'prev'
-    if opts.initial
-      @state.index = index
+    if index == @state.index
+      if opts.initial
+        @state.showPageNumber = true
+      else
+        @setState {
+          showPageNumber: true
+        }
     else
-      @setState {
-        index: index
-        loaded: false
-        error: false
-        imageSwipeX: 0
-      }
-      @props.onViewPage(@props.dir, index + 1)
-    @auto = Auto.None
+      if opts.initial
+        @state.index = index
+        @state.showPageNumber = true
+      else
+        @setState {
+          index: index
+          loaded: false
+          error: false
+          showPageNumber: true
+          imageSwipeX: 0
+        }
+        @props.onViewPage(@props.dir, index + 1)
+      @auto = Auto.None
 
-    imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)
-    for image in imagesToPreload
-      @imageCache.load image
+      imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)
+      for image in imagesToPreload
+        @imageCache.load image
 
-    @imageCache.load @props.metadata.images[@state.index], (info) =>
-      # is this a notification about the image we're currently trying to display?
-      if info.url == @props.metadata.images[@state.index]
-        if info.error
-          @setState { error: true }
-        else
-          imageSize = @calcImageSize(info.width, info.height, 1)
-          imagePos = @calcImageCenterPos(imageSize.width, imageSize.height)
-          @setState {
-            loaded: true
-            originalImageWidth: info.width
-            originalImageHeight: info.height
-            imageX: imagePos.x
-            imageY: imagePos.y
-            imageWidth: imageSize.width
-            imageHeight: imageSize.height
-            imageScale: 1
-            imageSwipeX: 0
-          }
+      @imageCache.load @props.metadata.images[@state.index], (info) =>
+        # is this a notification about the image we're currently trying to display?
+        if info.url == @props.metadata.images[@state.index]
+          if info.error
+            @setState { error: true }
+          else
+            imageSize = @calcImageSize(info.width, info.height, 1)
+            imagePos = @calcImageCenterPos(imageSize.width, imageSize.height)
+            @setState {
+              loaded: true
+              originalImageWidth: info.width
+              originalImageHeight: info.height
+              imageX: imagePos.x
+              imageY: imagePos.y
+              imageWidth: imageSize.width
+              imageHeight: imageSize.height
+              imageScale: 1
+              imageSwipeX: 0
+            }
+
+    if @pageNumberTimer != null
+      clearTimeout(@pageNumberTimer)
+    @pageNumberTimer = setTimeout =>
+      @setState { showPageNumber: false}
+      @pageNumberTimer = null
+    , PAGE_NUMBER_DISPLAY_MS
 
     if outOfBounds and opts.offer
       # We're attempting to scroll outside of the comic via direct user action
@@ -414,6 +439,37 @@ class ComicRenderer extends React.Component
             @state.confirmCB(confirmed)
             @setState { confirmCB: null }
       }
+
+    pageNumber = []
+    if Settings.getBool("comic.showPageNumber", true) and @state.showPageNumber
+      pageNumber.push div {
+        key: 'pagenumber'
+        style:
+          position: 'absolute'
+          width: '100%'
+          bottom: '5%'
+          textAlign: 'center'
+          fontSize: '1.4em'
+          zIndex: 3
+          pointerEvents: 'none'
+          fontFamily: 'monospace'
+          color: '#ffffff'
+          textShadow: '3px 3px #000000'
+      }, span {
+        key: 'pagedisplayinner'
+        style:
+          backgroundColor: 'rgba(0, 0, 0, 0.5)'
+          marginLeft: 'auto'
+          marginRight: 'auto'
+          padding: '6px 9px 6px 9px'
+          borderRadius: '3px'
+      }, "Page #{@state.index+1} / #{@props.metadata.pages}"
+    elements.push el ReactCSSTransitionGroup, {
+      key: 'pagenumbertransition'
+      transitionName: 'fademe'
+      transitionEnterTimeout: 100
+      transitionLeaveTimeout: 300
+    }, pageNumber
 
     autotouch = Settings.getFloat('comic.autotouch', 0)
     if @inLandscape() and (autotouch > 0)
