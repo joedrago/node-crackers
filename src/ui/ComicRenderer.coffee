@@ -223,26 +223,25 @@ class ComicRenderer extends React.Component
   moveImage: (x, y, width, height, scale) ->
     centerPos = @calcImageCenterPos(width, height)
 
-    if @state.touchCount == 0
-      if width < @props.width
-        # width fits completely, just center it
-        x = centerPos.x
-      else
-        # clamp to fit in the screen bounds
-        if x > 0
-          x = 0
-        if (x + width) < @props.width
-          x = @props.width - width
+    if width < @props.width
+      # width fits completely, just center it
+      x = centerPos.x
+    else
+      # clamp to fit in the screen bounds
+      if x > 0
+        x = 0
+      if (x + width) < @props.width
+        x = @props.width - width
 
-      if height < @props.height
-        # height fits completely, just center it
-        y = centerPos.y
-      else
-        # clamp to fit in the screen bounds
-        if y > 0
-          y = 0
-        if (y + height) < @props.height
-          y = @props.height - height
+    if height < @props.height
+      # height fits completely, just center it
+      y = centerPos.y
+    else
+      # clamp to fit in the screen bounds
+      if y > 0
+        y = 0
+      if (y + height) < @props.height
+        y = @props.height - height
 
     @setState {
       imageX: x
@@ -589,31 +588,52 @@ class ComicRenderer extends React.Component
         }, 'check_box_outline_blank'
 
     if @state.loaded
-      elements.push el Motion, {
-          key: 'animimage'
-          style:
-            imageX: spring(@state.imageX, @springConfig)
-            imageY: spring(@state.imageY, @springConfig)
-            imageWidth: spring(@state.imageWidth, @springConfig)
-            imageHeight: spring(@state.imageHeight, @springConfig)
-        }, (values) =>
-          el TouchDiv, {
-            listener: this
-            width: @props.width
-            height: @props.height
+      # TODO: Reduce copypasta here
+      if Settings.getBool("comic.animation", true)
+        elements.push el Motion, {
+            key: 'animimage'
             style:
-              id: 'page'
-              position: 'absolute'
-              left: 0
-              top: 0
+              imageX: spring(@state.imageX, @springConfig)
+              imageY: spring(@state.imageY, @springConfig)
+              imageWidth: spring(@state.imageWidth, @springConfig)
+              imageHeight: spring(@state.imageHeight, @springConfig)
+          }, (values) =>
+            el TouchDiv, {
+              listener: this
               width: @props.width
               height: @props.height
-              backgroundColor: '#111111'
-              backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
-              backgroundRepeat: 'no-repeat'
-              backgroundPosition: "#{values.imageX}px #{values.imageY}px"
-              backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
-          }
+              style:
+                id: 'page'
+                position: 'absolute'
+                left: 0
+                top: 0
+                width: @props.width
+                height: @props.height
+                backgroundColor: '#111111'
+                backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
+                backgroundRepeat: 'no-repeat'
+                backgroundPosition: "#{values.imageX}px #{values.imageY}px"
+                backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
+            }
+      else
+        elements.push el TouchDiv, {
+          key: 'animimage'
+          listener: this
+          width: @props.width
+          height: @props.height
+          style:
+            id: 'page'
+            position: 'absolute'
+            left: 0
+            top: 0
+            width: @props.width
+            height: @props.height
+            backgroundColor: '#111111'
+            backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
+            backgroundRepeat: 'no-repeat'
+            backgroundPosition: "#{@state.imageX}px #{@state.imageY}px"
+            backgroundSize: "#{@state.imageWidth}px #{@state.imageHeight}px"
+        }
     else
       elements.push el Loader, {
         key: 'loader'
