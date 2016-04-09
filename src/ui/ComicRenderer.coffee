@@ -79,6 +79,16 @@ class ComicRenderer extends React.Component
 
   onKeyPress: (event) ->
     # console.log "onKeyPress #{event.keyCode}"
+
+    # special case: confirm dialog is present
+    if @state.confirmCB != null
+      switch event.keyCode
+        when 68, 70, 88, 89, 90, 13 # D, F, X, Y ,Z, Enter
+          @onConfirm(true)
+        when 78, 27 # N, Escape
+          @onConfirm(false)
+      return
+
     switch event.keyCode
       when 48 # 0
         @setScale(1, false)
@@ -438,6 +448,12 @@ class ComicRenderer extends React.Component
       # Tap ends the zoom
       @setScale(1, false)
 
+  onConfirm: (confirmed) ->
+    console.log "onConfirm(#{confirmed})"
+    if @state.confirmCB
+      @state.confirmCB(confirmed)
+      @setState { confirmCB: null }
+
   render: ->
     if @state.error
       return el Loader, {
@@ -454,9 +470,7 @@ class ComicRenderer extends React.Component
         title: @state.confirmTitle
         text: @state.confirmText
         cb: (confirmed) =>
-          if @state.confirmCB
-            @state.confirmCB(confirmed)
-            @setState { confirmCB: null }
+          @onConfirm(confirmed)
       }
 
     pageNumber = []

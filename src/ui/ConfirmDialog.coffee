@@ -22,18 +22,8 @@ class ConfirmDialog extends React.Component
 
   constructor: (props) ->
     super props
-    @state =
-      open: false
-
-  componentWillReceiveProps: (nextProps) ->
-    if nextProps.open
-      @setState { open: true }
-
-  handleOpen: ->
-    @setState { open: true }
 
   handleClose: (confirmed = false) ->
-    @setState { open: false }
     @props.cb(confirmed)
 
   render: ->
@@ -55,7 +45,7 @@ class ConfirmDialog extends React.Component
       title: @props.title
       actions: actions
       modal: false
-      open: @state.open
+      open: @props.open
       onRequestClose: => @handleClose()
     }, [
       @props.text
