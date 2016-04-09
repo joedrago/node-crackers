@@ -12,13 +12,17 @@ if process.platform == 'win32'
 
 buildUI = (callback) ->
   # equal of command line $ "browserify --debug -t coffeeify ./src/main.coffee > bundle.js "
-  b = browserify {
-    # debug: true
+  productionBuild = (process.env.NODE_ENV == 'production')
+  opts = {
     extensions: ['.coffee']
   }
+  if not productionBuild
+    opts.debug = true
+  b = browserify opts
   b.add './src/ui/main.coffee'
   b.transform coffeeify
-  b.transform { global: true, ignore: ['**/main.*'] }, uglifyify
+  if productionBuild
+    b.transform { global: true, ignore: ['**/main.*'] }, uglifyify
   b.bundle (err, result) ->
     if not err
       fs.writeFile "build/templates/ui.js", result, (err) ->
