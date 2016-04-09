@@ -7,7 +7,7 @@ MenuItem = require 'material-ui/lib/menus/menu-item'
 SelectField = require 'material-ui/lib/select-field'
 
 Settings = require '../Settings'
-{el, div, img} = require '../tags'
+{el, div, hr, img} = require '../tags'
 
 class SettingsView extends React.Component
   constructor: (props) ->
@@ -65,7 +65,7 @@ class SettingsView extends React.Component
 
     return div {}, [selectField]
 
-  pulldownStyle: ->
+  miniTitleStyle: ->
     return {
       color: '#aaaaaa'
       fontSize: '1.1em'
@@ -86,16 +86,18 @@ class SettingsView extends React.Component
         marginBottom: '15px'
     }, "Settings"
 
-    elements.push @createCheckbox('comic.autoZoomOut', "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)")
-    elements.push @createCheckbox('comic.zoomgrid', "Use the zoomgrid (only use on touch devices)")
-    elements.push @createCheckbox('comic.confirmBinge', "Display confirmation dialog when auto-switching to the next/previous issue")
+    # ------------------------------------------------------------------------
+
+    elements.push @createCheckbox('comic.animation', "Enable comic animation")
     elements.push @createCheckbox('comic.showPageNumber', "Display the page number when switching pages")
-    elements.push @createCheckbox('comic.animation', "Animate comic page motion/zoom")
+    elements.push @createCheckbox('comic.confirmBinge', "Display confirmation dialog when auto-switching to the next/previous issue")
+
+    # ------------------------------------------------------------------------
 
     elements.push div {
       key: 'settings.zoomlevelstitle'
-      style: @pulldownStyle()
-    }, "Zoom levels when double clicked:"
+      style: @miniTitleStyle()
+    }, "Zoom levels on double click/tap:"
 
     zoom1 = Settings.getFloat("comic.dblzoom1")
     zoom2 = Settings.getFloat("comic.dblzoom2")
@@ -110,18 +112,40 @@ class SettingsView extends React.Component
     elements.push @createZoombox('comic.dblzoom2', zoom2, (zoom1 > 0), "zoom2")
     elements.push @createZoombox('comic.dblzoom3', zoom3, (zoom2 > 0), "zoom3")
 
+    # ------------------------------------------------------------------------
+
+    elements.push hr {
+      key: "hr.touchonly"
+      size: 1
+      style:
+        marginTop: '20px'
+        marginBottom: '20px'
+        borderColor: '#777777'
+    }
+
+    # ------------------------------------------------------------------------
+
+    elements.push div {
+      key: 'settings.touchonly'
+      style: @miniTitleStyle()
+    }, "Touch devices only (tablet / phone):"
+
+    elements.push @createCheckbox('comic.autoZoomOut', "Automatically unzoom when you aren't touching the screen")
+    elements.push @createCheckbox('comic.zoomgrid', "Use zoomgrid")
+
     elements.push div {
       key: 'settings.autotouchtitle'
-      style: @pulldownStyle()
-    }, "Enable autoread on tablets in landscape mode (choose scale):"
+      style: @miniTitleStyle()
+    }, "Enable autoread in landscape mode (touch devices only, choose scale):"
     elements.push @createAutotouch()
+
+    # ------------------------------------------------------------------------
 
     view = div {
       style:
         marginTop: '10px'
         marginLeft: '60px'
     }, elements
-
     return view
 
 module.exports = SettingsView
