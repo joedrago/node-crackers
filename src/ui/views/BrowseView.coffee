@@ -181,13 +181,9 @@ class BrowseView extends React.Component
       contextMenuOpen: false
       contextMenuDir: ''
       sort: 'alphabetical'
-      show:
-        reading: true
-        unread: true
-        completed: true
-        ignored: false
-    for k, v of @state.show
-      @state.show[k] = Settings.getBool("show.#{k}", v)
+      show: {}
+    for k in ['reading', 'unread', 'completed', 'ignored']
+      @state.show[k] = Settings.getBool("show.#{k}")
     if @props.progressEnabled
       @state.sort = 'interest'
 

@@ -19,17 +19,17 @@ class SettingsView extends React.Component
     @setState { kick: @state.kick + 1 }
     return
 
-  toggle: (name, defaultValue) ->
-    Settings.set(name, not Settings.getBool(name, defaultValue))
+  toggle: (name) ->
+    Settings.set(name, not Settings.getBool(name))
     @kick()
     return
 
-  createCheckbox: (name, defaultValue, description) ->
+  createCheckbox: (name, description) ->
     return el Checkbox, {
       key: "settings.#{name}"
-      checked: Settings.getBool(name, defaultValue)
+      checked: Settings.getBool(name)
       label: description
-      onCheck: => @toggle(name, defaultValue)
+      onCheck: => @toggle(name)
     }
 
   createZoombox: (name, value, enabled, description) ->
@@ -53,7 +53,7 @@ class SettingsView extends React.Component
 
   createAutotouch: ->
     selectField = el SelectField, {
-        value: Settings.getFloat('comic.autotouch', 0)
+        value: Settings.getFloat('comic.autotouch')
         onChange: (event, index, value) =>
           Settings.set('comic.autotouch', value)
           @kick()
@@ -86,20 +86,20 @@ class SettingsView extends React.Component
         marginBottom: '15px'
     }, "Settings"
 
-    elements.push @createCheckbox('comic.autoZoomOut', false, "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)")
-    elements.push @createCheckbox('comic.zoomgrid', false, "Use the zoomgrid (only use on touch devices)")
-    elements.push @createCheckbox('comic.confirmBinge', true, "Display confirmation dialog when auto-switching to the next/previous issue")
-    elements.push @createCheckbox('comic.showPageNumber', true, "Display the page number when switching pages")
-    elements.push @createCheckbox('comic.animation', true, "Animate comic page motion/zoom")
+    elements.push @createCheckbox('comic.autoZoomOut', "Automatically unzoom when you aren't touching the screen (only use on tablets/phones)")
+    elements.push @createCheckbox('comic.zoomgrid', "Use the zoomgrid (only use on touch devices)")
+    elements.push @createCheckbox('comic.confirmBinge', "Display confirmation dialog when auto-switching to the next/previous issue")
+    elements.push @createCheckbox('comic.showPageNumber', "Display the page number when switching pages")
+    elements.push @createCheckbox('comic.animation', "Animate comic page motion/zoom")
 
     elements.push div {
       key: 'settings.zoomlevelstitle'
       style: @pulldownStyle()
     }, "Zoom levels when double clicked:"
 
-    zoom1 = Settings.getFloat("comic.dblzoom1", 2)
-    zoom2 = Settings.getFloat("comic.dblzoom2", 3)
-    zoom3 = Settings.getFloat("comic.dblzoom3", 0)
+    zoom1 = Settings.getFloat("comic.dblzoom1")
+    zoom2 = Settings.getFloat("comic.dblzoom2")
+    zoom3 = Settings.getFloat("comic.dblzoom3")
     if zoom1 == 0
       zoom2 = 0
       zoom3 = 0

@@ -205,7 +205,7 @@ class ComicRenderer extends React.Component
 
       if offerIssue and (offerIssue.length > 0)
         offerHash = "#comic/"+encodeURIComponent("#{offerIssue}").replace("%2F", "/")
-        if Settings.getBool("comic.confirmBinge", true)
+        if Settings.getBool("comic.confirmBinge")
           @setState {
             confirmTitle: offerTitle
             confirmText: "Would you like to go to the #{offerAdjective} issue? (#{offerIssue})"
@@ -277,7 +277,7 @@ class ComicRenderer extends React.Component
     imageScale = @state.imageScale
     if imageScale == 1
       if useFirstZoomLevel
-        imageScale = Settings.getFloat("comic.dblzoom1", 2)
+        imageScale = Settings.getFloat("comic.dblzoom1")
       else
         imageScale = @autoScale
     # console.log("zoomToCorner(#{zoomX}, #{zoomY}, #{useFirstZoomLevel}) scale: #{imageScale}")
@@ -304,11 +304,11 @@ class ComicRenderer extends React.Component
 
   onDoubleTap: (x, y) ->
     scaleTiers = [1]
-    if (zoom1 = Settings.getFloat("comic.dblzoom1", 2)) > 1
+    if (zoom1 = Settings.getFloat("comic.dblzoom1")) > 1
       scaleTiers.push zoom1
-      if (zoom2 = Settings.getFloat("comic.dblzoom2", 3)) > 1
+      if (zoom2 = Settings.getFloat("comic.dblzoom2")) > 1
         scaleTiers.push zoom2
-        if (zoom3 = Settings.getFloat("comic.dblzoom3", 0)) > 1
+        if (zoom3 = Settings.getFloat("comic.dblzoom3")) > 1
           scaleTiers.push zoom3
     # console.log "scaleTiers", scaleTiers
 
@@ -336,7 +336,7 @@ class ComicRenderer extends React.Component
       @setState { imageSwipeX: 0 }
 
     autoZoomOutThreshold = 1.1
-    if Settings.getBool("comic.autoZoomOut", false)
+    if Settings.getBool("comic.autoZoomOut")
       # console.log "comic.autoZoomOut is true"
       autoZoomOutThreshold = 10 # zoom out when the person lets go, no matter what
     if (@state.imageScale > 1) and (@state.imageScale < autoZoomOutThreshold)
@@ -460,7 +460,7 @@ class ComicRenderer extends React.Component
       }
 
     pageNumber = []
-    if Settings.getBool("comic.showPageNumber", true) and @state.showPageNumber
+    if Settings.getBool("comic.showPageNumber") and @state.showPageNumber
       pageNumber.push div {
         key: 'pagenumber'
         style:
@@ -491,7 +491,7 @@ class ComicRenderer extends React.Component
     }, pageNumber
 
     # ZoomGrid
-    if Settings.getBool("comic.zoomgrid", false)
+    if Settings.getBool("comic.zoomgrid")
       elements.push div {
         id: 'zoomgrid'
         className: 'zoomgrid'
@@ -510,7 +510,7 @@ class ComicRenderer extends React.Component
         }
       ]
 
-    autotouch = Settings.getFloat('comic.autotouch', 0)
+    autotouch = Settings.getFloat('comic.autotouch')
     if @inLandscape() and (autotouch > 0)
       # Autoread!
       elements.push el IconButton, {
@@ -629,7 +629,7 @@ class ComicRenderer extends React.Component
 
     if @state.loaded
       # TODO: Reduce copypasta here
-      if Settings.getBool("comic.animation", true)
+      if Settings.getBool("comic.animation")
         elements.push el Motion, {
             key: 'animimage'
             style:
