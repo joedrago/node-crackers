@@ -67,7 +67,6 @@ class App extends React.Component
     super props
 
     @comicMetadataCache = new LRUCache(100)
-    @progressEnabled = "#inject{progress}" == "true"
     @pageUpdateTimer = null
     @state =
       navOpen: false
@@ -147,7 +146,7 @@ class App extends React.Component
 
   loadManifest: (updateData = null) ->
     ajaxData = {
-      url: '#inject{endpoint}'
+      url: @props.endpoint
       dataType: 'json'
       data: null
       success: (manifest, status) =>
@@ -156,7 +155,7 @@ class App extends React.Component
           manifest: manifest
         }
     }
-    if @progressEnabled and (updateData != null)
+    if @props.progressEnabled and (updateData != null)
       ajaxData.data = JSON.stringify(updateData)
       ajaxData.type = 'POST'
     $.ajax ajaxData
@@ -256,7 +255,7 @@ class App extends React.Component
     return
 
   onViewPage: (dir, page) ->
-    if not @progressEnabled
+    if not @props.progressEnabled
       return
 
     console.log "[#{dir}] displaying page #{page}"
@@ -343,7 +342,7 @@ class App extends React.Component
       # console.log "chose view #{@state.view}"
       view = el @views[@state.view], {
         key: "view.#{@state.view}"
-        progressEnabled: @progressEnabled
+        progressEnabled: @props.progressEnabled
         width: @props.containerWidth
         height: @props.containerHeight
         manifest: @state.manifest
