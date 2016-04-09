@@ -173,7 +173,7 @@ class App extends React.Component
       viewArg = ''
       @redirect('#browse')
 
-    console.log "navigate('#{view}', '#{viewArg}')"
+    # console.log "navigate('#{view}', '#{viewArg}')"
     if fromConstructor
       @state.view = view
       @state.viewArg = viewArg
@@ -181,21 +181,21 @@ class App extends React.Component
       @setState { view: view, viewArg: viewArg }
 
   changeDir: (dir) ->
-    console.log "changeDir(#{dir})"
+    # console.log "changeDir(#{dir})"
     comicMetadata = null
     indexList = @state.manifest.children[dir]
     if not indexList
-      console.log "loading comic: #{dir}"
+      # console.log "loading comic: #{dir}"
       indexList = null
       comicMetadata = @comicMetadataCache.get(dir)
       if comicMetadata
-        console.log "using cached metadata: #{dir}"
+        # console.log "using cached metadata: #{dir}"
         @setState {
           comicMetadata: comicMetadata
         }
       else
         metadataUrl = "#{dir}/meta.crackers"
-        console.log "Downloading #{metadataUrl}"
+        # console.log "Downloading #{metadataUrl}"
         metadataDir = dir
         $.getJSON(metadataUrl)
         .success (metadata) =>
@@ -204,7 +204,7 @@ class App extends React.Component
             comicMetadata: metadata
           }
         .error ->
-          console.log "lel error!"
+          # console.log "lel error!"
 
     @setState {
       dir: dir
@@ -213,7 +213,7 @@ class App extends React.Component
     }
 
   updatePageProgress: (dir, page) ->
-    console.log "[#{dir}] update page progress #{page}"
+    # console.log "[#{dir}] update page progress #{page}"
     @loadManifest({
       dir: dir
       page: page
@@ -243,7 +243,7 @@ class App extends React.Component
       confirmCB: (confirmed) =>
         if not confirmed
           return
-        console.log "dirAction(#{dir}, #{action}) confirmed: #{confirmed}"
+        # console.log "dirAction(#{dir}, #{action}) confirmed: #{confirmed}"
         updateData = switch action
           when 'mark'   then { mark:   dir }
           when 'unmark' then { unmark: dir }
@@ -258,7 +258,7 @@ class App extends React.Component
     if not @props.progressEnabled
       return
 
-    console.log "[#{dir}] displaying page #{page}"
+    # console.log "[#{dir}] displaying page #{page}"
     if @pageUpdateTimer != null
       clearTimeout(@pageUpdateTimer)
     @pageUpdateTimer = setTimeout =>

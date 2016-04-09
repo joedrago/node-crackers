@@ -1,7 +1,7 @@
 Perf = require 'react-addons-perf'
 PubSub = require 'pubsub-js'
 
-PROFILING_KEY = 'P'
+PROFILING_KEY = 'J'
 
 # To profile Crackers, simply add this anywhere to App.coffee:
 #

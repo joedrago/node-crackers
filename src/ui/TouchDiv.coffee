@@ -21,7 +21,6 @@ class TouchDiv extends React.Component
     @dblclickTime = null
 
   componentDidMount: ->
-    # console.log "TouchDiv componentDidMount"
     node = DOM.findDOMNode(this)
     $(node).on 'mousedown', (event) =>
       event.preventDefault()
@@ -47,9 +46,6 @@ class TouchDiv extends React.Component
           clientX: event.clientX
           clientY: event.clientY
         }]
-    # $(node).on 'dblclick', (event) =>
-    #   event.preventDefault()
-    #   @onDoubleTap(event.clientX, event.clientY)
     $(node).on 'touchstart', (event) =>
       event.preventDefault()
       @onTouchesBegan event.originalEvent.changedTouches
@@ -64,12 +60,10 @@ class TouchDiv extends React.Component
       @props.listener.onZoom(event.clientX, event.clientY, event.deltaY * event.deltaFactor / 4)
 
   componentWillUnmount: ->
-    # console.log "TouchDiv componentWillUnmount"
     node = DOM.findDOMNode(this)
     $(node).off 'mousedown'
     $(node).off 'mouseup'
     $(node).off 'mousemove'
-    # $(node).off 'dblclick'
     $(node).off 'touchstart'
     $(node).off 'touchend'
     $(node).off 'touchmove'

@@ -1,3 +1,6 @@
+# This is just a bunch of helper functions / factories for making certain html elements (tags).
+# Dumb name; very convenient shorthand.
+
 React = require 'react'
 FontIcon = require 'material-ui/lib/font-icon'
 

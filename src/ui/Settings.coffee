@@ -2,7 +2,8 @@ class Settings
   constructor: ->
     @cache = {}
 
-  # The are purposefully string values, as localStorage only knows about strings
+  # The are purposefully string values, as localStorage only knows about strings.
+  # Any settings not in this list should be considered an error.
   defaultValues:
     'comic.animation': 'true'
     'comic.autotouch': '0'
