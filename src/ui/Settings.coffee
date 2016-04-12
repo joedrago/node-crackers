@@ -18,6 +18,7 @@ class Settings
     'show.unread': 'true'
     'show.completed': 'true'
     'show.ignored': 'false'
+    'help.reminder': 'true'
 
   defaultValue: (key) ->
     if @defaultValues.hasOwnProperty(key)

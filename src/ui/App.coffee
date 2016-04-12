@@ -7,6 +7,7 @@ PubSub = require 'pubsub-js'
 # Local requires
 LRUCache = require './LRUCache'
 ConfirmDialog = require './ConfirmDialog'
+Settings = require './Settings'
 fullscreen = require './fullscreen'
 {div, el, icon} = require './tags'
 
@@ -14,9 +15,7 @@ fullscreen = require './fullscreen'
 BrowseView = require './views/BrowseView'
 ComicView = require './views/ComicView'
 HelpView = require './views/HelpView'
-HomeView = require './views/HomeView'
 LoadingView = require './views/LoadingView'
-SearchView = require './views/SearchView'
 SettingsView = require './views/SettingsView'
 UpdatesView = require './views/UpdatesView'
 
@@ -28,6 +27,7 @@ IconButton = require 'material-ui/lib/icon-button'
 LeftNav = require 'material-ui/lib/left-nav'
 MenuItem = require 'material-ui/lib/menus/menu-item'
 RaisedButton = require 'material-ui/lib/raised-button'
+Snackbar = require 'material-ui/lib/snackbar'
 Toolbar = require 'material-ui/lib/toolbar/toolbar'
 ToolbarGroup = require 'material-ui/lib/toolbar/toolbar-group'
 ToolbarSeparator = require 'material-ui/lib/toolbar/toolbar-separator'
@@ -70,6 +70,7 @@ class App extends React.Component
     @pageUpdateTimer = null
     @state =
       navOpen: false
+      helpSnackbarOpen: Settings.getBool('help.reminder')
       manifest: null
       view: 'home'
       viewArg: ''
@@ -80,11 +81,9 @@ class App extends React.Component
       fullscreen: fullscreen.available() and fullscreen.active()
 
     @views =
-      home: HomeView
       browse: BrowseView
       comic: ComicView
       help: HelpView
-      search: SearchView
       settings: SettingsView
       updates: UpdatesView
 
@@ -117,6 +116,15 @@ class App extends React.Component
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#settings')
+          @setState { navOpen: false }
+      }
+      el MenuItem, {
+        key: "menu.help"
+        primaryText: "Help"
+        leftIcon: icon 'help'
+        onTouchTap: (e) =>
+          e.preventDefault()
+          @redirect('#help')
           @setState { navOpen: false }
       }
     ]
@@ -161,7 +169,8 @@ class App extends React.Component
     $.ajax ajaxData
 
   redirect: (newHash) ->
-    window.location.replace(window.location.pathname + window.location.search + newHash)
+    # window.location.replace(window.location.pathname + window.location.search + newHash)
+    window.location.hash = newHash
     return
 
   navigate: (fromConstructor = false) ->
@@ -337,6 +346,18 @@ class App extends React.Component
         onRequestChange: (open) => @setState { navOpen: open }
       }, @navMenuItems
     )
+
+    elements.push el Snackbar, {
+      open: @state.helpSnackbarOpen
+      message: 'First time here? Learn the basics!'
+      action: 'Learn'
+      autoHideDuration: 4000
+      onActionTouchTap: =>
+        @redirect('#help')
+        @setState { helpSnackbarOpen: false }
+      onRequestClose: =>
+        @setState { helpSnackbarOpen: false }
+    }
 
     if @state.manifest
       # console.log "chose view #{@state.view}"

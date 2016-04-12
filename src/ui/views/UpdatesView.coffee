@@ -70,7 +70,7 @@ class UpdatesView extends React.Component
       dataType: 'json'
       data: null
       success: (updates, status) =>
-        console.log updates
+        # console.log updates
         @setState {
           updates: updates
         }
