@@ -312,6 +312,12 @@ class ComicRenderer extends React.Component
   onClick: (x, y) ->
     # console.log "onClick #{x} #{y}"
 
+  onRClick: (x, y) ->
+    if x > (@props.width >> 1)
+      @setIndex @state.index+1, { offer: true }
+    else
+      @setIndex @state.index-1, { offer: true }
+
   onDoubleTap: (x, y) ->
     scaleTiers = [1]
     if (zoom1 = Settings.getFloat("comic.dblzoom1")) > 1

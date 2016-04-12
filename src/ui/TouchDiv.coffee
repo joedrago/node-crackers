@@ -24,6 +24,9 @@ class TouchDiv extends React.Component
     node = DOM.findDOMNode(this)
     $(node).on 'mousedown', (event) =>
       event.preventDefault()
+      if event.which == 3
+        # Right mouse click
+        return
       @onTouchesBegan [{
         identifier: @MOUSE_ID
         clientX: event.clientX
@@ -32,6 +35,9 @@ class TouchDiv extends React.Component
       @mouseDown = true
     $(node).on 'mouseup', (event) =>
       event.preventDefault()
+      if event.which == 3
+        # Right mouse click
+        return
       @onTouchesEnded [{
         identifier: @MOUSE_ID
         clientX: event.clientX
@@ -46,6 +52,10 @@ class TouchDiv extends React.Component
           clientX: event.clientX
           clientY: event.clientY
         }]
+    $(node).on 'contextmenu', (event) =>
+      return if event.ctrlKey
+      event.preventDefault()
+      @props.listener.onRClick(event.clientX, event.clientY)
     $(node).on 'touchstart', (event) =>
       event.preventDefault()
       @onTouchesBegan event.originalEvent.changedTouches
@@ -64,6 +74,7 @@ class TouchDiv extends React.Component
     $(node).off 'mousedown'
     $(node).off 'mouseup'
     $(node).off 'mousemove'
+    $(node).off 'contextmenu'
     $(node).off 'touchstart'
     $(node).off 'touchend'
     $(node).off 'touchmove'

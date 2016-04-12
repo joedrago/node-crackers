@@ -24,6 +24,7 @@
 
 * On **desktop**:
   * Zoom with mousewheel, drag when zoomed to scroll around.
+  * Right click on left/right halves of the window to switch pages.
   * Keyboard shortcuts:
     * **Left, Z** - Previous page
     * **Right, X** - Next page
