@@ -13,6 +13,7 @@ class Settings
     'comic.dblzoom2': '3'
     'comic.dblzoom3': '0'
     'comic.showPageNumber': 'true'
+    'comic.spaceAutoRead': 'true'
     'comic.zoomgrid': 'false'
     'show.reading': 'true'
     'show.unread': 'true'

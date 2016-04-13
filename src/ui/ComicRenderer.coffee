@@ -83,7 +83,7 @@ class ComicRenderer extends React.Component
     # special case: confirm dialog is present
     if @state.confirmCB != null
       switch event.keyCode
-        when 68, 70, 88, 89, 90, 13 # D, F, X, Y ,Z, Enter
+        when 68, 70, 88, 89, 90, 32, 13 # D, F, X, Y, Z, Space, Enter
           @onConfirm(true)
         when 78, 27 # N, Escape
           @onConfirm(false)
@@ -124,6 +124,12 @@ class ComicRenderer extends React.Component
         @autoPrev()
       when 70 # F
         @autoNext()
+
+      when 32 # Space
+        if Settings.getBool("comic.spaceAutoRead")
+          @autoNext()
+        else
+          @setIndex @state.index+1, { offer: true }
 
       when 78 # N
         if @props.metadata.next
