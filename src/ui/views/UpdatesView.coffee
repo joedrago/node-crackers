@@ -1,6 +1,8 @@
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
+Settings = require '../Settings'
+{PlaceholderImage} = require './BrowseView'
 {a, el, div, img, span} = require '../tags'
 
 class UpdateDay extends React.Component
@@ -8,24 +10,30 @@ class UpdateDay extends React.Component
     super props
 
   render: ->
+    titleMarginBottom = '0px'
+    if @props.detailed
+      titleMarginBottom = '20px'
+
     title = div {
       key: "day.title.#{@props.day.date}"
       style:
-        color: '#ffaaff'
         marginTop: '10px'
-    }, @props.day.date
+        marginBottom: titleMarginBottom
+    }, a {
+      key: "link"
+      href: "#updates/#{@props.day.date}"
+      style:
+        color: '#ffaaff'
+    }, @props.day.pdate
 
     links = []
     for e,index in @props.day.list
-      action = 'comic'
-
       text = [
         span {
           key: "dir"
-        }, e.dir
+        }, e.title
       ]
       if e.hasOwnProperty('start')
-        action = 'browse'
         rangeText = " #{e.start}"
         if e.start != e.end
           rangeText += "-#{e.end}"
@@ -35,15 +43,40 @@ class UpdateDay extends React.Component
             color: '#aaffff'
         }, rangeText
 
+      linkContents = text
+      outerDisplay = 'block'
+      outerTextAlign = 'left'
+      outerHorizMargin = '0px'
+      linkMarginLeft = '20px'
+      if @props.detailed
+        outerDisplay = 'inline-block'
+        outerTextAlign = 'center'
+        linkMarginLeft = '0px'
+        outerHorizMargin = '10px'
+        linkContents = [
+          el PlaceholderImage, {
+            key: 'cover'
+            src: e.cover
+            style:
+              display: 'block'
+          }
+          el 'br'
+        ].concat text
+
       link = div {
         key: "day.link.#{@props.day.date}.#{index}"
+        style:
+          display: outerDisplay
+          textAlign: outerTextAlign
+          marginLeft: outerHorizMargin
+          marginRight: outerHorizMargin
       }, a {
         key: "link"
-        href: "##{action}/" + encodeURIComponent("#{e.dir}").replace("%2F", "/")
+        href: "##{e.action}/" + encodeURIComponent("#{e.dir}").replace("%2F", "/")
         style:
           color: '#ffffaa'
-          marginLeft: '20px'
-      }, text
+          marginLeft: linkMarginLeft
+      }, linkContents
 
       links.push link
 
@@ -88,19 +121,30 @@ class UpdatesView extends React.Component
 
     days = []
 
-    days.push div {
+    days.push a {
       key: 'updates.title'
+      href: '#updates'
       style:
+        display: 'block'
         color: '#aaaaaa'
         fontSize: '1.2em'
         fontStyle: 'italic'
     }, "Updates"
 
+    specificDate = null
     for day in @state.updates
-      days.push el UpdateDay, {
-        key: "update.#{day.date}"
-        day: day
-      }
+      if day.date == @props.arg
+        specificDate = @props.arg
+        break
+
+    showDetailed = (specificDate != null) or Settings.getBool('updates.detailed')
+    for day in @state.updates
+      if (specificDate == null) or (day.date == specificDate)
+        days.push el UpdateDay, {
+          key: "update.#{day.date}"
+          day: day
+          detailed: showDetailed
+        }
 
     view = div {
       style:

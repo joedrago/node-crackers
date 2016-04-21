@@ -152,6 +152,8 @@ class BrowseTitle extends React.Component
     color: '#aaaaaa'
     size: '1.2em'
 
+  @PlaceholderImage: PlaceholderImage
+
   constructor: (props) ->
     super props
 
@@ -493,4 +495,6 @@ class BrowseView extends React.Component
 
     return view
 
-module.exports = BrowseView
+module.exports =
+  BrowseView: BrowseView
+  PlaceholderImage: PlaceholderImage

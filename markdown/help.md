@@ -40,6 +40,7 @@
     * **2** - Set zoom to 2x
     * **3** - Set zoom to 3x
     * **0** - Zoom out
+    * **Space** - Autoread next (or Next page, see Settings)
 
 -------------------------------------------------------------
 

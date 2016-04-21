@@ -1,10 +1,14 @@
 cfs = require './cfs'
+constants = require './constants'
 moment = require 'moment'
 path = require 'path'
 
 BUCKET_WINDOW = 24 * 60 * 60
 
-formatTimestamp = (ts) ->
+formatDate = (ts) ->
+  return moment(ts * 1000).format('YYYYMMDD')
+
+formatPrettyDate = (ts) ->
   return moment(ts * 1000).format('MMMM Do, YYYY')
 
 sortByRelativeDir = (a, b) ->
@@ -41,10 +45,13 @@ class UpdatesGenerator
     for bucket in timeBuckets
       update =
         list: []
-        date: formatTimestamp(bucket.start)
+        pdate: formatPrettyDate(bucket.start)
+        date: formatDate(bucket.start)
       @updates.push update
 
       bucket.list.sort(sortByRelativeDir)
+      seriesCover = null
+      seriesDir = null
       startDir = null
       startIssue = 0
       endIssue = 0
@@ -56,27 +63,49 @@ class UpdatesGenerator
           # Found a series discontinuity. Dump whatever is currently in the pipeline
           # and start a new series.
           if startDir and (startIssue > 0) and (endIssue > 0)
+            dir = startDir
+            action = 'browse'
+            if startIssue == endIssue
+              dir = seriesDir
+              action = 'comic'
             update.list.push {
-              dir: startDir
+              action: action
+              dir: dir
+              title: startDir
               start: startIssue
               end: endIssue
+              cover: seriesCover
             }
             startDir = null
+            seriesCover = null
           if issue > 0
             startDir = parsed.dir
             startIssue = endIssue = issue
+            seriesCover = "#{comic.relativeDir}/#{constants.COVER_FILENAME}"
+            seriesDir = comic.relativeDir
           else
             update.list.push {
+              action: 'comic'
               dir: comic.relativeDir
+              title: comic.relativeDir
+              cover: "#{comic.relativeDir}/#{constants.COVER_FILENAME}"
             }
         else
           endIssue = issue
 
       if startDir and (startIssue > 0) and (endIssue > 0)
+        dir = startDir
+        action = 'browse'
+        if startIssue == endIssue
+          dir = seriesDir
+          action = 'comic'
         update.list.push {
-          dir: startDir
+          action: action
+          dir: dir
+          title: startDir
           start: startIssue
           end: endIssue
+          cover: seriesCover
         }
 
   roundTimestamp: (ts) ->

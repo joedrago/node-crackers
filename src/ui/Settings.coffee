@@ -15,11 +15,12 @@ class Settings
     'comic.showPageNumber': 'true'
     'comic.spaceAutoRead': 'true'
     'comic.zoomgrid': 'false'
+    'help.reminder': 'true'
     'show.reading': 'true'
     'show.unread': 'true'
     'show.completed': 'true'
     'show.ignored': 'false'
-    'help.reminder': 'true'
+    'updates.detailed': 'false'
 
   defaultValue: (key) ->
     if @defaultValues.hasOwnProperty(key)

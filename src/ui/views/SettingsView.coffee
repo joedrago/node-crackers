@@ -92,6 +92,7 @@ class SettingsView extends React.Component
     elements.push @createCheckbox('comic.showPageNumber', "Display the page number when switching pages")
     elements.push @createCheckbox('comic.confirmBinge', "Display confirmation dialog when auto-switching to the next/previous issue")
     elements.push @createCheckbox('comic.spaceAutoRead', "Space bar performs Autoread (vs simply 'next page')")
+    elements.push @createCheckbox('updates.detailed', "Show detailed view when listing all dates in Updates")
 
     # ------------------------------------------------------------------------
 

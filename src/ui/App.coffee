@@ -12,7 +12,7 @@ fullscreen = require './fullscreen'
 {div, el, icon} = require './tags'
 
 # Views
-BrowseView = require './views/BrowseView'
+{BrowseView} = require './views/BrowseView'
 ComicView = require './views/ComicView'
 HelpView = require './views/HelpView'
 LoadingView = require './views/LoadingView'
@@ -351,7 +351,7 @@ class App extends React.Component
       open: @state.helpSnackbarOpen
       message: 'First time here? Learn the basics!'
       action: 'Learn'
-      autoHideDuration: 4000
+      autoHideDuration: 20000
       onActionTouchTap: =>
         @redirect('#help')
         @setState { helpSnackbarOpen: false }
