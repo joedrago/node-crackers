@@ -44,15 +44,18 @@ class UpdateDay extends React.Component
         }, rangeText
 
       linkContents = text
-      outerDisplay = 'block'
-      outerTextAlign = 'left'
-      outerHorizMargin = '0px'
       linkMarginLeft = '20px'
+      outerStyle =
+        marginLeft: '20px'
       if @props.detailed
-        outerDisplay = 'inline-block'
-        outerTextAlign = 'center'
         linkMarginLeft = '0px'
-        outerHorizMargin = '10px'
+        outerStyle.display = 'inline-block'
+        outerStyle.width = '150px'
+        outerStyle.textAlign = 'center'
+        outerStyle.marginLeft = '0px'
+        outerStyle.marginLeft = '10px'
+        outerStyle.marginRight = '10px'
+        outerStyle.verticalAlign = 'top'
         linkContents = [
           el PlaceholderImage, {
             key: 'cover'
@@ -65,11 +68,7 @@ class UpdateDay extends React.Component
 
       link = div {
         key: "day.link.#{@props.day.date}.#{index}"
-        style:
-          display: outerDisplay
-          textAlign: outerTextAlign
-          marginLeft: outerHorizMargin
-          marginRight: outerHorizMargin
+        style: outerStyle
       }, a {
         key: "link"
         href: "##{e.action}/" + encodeURIComponent("#{e.dir}").replace("%2F", "/")
