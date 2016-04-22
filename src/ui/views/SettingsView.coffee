@@ -132,6 +132,7 @@ class SettingsView extends React.Component
       style: @miniTitleStyle()
     }, "Touch devices only (tablet / phone):"
 
+    elements.push @createCheckbox('fullscreen.overlay', "Force fullscreen mode with fullscreen overlay (when not in fullscreen)")
     elements.push @createCheckbox('comic.autoZoomOut', "Automatically unzoom when you aren't touching the screen")
     elements.push @createCheckbox('comic.zoomgrid', "Use zoomgrid")
 

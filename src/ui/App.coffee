@@ -9,7 +9,7 @@ LRUCache = require './LRUCache'
 ConfirmDialog = require './ConfirmDialog'
 Settings = require './Settings'
 fullscreen = require './fullscreen'
-{div, el, icon} = require './tags'
+{div, el, icon, span} = require './tags'
 
 # Views
 {BrowseView} = require './views/BrowseView'
@@ -318,25 +318,54 @@ class App extends React.Component
         }
     ]
 
-    if fullscreen.available() and fullscreen.active()
-      # Fake back button
-      elements.push el IconButton, {
-          key: "fakebackbutton"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 40
-            top: 0
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              window.history.back()
-            , 0
-        }, 'keyboard_arrow_left'
+    if fullscreen.available()
+      if fullscreen.active()
+        # Fake back button
+        elements.push el IconButton, {
+            key: "fakebackbutton"
+            iconClassName: 'material-icons'
+            touch: true
+            style:
+              opacity: 0.5
+              position: 'fixed'
+              left: 40
+              top: 0
+              zIndex: 2
+            iconStyle:
+              color: '#ffffff'
+            onTouchTap: =>
+              setTimeout =>
+                window.history.back()
+              , 0
+          }, 'keyboard_arrow_left'
+      else
+        # Fullscreen not active, draw overlay if enabled
+        if Settings.getBool('fullscreen.overlay')
+          elements.push div {
+            key: "fullscreenoverlay"
+            style:
+              backgroundColor: 'rgba(0, 0, 0, 0.8)'
+              zIndex: 5
+              position: 'fixed'
+              left: 0
+              top: 0
+              right: 0
+              bottom: 0
+              textAlign: 'center'
+              paddingTop: '15px'
+            onClick: (e) ->
+              e.preventDefault()
+              fullscreen.toggle()
+              @setState { navOpen: false, fullscreen: fullscreen.active() }
+          }, [
+            span {
+              style:
+                color: '#ffffff'
+                fontSize: '1.6em'
+                fontFamily: 'monospace'
+                fontWeight: 900
+            }, "Tap to Enter Fullscreen"
+          ]
 
     elements.push(el LeftNav, {
         key: 'leftnav'
