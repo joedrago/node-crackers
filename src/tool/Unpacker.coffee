@@ -6,7 +6,6 @@ log = require './log'
 path = require 'path'
 touch = require 'touch'
 which = require 'which'
-wrench = require 'wrench'
 
 class Unpacker
   constructor: (@archive, @dir) ->
@@ -69,7 +68,7 @@ class Unpacker
     exec(cmd, args, @tempDir)
 
     # force all the permissions in the temp dir to rwx
-    wrench.chmodSyncRecursive(@tempDir, 0o0755);
+    cfs.chmodSyncRecursive(@tempDir, 0o0755);
 
     # Prepare images directory
     if fs.existsSync(@imagesDir)

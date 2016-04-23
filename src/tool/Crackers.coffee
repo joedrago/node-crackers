@@ -4,7 +4,6 @@ exec = require './exec'
 fs = require 'fs'
 log = require './log'
 path = require 'path'
-wrench = require 'wrench'
 
 ComicGenerator = require './ComicGenerator'
 RootGenerator = require './RootGenerator'
@@ -239,7 +238,7 @@ class Crackers
         madeDir[dstDir] = true
         if args.execute
           console.log " Mkdir: \"#{dstDir}\""
-          wrench.mkdirSyncRecursive(dstDir)
+          cfs.mkdirSyncRecursive(dstDir)
         else
           console.log "#{mkdirCmd} \"#{dstDir}\""
       if src == dst
@@ -304,7 +303,7 @@ class Crackers
         archiveFilename = cfs.join(rootDir, constants.ARCHIVES_DIR, "#{comic.relativeDir}.cbz")
         parsed = path.parse archiveFilename
         archiveDir = parsed.dir
-        wrench.mkdirSyncRecursive(archiveDir)
+        cfs.mkdirSyncRecursive(archiveDir)
         if not cfs.prepareDir(archiveDir)
           continue
         if args.force or cfs.newer(comic.dir, archiveFilename)
