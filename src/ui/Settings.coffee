@@ -15,6 +15,7 @@ class Settings
     'comic.showPageNumber': 'true'
     'comic.spaceAutoRead': 'true'
     'comic.zoomgrid': 'false'
+    'fakebackbutton.force': 'false'
     'fullscreen.overlay': 'false'
     'help.reminder': 'true'
     'show.reading': 'true'

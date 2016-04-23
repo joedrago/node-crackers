@@ -319,7 +319,7 @@ class App extends React.Component
     ]
 
     if fullscreen.available()
-      if fullscreen.active()
+      if fullscreen.active() or Settings.getBool('fakebackbutton.force')
         # Fake back button
         elements.push el IconButton, {
             key: "fakebackbutton"
@@ -338,8 +338,8 @@ class App extends React.Component
                 window.history.back()
               , 0
           }, 'keyboard_arrow_left'
-      else
-        # Fullscreen not active, draw overlay if enabled
+      if not fullscreen.active()
+        # draw overlay if enabled
         if Settings.getBool('fullscreen.overlay')
           elements.push div {
             key: "fullscreenoverlay"

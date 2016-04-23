@@ -1,3 +1,17 @@
+## Best Browser Experiences
+
+* On **Android** (multiple choices)
+  * Open in Chrome, choose Add to Home Screen, visit from that new button
+  * Open in Chrome, enter Fullscreen mode
+    * The fullscreen overlay setting is excellent on Android
+
+* On **iOS**
+  * Open in Safari (specifically), choose Add to Home Screen, visit from that new button
+    * Enable "Always display the fake back button" in Settings
+
+* On **desktop** (any OS)
+  * Chrome or Firefox, preferably in Fullscreen mode (all testing is in Chrome)
+
 ## The Basics: Getting Around
 
 * Use the **Menu** button in the top left.
