@@ -269,8 +269,8 @@ class BrowseView extends React.Component
         el IconMenu, {
           key: 'filterbutton'
           iconButtonElement: el IconButton, {
-              iconClassName: 'material-icons'
-            }, 'filter_list'
+            iconClassName: 'material-icons'
+          }, 'filter_list'
           iconStyle: {}
           anchorOrigin: { horizontal: 'right', vertical: 'top' }
           targetOrigin: { horizontal: 'right', vertical: 'top' }
@@ -379,13 +379,13 @@ class BrowseView extends React.Component
       ]
 
       entries.push el LeftNav, {
-          key: 'contextmenu'
-          docked: false
-          openRight: true
-          open: @state.contextMenuOpen
-          disableSwipeToOpen: true
-          onRequestChange: (open) => @setState { contextMenuOpen: open }
-        }, contextMenuItems
+        key: 'contextmenu'
+        docked: false
+        openRight: true
+        open: @state.contextMenuOpen
+        disableSwipeToOpen: true
+        onRequestChange: (open) => @setState { contextMenuOpen: open }
+      }, contextMenuItems
 
 
     # ------------------------------------------------------------------------

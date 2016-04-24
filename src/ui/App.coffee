@@ -288,55 +288,55 @@ class App extends React.Component
     elements = [
       # Corner icon
       el IconButton, {
-          key: "opennavbutton"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 0
-            top: 0
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @setState { navOpen: !@state.navOpen }
-            , 0
-        }, 'menu'
+        key: "opennavbutton"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 0
+          top: 0
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @setState { navOpen: !@state.navOpen }
+          , 0
+      }, 'menu'
 
-        el ConfirmDialog, {
-          key: "confirmdialog"
-          open: (@state.confirmCB != null)
-          yes: @state.confirmYes
-          title: @state.confirmTitle
-          text: @state.confirmText
-          cb: (confirmed) =>
-            if @state.confirmCB
-              @state.confirmCB(confirmed)
-              @setState { confirmCB: null }
-        }
+      el ConfirmDialog, {
+        key: "confirmdialog"
+        open: (@state.confirmCB != null)
+        yes: @state.confirmYes
+        title: @state.confirmTitle
+        text: @state.confirmText
+        cb: (confirmed) =>
+          if @state.confirmCB
+            @state.confirmCB(confirmed)
+            @setState { confirmCB: null }
+      }
     ]
 
     if Settings.getBool('fakebackbutton.force') or (fullscreen.available() and fullscreen.active())
       # Fake back button
       elements.push el IconButton, {
-          key: "fakebackbutton"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 40
-            top: 0
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              window.history.back()
-            , 0
-        }, 'keyboard_arrow_left'
+        key: "fakebackbutton"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 40
+          top: 0
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            window.history.back()
+          , 0
+      }, 'keyboard_arrow_left'
 
     # draw fullscreen overlay if enabled and we can / still need to enter fullscreen
     if Settings.getBool('fullscreen.overlay') and fullscreen.available() and not fullscreen.active()
@@ -366,14 +366,13 @@ class App extends React.Component
         }, "Tap to Enter Fullscreen"
       ]
 
-    elements.push(el LeftNav, {
-        key: 'leftnav'
-        docked: false
-        open: @state.navOpen
-        disableSwipeToOpen: true
-        onRequestChange: (open) => @setState { navOpen: open }
-      }, @navMenuItems
-    )
+    elements.push el LeftNav, {
+      key: 'leftnav'
+      docked: false
+      open: @state.navOpen
+      disableSwipeToOpen: true
+      onRequestChange: (open) => @setState { navOpen: open }
+    }, @navMenuItems
 
     elements.push el Snackbar, {
       open: @state.helpSnackbarOpen

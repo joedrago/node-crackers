@@ -475,15 +475,15 @@ class ComicRenderer extends React.Component
     elements = []
 
     elements.push el ConfirmDialog, {
-        key: "confirmdialog"
-        open: (@state.confirmCB != null)
-        yes: 'Yes'
-        no: 'No'
-        title: @state.confirmTitle
-        text: @state.confirmText
-        cb: (confirmed) =>
-          @onConfirm(confirmed)
-      }
+      key: "confirmdialog"
+      open: (@state.confirmCB != null)
+      yes: 'Yes'
+      no: 'No'
+      title: @state.confirmTitle
+      text: @state.confirmText
+      cb: (confirmed) =>
+        @onConfirm(confirmed)
+    }
 
     pageNumber = []
     if Settings.getBool("comic.showPageNumber") and @state.showPageNumber
@@ -540,147 +540,147 @@ class ComicRenderer extends React.Component
     if @inLandscape() and (autotouch > 0)
       # Autoread!
       elements.push el IconButton, {
-          key: "autoread_back"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 0
-            top: 40
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @autoScale = autotouch
-              @autoPrev()
-            , 0
-        }, 'call_missed'
+        key: "autoread_back"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 0
+          top: 40
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @autoScale = autotouch
+            @autoPrev()
+          , 0
+      }, 'call_missed'
 
       elements.push el IconButton, {
-          key: "autoread_forward"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 0
-            top: 80
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @autoScale = autotouch
-              @autoNext()
-            , 0
-        }, 'call_missed_outgoing'
+        key: "autoread_forward"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 0
+          top: 80
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @autoScale = autotouch
+            @autoNext()
+          , 0
+      }, 'call_missed_outgoing'
 
       elements.push el IconButton, {
-          key: "zoomtocorner_q"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 0
-            bottom: 30
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @autoScale = autotouch
-              @zoomToCorner(0, 0)
-            , 0
-        }, 'check_box_outline_blank'
+        key: "zoomtocorner_q"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 0
+          bottom: 30
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @autoScale = autotouch
+            @zoomToCorner(0, 0)
+          , 0
+      }, 'check_box_outline_blank'
 
       elements.push el IconButton, {
-          key: "zoomtocorner_w"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 30
-            bottom: 30
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @autoScale = autotouch
-              @zoomToCorner(1, 0)
-            , 0
-        }, 'check_box_outline_blank'
+        key: "zoomtocorner_w"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 30
+          bottom: 30
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @autoScale = autotouch
+            @zoomToCorner(1, 0)
+          , 0
+      }, 'check_box_outline_blank'
 
       elements.push el IconButton, {
-          key: "zoomtocorner_a"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 0
-            bottom: 0
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @autoScale = autotouch
-              @zoomToCorner(0, 1)
-            , 0
-        }, 'check_box_outline_blank'
+        key: "zoomtocorner_a"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 0
+          bottom: 0
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @autoScale = autotouch
+            @zoomToCorner(0, 1)
+          , 0
+      }, 'check_box_outline_blank'
 
       elements.push el IconButton, {
-          key: "zoomtocorner_s"
-          iconClassName: 'material-icons'
-          touch: true
-          style:
-            opacity: 0.5
-            position: 'fixed'
-            left: 30
-            bottom: 0
-            zIndex: 2
-          iconStyle:
-            color: '#ffffff'
-          onTouchTap: =>
-            setTimeout =>
-              @autoScale = autotouch
-              @zoomToCorner(1, 1)
-            , 0
-        }, 'check_box_outline_blank'
+        key: "zoomtocorner_s"
+        iconClassName: 'material-icons'
+        touch: true
+        style:
+          opacity: 0.5
+          position: 'fixed'
+          left: 30
+          bottom: 0
+          zIndex: 2
+        iconStyle:
+          color: '#ffffff'
+        onTouchTap: =>
+          setTimeout =>
+            @autoScale = autotouch
+            @zoomToCorner(1, 1)
+          , 0
+      }, 'check_box_outline_blank'
 
     if @state.loaded
       # TODO: Reduce copypasta here
       if Settings.getBool("comic.animation")
         elements.push el Motion, {
-            key: 'animimage'
+          key: 'animimage'
+          style:
+            imageX: spring(@state.imageX, @springConfig)
+            imageY: spring(@state.imageY, @springConfig)
+            imageWidth: spring(@state.imageWidth, @springConfig)
+            imageHeight: spring(@state.imageHeight, @springConfig)
+        }, (values) =>
+          el TouchDiv, {
+            listener: this
+            width: @props.width
+            height: @props.height
             style:
-              imageX: spring(@state.imageX, @springConfig)
-              imageY: spring(@state.imageY, @springConfig)
-              imageWidth: spring(@state.imageWidth, @springConfig)
-              imageHeight: spring(@state.imageHeight, @springConfig)
-          }, (values) =>
-            el TouchDiv, {
-              listener: this
+              id: 'page'
+              position: 'absolute'
+              left: 0
+              top: 0
               width: @props.width
               height: @props.height
-              style:
-                id: 'page'
-                position: 'absolute'
-                left: 0
-                top: 0
-                width: @props.width
-                height: @props.height
-                backgroundColor: '#111111'
-                backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
-                backgroundRepeat: 'no-repeat'
-                backgroundPosition: "#{values.imageX}px #{values.imageY}px"
-                backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
-            }
+              backgroundColor: '#111111'
+              backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
+              backgroundRepeat: 'no-repeat'
+              backgroundPosition: "#{values.imageX}px #{values.imageY}px"
+              backgroundSize: "#{values.imageWidth}px #{values.imageHeight}px"
+          }
       else
         elements.push el TouchDiv, {
           key: 'animimage'

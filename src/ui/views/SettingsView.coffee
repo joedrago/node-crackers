@@ -34,34 +34,34 @@ class SettingsView extends React.Component
 
   createZoombox: (name, value, enabled, description) ->
     selectField = el SelectField, {
-        key: "zoombox.#{name}"
-        value: value
-        disabled: !enabled
-        onChange: (event, index, value) =>
-          console.log "changing #{name} to #{value}"
-          Settings.set(name, value)
-          @kick()
-      }, [
-        el MenuItem, { value:   0, primaryText: 'Disabled' }
-        el MenuItem, { value: 1.5, primaryText: '1.5x' }
-        el MenuItem, { value:   2, primaryText: '2x' }
-        el MenuItem, { value: 2.5, primaryText: '2.5x' }
-        el MenuItem, { value:   3, primaryText: '3x' }
-      ]
+      key: "zoombox.#{name}"
+      value: value
+      disabled: !enabled
+      onChange: (event, index, value) =>
+        console.log "changing #{name} to #{value}"
+        Settings.set(name, value)
+        @kick()
+    }, [
+      el MenuItem, { value:   0, primaryText: 'Disabled' }
+      el MenuItem, { value: 1.5, primaryText: '1.5x' }
+      el MenuItem, { value:   2, primaryText: '2x' }
+      el MenuItem, { value: 2.5, primaryText: '2.5x' }
+      el MenuItem, { value:   3, primaryText: '3x' }
+    ]
 
     return div {}, [selectField]
 
   createAutotouch: ->
     selectField = el SelectField, {
-        value: Settings.getFloat('comic.autotouch')
-        onChange: (event, index, value) =>
-          Settings.set('comic.autotouch', value)
-          @kick()
-      }, [
-        el MenuItem, { value:   0, primaryText: 'Disabled' }
-        el MenuItem, { value: 1.5, primaryText: '1.5x' }
-        el MenuItem, { value:   2, primaryText: '2x' }
-      ]
+      value: Settings.getFloat('comic.autotouch')
+      onChange: (event, index, value) =>
+        Settings.set('comic.autotouch', value)
+        @kick()
+    }, [
+      el MenuItem, { value:   0, primaryText: 'Disabled' }
+      el MenuItem, { value: 1.5, primaryText: '1.5x' }
+      el MenuItem, { value:   2, primaryText: '2x' }
+    ]
 
     return div {}, [selectField]
 

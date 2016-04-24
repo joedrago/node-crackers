@@ -90,7 +90,67 @@ buildTool = (callback) ->
     util.log "Tool compilation finished."
     callback?() if code is 0
 
+# Adapted from 'wrench' module
+readdir = (baseDir) ->
+  baseDir = baseDir.replace(/\/$/, '')
+
+  readdirSyncRecursive = (baseDir) ->
+    files = []
+    isDir = (fname) ->
+      if fs.existsSync(path.join(baseDir, fname))
+        return fs.statSync( path.join(baseDir, fname) ).isDirectory()
+      return false
+    prependBaseDir = (fname) ->
+      return path.join(baseDir, fname)
+
+    curFiles = fs.readdirSync(baseDir)
+    nextDirs = curFiles.filter(isDir)
+    curFiles = curFiles.map(prependBaseDir)
+
+    files = files.concat(curFiles)
+
+    while nextDirs.length > 0
+      files = files.concat( readdirSyncRecursive(path.join(baseDir, nextDirs.shift())) )
+
+    return files
+
+  # convert absolute paths to relative
+  fileList = readdirSyncRecursive(baseDir).map (val) ->
+    return path.relative(baseDir, val)
+
+  return fileList
+
+scan = (filename) ->
+  foundBadIndent = false
+  lines = String(fs.readFileSync("src/#{filename}")).split(/\n/)
+  prevIndent = 0
+  for line, index in lines
+    line = line.replace(/[\r]/, '')
+    pageNumber = index+1
+
+    indent = 0
+    if matches = line.match(/^(\s*)/)
+      indent = matches[1].length
+
+    if (prevIndent > 0) and (indent >= prevIndent+4)
+      console.error "ERROR: Found double indent: #{filename}:#{pageNumber} (#{prevIndent} -> #{indent})"
+      foundBadIndent = true
+    prevIndent = indent
+  return foundBadIndent
+
+findDoubleIndents = (callback) ->
+  files = readdir('src')
+  foundBadIndent = false
+  for file in files
+    if file.match(/.coffee$/)
+      if scan(file)
+        foundBadIndent = true
+  if not foundBadIndent
+    util.log "No double indents found."
+    callback?()
+
 task 'build', 'build JS bundle', (options) ->
-  buildTool ->
-    buildMarkdown ->
-      buildUI ->
+  findDoubleIndents ->
+    buildTool ->
+      buildMarkdown ->
+        buildUI ->
