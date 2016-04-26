@@ -15,10 +15,8 @@ ConfirmDialog = require './ConfirmDialog'
 ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
 Settings = require './Settings'
-{div} = require './tags'
+tags = require './tags'
 {el} = require './tags'
-{img} = require './tags'
-{span} = require './tags'
 
 Auto =
   None: 0
@@ -491,7 +489,7 @@ class ComicRenderer extends React.Component
 
     pageNumber = []
     if Settings.getBool("comic.showPageNumber") and @state.showPageNumber
-      pageNumber.push div {
+      pageNumber.push tags.div {
         key: 'pagenumber'
         style:
           position: 'absolute'
@@ -504,7 +502,7 @@ class ComicRenderer extends React.Component
           fontFamily: 'monospace'
           color: '#ffffff'
           textShadow: '3px 3px #000000'
-      }, span {
+      }, tags.span {
         key: 'pagedisplayinner'
         style:
           backgroundColor: 'rgba(0, 0, 0, 0.5)'
@@ -522,7 +520,7 @@ class ComicRenderer extends React.Component
 
     # ZoomGrid
     if Settings.getBool("comic.zoomgrid")
-      elements.push div {
+      elements.push tags.div {
         id: 'zoomgrid'
         className: 'zoomgrid'
         onTouchStart: (e) =>
@@ -535,7 +533,7 @@ class ComicRenderer extends React.Component
           e.preventDefault()
           @onZoomGridEnd(e.changedTouches[0])
       }, [
-        div {
+        tags.div {
           className: 'zoomgridinner'
         }
       ]
@@ -709,7 +707,7 @@ class ComicRenderer extends React.Component
         key: 'loader'
         color: '#222222'
       }
-    return div {}, elements
+    return tags.div {}, elements
 
 module.exports = ComicRenderer
 

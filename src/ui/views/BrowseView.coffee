@@ -16,13 +16,8 @@ ToolbarTitle = require 'material-ui/lib/toolbar/toolbar-title'
 
 # Local requires
 Settings = require '../Settings'
-{a} = require '../tags'
-{div} = require '../tags'
+tags = require '../tags'
 {el} = require '../tags'
-{icon} = require '../tags'
-{img} = require '../tags'
-{hr} = require '../tags'
-{span} = require '../tags'
 
 COVER_WIDTH = '150px'
 COVER_HEIGHT = '231px' # placeholder height, the real images are auto-height
@@ -43,12 +38,12 @@ class PlaceholderImage extends React.Component
 
   render: ->
     if @state.loaded
-      return img {
+      return tags.img {
         key: @props.key
         src: @props.src
       }
 
-    return div {
+    return tags.div {
       key: @props.key
       style:
         display: 'block'
@@ -75,7 +70,7 @@ class BrowseEntry extends React.Component
         href = "#browse/" + encodeURIComponent("#{@props.info.dir}").replace("%2F", "/")
         subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"
 
-    title = span {
+    title = tags.span {
       key: 'title'
       style:
         fontWeight: 900
@@ -88,7 +83,7 @@ class BrowseEntry extends React.Component
       percent = @props.info.perc
       if percent < 0
         percent = 0
-      progressBar = div {
+      progressBar = tags.div {
         key: 'progressbar'
         style:
           display: 'block'
@@ -97,7 +92,7 @@ class BrowseEntry extends React.Component
           marginBottom: '3px'
           background: '#333333'
       }, [
-        div {
+        tags.div {
           key: 'progressbarinner'
           style:
             width: "#{percent}%"
@@ -109,14 +104,14 @@ class BrowseEntry extends React.Component
 
     linkContents.push cover
 
-    link = a {
+    link = tags.a {
       key: 'link'
       href: href
       style:
         cursor: 'pointer'
     }, linkContents
 
-    subtitle = div {
+    subtitle = tags.div {
       key: 'subtitle'
       style:
         color: '#aaaaaa'
@@ -124,7 +119,7 @@ class BrowseEntry extends React.Component
     }, subtitleText
 
     if @props.progressEnabled
-      menu = div {
+      menu = tags.div {
         key: 'contextmenutext'
         style:
           cursor: 'pointer'
@@ -132,11 +127,11 @@ class BrowseEntry extends React.Component
           @props.contextMenu(@props.info.dir)
       }, title
     else
-      menu = div {
+      menu = tags.div {
         key: 'contextmenutext'
       }, title
 
-    entry = div {
+    entry = tags.div {
       key: "BrowseEntry"
       style:
         display: 'inline-block'
@@ -175,7 +170,7 @@ class BrowseTitle extends React.Component
     else
       title = "Reading:"
 
-    return div {
+    return tags.div {
       style:
         color: @props.color
         fontSize: @props.size
@@ -215,7 +210,7 @@ class BrowseView extends React.Component
     # Bail out if the directory doesn't make sense.
 
     if not @props.manifest.children.hasOwnProperty(@props.arg)
-      return div {
+      return tags.div {
         style:
           color: '#ffffff'
       }, "Invalid directory. Go home."
@@ -328,7 +323,7 @@ class BrowseView extends React.Component
         zIndex: 1
     }, toolbarItems
 
-    spacing = div {
+    spacing = tags.div {
       key: 'spacing'
       style:
         height: '60px'
@@ -352,7 +347,7 @@ class BrowseView extends React.Component
         el MenuItem, {
           key: "contextmenu.markread"
           primaryText: "Mark as Read"
-          rightIcon: icon 'done'
+          rightIcon: tags.icon 'done'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }
@@ -363,7 +358,7 @@ class BrowseView extends React.Component
         el MenuItem, {
           key: "contextmenu.markunread"
           primaryText: "Mark as Unread"
-          rightIcon: icon 'done_all'
+          rightIcon: tags.icon 'done_all'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }
@@ -374,7 +369,7 @@ class BrowseView extends React.Component
         el MenuItem, {
           key: "contextmenu.ignore"
           primaryText: "Toggle Ignore"
-          rightIcon: icon 'do_not_disturb'
+          rightIcon: tags.icon 'do_not_disturb'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }
@@ -456,7 +451,7 @@ class BrowseView extends React.Component
           if ((lastPerc != 0) and (entry.perc == 0))
             addDivider = true
           if addDivider
-            entries.push hr {
+            entries.push tags.hr {
               key: "hr.perc#{entry.perc}"
               size: 1
               style:
@@ -477,7 +472,7 @@ class BrowseView extends React.Component
 
     if sawOneEntry
       if filteredListSize != unfilteredListSize
-        entries.push hr {
+        entries.push tags.hr {
           key: "hr.filtered"
           size: 1
           style:
@@ -490,7 +485,7 @@ class BrowseView extends React.Component
     # ------------------------------------------------------------------------
     # Create view
 
-    view = div {
+    view = tags.div {
       key: 'browseview'
       style:
         width: '100%'

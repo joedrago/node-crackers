@@ -1,9 +1,10 @@
 # React
 React = require 'react'
 DOM = require 'react-dom'
-{div} = require './tags'
+
+# Local requires
+tags = require './tags'
 {el} = require './tags'
-{img} = require './tags'
 
 class TouchDiv extends React.Component
   constructor: (props) ->
@@ -84,7 +85,7 @@ class TouchDiv extends React.Component
     $(node).off 'mousewheel'
 
   render: ->
-    div {
+    tags.div {
       style: @props.style
     }
 

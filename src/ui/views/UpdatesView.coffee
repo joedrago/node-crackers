@@ -1,13 +1,13 @@
+# React
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
 Settings = require '../Settings'
 {PlaceholderImage} = require './BrowseView'
-{a} = require '../tags'
+
+# Local requires
+tags = require '../tags'
 {el} = require '../tags'
-{div} = require '../tags'
-{img} = require '../tags'
-{span} = require '../tags'
 
 class UpdateDay extends React.Component
   constructor: (props) ->
@@ -18,12 +18,12 @@ class UpdateDay extends React.Component
     if @props.detailed
       titleMarginBottom = '20px'
 
-    title = div {
+    title = tags.div {
       key: "day.title.#{@props.day.date}"
       style:
         marginTop: '10px'
         marginBottom: titleMarginBottom
-    }, a {
+    }, tags.a {
       key: "link"
       href: "#updates/#{@props.day.date}"
       style:
@@ -33,7 +33,7 @@ class UpdateDay extends React.Component
     links = []
     for e,index in @props.day.list
       text = [
-        span {
+        tags.span {
           key: "dir"
         }, e.title
       ]
@@ -41,7 +41,7 @@ class UpdateDay extends React.Component
         rangeText = " #{e.start}"
         if e.start != e.end
           rangeText += "-#{e.end}"
-        text.push span {
+        text.push tags.span {
           key: 'range'
           style:
             color: '#aaffff'
@@ -70,10 +70,10 @@ class UpdateDay extends React.Component
           el 'br'
         ].concat text
 
-      link = div {
+      link = tags.div {
         key: "day.link.#{@props.day.date}.#{index}"
         style: outerStyle
-      }, a {
+      }, tags.a {
         key: "link"
         href: "##{e.action}/" + encodeURIComponent("#{e.dir}").replace("%2F", "/")
         style:
@@ -83,7 +83,7 @@ class UpdateDay extends React.Component
 
       links.push link
 
-    return div {
+    return tags.div {
       style:
         color: '#ffaaff'
         fontFamily: 'monospace'
@@ -124,7 +124,7 @@ class UpdatesView extends React.Component
 
     days = []
 
-    days.push a {
+    days.push tags.a {
       key: 'updates.title'
       href: '#updates'
       style:
@@ -149,7 +149,7 @@ class UpdatesView extends React.Component
           detailed: showDetailed
         }
 
-    view = div {
+    view = tags.div {
       style:
         marginTop: '10px'
         marginLeft: '60px'

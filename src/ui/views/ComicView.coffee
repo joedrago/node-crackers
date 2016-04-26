@@ -1,10 +1,12 @@
+# React
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
+
+# Local requires
 loadMetadata = require '../MetadataCache'
+tags = require '../tags'
 {el} = require '../tags'
-{div} = require '../tags'
-{img} = require '../tags'
 
 ComicRenderer = require '../ComicRenderer'
 
@@ -55,7 +57,7 @@ class ComicView extends React.Component
 
   render: ->
     if @state.dir == null
-      return div {
+      return tags.div {
         style:
           color: '#ffffff'
       }, "Invalid comic. Go Home."

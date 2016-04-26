@@ -9,10 +9,8 @@ LRUCache = require './LRUCache'
 ConfirmDialog = require './ConfirmDialog'
 Settings = require './Settings'
 fullscreen = require './fullscreen'
-{div} = require './tags'
+tags = require './tags'
 {el} = require './tags'
-{icon} = require './tags'
-{span} = require './tags'
 
 # Views
 {BrowseView} = require './views/BrowseView'
@@ -98,7 +96,7 @@ class App extends React.Component
       el MenuItem, {
         key: "menu.browse"
         primaryText: "Browse"
-        leftIcon: icon 'grid_on'
+        leftIcon: tags.icon 'grid_on'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#browse')
@@ -107,7 +105,7 @@ class App extends React.Component
       el MenuItem, {
         key: "menu.updates"
         primaryText: "Updates"
-        leftIcon: icon 'event_note'
+        leftIcon: tags.icon 'event_note'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#updates')
@@ -116,7 +114,7 @@ class App extends React.Component
       el MenuItem, {
         key: "menu.settings"
         primaryText: "Settings"
-        leftIcon: icon 'settings'
+        leftIcon: tags.icon 'settings'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#settings')
@@ -125,7 +123,7 @@ class App extends React.Component
       el MenuItem, {
         key: "menu.help"
         primaryText: "Help"
-        leftIcon: icon 'help'
+        leftIcon: tags.icon 'help'
         onTouchTap: (e) =>
           e.preventDefault()
           @redirect('#help')
@@ -140,7 +138,7 @@ class App extends React.Component
       @navMenuItems.push el MenuItem, {
         key: "menu.fullscreen"
         primaryText: "Toggle Fullscreen"
-        leftIcon: icon 'fullscreen'
+        leftIcon: tags.icon 'fullscreen'
         onTouchTap: (e) =>
           e.preventDefault()
           fullscreen.toggle()
@@ -344,7 +342,7 @@ class App extends React.Component
 
     # draw fullscreen overlay if enabled and we can / still need to enter fullscreen
     if Settings.getBool('fullscreen.overlay') and fullscreen.available() and not fullscreen.active()
-      elements.push div {
+      elements.push tags.div {
         key: "fullscreenoverlay"
         style:
           backgroundColor: 'rgba(0, 0, 0, 0.8)'
@@ -361,7 +359,7 @@ class App extends React.Component
           fullscreen.toggle()
           @setState { navOpen: false, fullscreen: fullscreen.active() }
       }, [
-        span {
+        tags.span {
           style:
             color: '#ffffff'
             fontSize: '1.6em'
@@ -413,7 +411,7 @@ class App extends React.Component
       }
 
     elements.push view
-    return div { id: 'outerdiv' }, elements
+    return tags.div { id: 'outerdiv' }, elements
 
 App = Dimensions()(App)
 module.exports = App

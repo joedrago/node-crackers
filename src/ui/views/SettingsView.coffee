@@ -1,16 +1,17 @@
+# React
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
 
+# Material UI components
 Checkbox = require 'material-ui/lib/checkbox'
 MenuItem = require 'material-ui/lib/menus/menu-item'
 SelectField = require 'material-ui/lib/select-field'
 
+# Local requires
 Settings = require '../Settings'
+tags = require '../tags'
 {el} = require '../tags'
-{div} = require '../tags'
-{hr} = require '../tags'
-{img} = require '../tags'
 
 class SettingsView extends React.Component
   constructor: (props) ->
@@ -52,7 +53,7 @@ class SettingsView extends React.Component
       el MenuItem, { value:   3, primaryText: '3x' }
     ]
 
-    return div {}, [selectField]
+    return tags.div {}, [selectField]
 
   createAutotouch: ->
     selectField = el SelectField, {
@@ -66,7 +67,7 @@ class SettingsView extends React.Component
       el MenuItem, { value:   2, primaryText: '2x' }
     ]
 
-    return div {}, [selectField]
+    return tags.div {}, [selectField]
 
   miniTitleStyle: ->
     return {
@@ -80,7 +81,7 @@ class SettingsView extends React.Component
   render: ->
     elements = []
 
-    elements.push div {
+    elements.push tags.div {
       key: 'settings.title'
       style:
         color: '#aaaaaa'
@@ -100,7 +101,7 @@ class SettingsView extends React.Component
 
     # ------------------------------------------------------------------------
 
-    elements.push div {
+    elements.push tags.div {
       key: 'settings.zoomlevelstitle'
       style: @miniTitleStyle()
     }, "Zoom levels on double click/tap:"
@@ -120,7 +121,7 @@ class SettingsView extends React.Component
 
     # ------------------------------------------------------------------------
 
-    elements.push hr {
+    elements.push tags.hr {
       key: "hr.touchonly"
       size: 1
       style:
@@ -131,7 +132,7 @@ class SettingsView extends React.Component
 
     # ------------------------------------------------------------------------
 
-    elements.push div {
+    elements.push tags.div {
       key: 'settings.touchonly'
       style: @miniTitleStyle()
     }, "Touch devices only (tablet / phone):"
@@ -140,7 +141,7 @@ class SettingsView extends React.Component
     elements.push @createCheckbox('comic.autoZoomOut', "Automatically unzoom when you aren't touching the screen")
     elements.push @createCheckbox('comic.zoomgrid', "Use zoomgrid")
 
-    elements.push div {
+    elements.push tags.div {
       key: 'settings.autotouchtitle'
       style: @miniTitleStyle()
     }, "Enable autoread in landscape mode (touch devices only, choose scale):"
@@ -148,7 +149,7 @@ class SettingsView extends React.Component
 
     # ------------------------------------------------------------------------
 
-    view = div {
+    view = tags.div {
       style:
         marginTop: '10px'
         marginLeft: '60px'

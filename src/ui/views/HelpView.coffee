@@ -1,8 +1,9 @@
+# React
 React = require 'react'
+
+# Local requires
+tags = require '../tags'
 {el} = require '../tags'
-{div} = require '../tags'
-{img} = require '../tags'
-{span} = require '../tags'
 
 MarkdownSpan = require '../MarkdownSpan'
 Settings = require '../Settings'
@@ -13,7 +14,7 @@ class HelpView extends React.Component
 
   render: ->
     Settings.set('help.reminder', 'false')
-    div {
+    tags.div {
       id: 'help'
       style:
         display: 'inline-block'
