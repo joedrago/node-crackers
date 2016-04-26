@@ -9,7 +9,10 @@ LRUCache = require './LRUCache'
 ConfirmDialog = require './ConfirmDialog'
 Settings = require './Settings'
 fullscreen = require './fullscreen'
-{div, el, icon, span} = require './tags'
+{div} = require './tags'
+{el} = require './tags'
+{icon} = require './tags'
+{span} = require './tags'
 
 # Views
 {BrowseView} = require './views/BrowseView'
@@ -38,8 +41,9 @@ DarkTheme = require 'material-ui/lib/styles/baseThemes/darkBaseTheme'
 getMuiTheme = require 'material-ui/lib/styles/getMuiTheme'
 
 # React requirement, should go away in the future
-injectTapEventPlugin = require "react-tap-event-plugin"
-injectTapEventPlugin()
+do ->
+  injectTapEventPlugin = require "react-tap-event-plugin"
+  injectTapEventPlugin()
 
 # Uncomment to enable profiling
 # require './Profiling'
@@ -411,4 +415,5 @@ class App extends React.Component
     elements.push view
     return div { id: 'outerdiv' }, elements
 
-module.exports = Dimensions()(App)
+App = Dimensions()(App)
+module.exports = App

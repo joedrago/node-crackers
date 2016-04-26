@@ -10,7 +10,8 @@ FlatButton = require 'material-ui/lib/flat-button'
 RaisedButton = require 'material-ui/lib/raised-button'
 
 # Local requires
-{div, el} = require './tags'
+{div} = require './tags'
+{el} = require './tags'
 
 class ConfirmDialog extends React.Component
   @defaultProps: {

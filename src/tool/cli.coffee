@@ -2,39 +2,39 @@ Crackers = require './Crackers'
 exec = require './exec'
 log = require './log'
 
-syntax = ->
-  log.syntax "Syntax: crackers [-h]"
-  log.syntax "        crackers [-v] [-c] [-u]          update   PATH           (aliases: create, generate, gen)"
-  log.syntax "        crackers [-v] [-x] [-t T] [-s N] organize PATH [PATH...] (aliases: rename, mv)"
-  log.syntax "        crackers [-v] [-x]               cleanup  PATH [PATH...] (aliases: remove, rm, del)"
-  log.syntax "        crackers [-v] [-x] [-t T] [-s N] merge    PATH [PATH...]"
-  log.syntax "        crackers [-v]                    archive  PATH [PATH...]"
-  log.syntax ""
-  log.syntax "Global options:"
-  log.syntax "        -h,--help         This help output"
-  log.syntax "        -v,--verbose      Verbose output"
-  log.syntax ""
-  log.syntax "Update options:"
-  log.syntax "        -c,--cover        Force regeneration of covers"
-  log.syntax "        -d,--download     Show download links when cbr/cbt/cbz files are still present"
-  log.syntax "        -u,--unpack       Force reunpack of cbr/cbt/cbz files"
-  log.syntax ""
-  log.syntax "Organize options:"
-  log.syntax "        -s,--skip N       Skip N sets of digits when looking for the issue (default: 0)"
-  log.syntax "        -t,--template T   Use template T when renaming. Default: {name}/{issue.3}"
-  log.syntax ""
-  log.syntax "Merge options:"
-  log.syntax "        -m,--merge DIR    merge destination (defaults to current directory)"
-  log.syntax ""
-  log.syntax "Organize / Cleanup / Merge options:"
-  log.syntax "        -x,--execute      Perform rename/remove (default is to simply list actions)"
-  log.syntax ""
-  log.syntax "Archive options:"
-  log.syntax "        -f,--force        Force re-archive"
-  log.syntax ""
-  process.exit(1)
-
 main = ->
+  syntax = ->
+    log.syntax "Syntax: crackers [-h]"
+    log.syntax "        crackers [-v] [-c] [-u]          update   PATH           (aliases: create, generate, gen)"
+    log.syntax "        crackers [-v] [-x] [-t T] [-s N] organize PATH [PATH...] (aliases: rename, mv)"
+    log.syntax "        crackers [-v] [-x]               cleanup  PATH [PATH...] (aliases: remove, rm, del)"
+    log.syntax "        crackers [-v] [-x] [-t T] [-s N] merge    PATH [PATH...]"
+    log.syntax "        crackers [-v]                    archive  PATH [PATH...]"
+    log.syntax ""
+    log.syntax "Global options:"
+    log.syntax "        -h,--help         This help output"
+    log.syntax "        -v,--verbose      Verbose output"
+    log.syntax ""
+    log.syntax "Update options:"
+    log.syntax "        -c,--cover        Force regeneration of covers"
+    log.syntax "        -d,--download     Show download links when cbr/cbt/cbz files are still present"
+    log.syntax "        -u,--unpack       Force reunpack of cbr/cbt/cbz files"
+    log.syntax ""
+    log.syntax "Organize options:"
+    log.syntax "        -s,--skip N       Skip N sets of digits when looking for the issue (default: 0)"
+    log.syntax "        -t,--template T   Use template T when renaming. Default: {name}/{issue.3}"
+    log.syntax ""
+    log.syntax "Merge options:"
+    log.syntax "        -m,--merge DIR    merge destination (defaults to current directory)"
+    log.syntax ""
+    log.syntax "Organize / Cleanup / Merge options:"
+    log.syntax "        -x,--execute      Perform rename/remove (default is to simply list actions)"
+    log.syntax ""
+    log.syntax "Archive options:"
+    log.syntax "        -f,--force        Force re-archive"
+    log.syntax ""
+    process.exit(1)
+
   args = require('minimist')(process.argv.slice(2), {
     boolean: ['h', 'v', 'c', 'u', 'x', 'f']
     string: ['t','m','s']
@@ -129,5 +129,4 @@ main = ->
       force: args.force
     }
 
-module.exports =
-  main: main
+module.exports = main

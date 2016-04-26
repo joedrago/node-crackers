@@ -16,7 +16,13 @@ ToolbarTitle = require 'material-ui/lib/toolbar/toolbar-title'
 
 # Local requires
 Settings = require '../Settings'
-{a, div, el, icon, img, hr, span} = require '../tags'
+{a} = require '../tags'
+{div} = require '../tags'
+{el} = require '../tags'
+{icon} = require '../tags'
+{img} = require '../tags'
+{hr} = require '../tags'
+{span} = require '../tags'
 
 COVER_WIDTH = '150px'
 COVER_HEIGHT = '231px' # placeholder height, the real images are auto-height
@@ -498,3 +504,8 @@ class BrowseView extends React.Component
 module.exports =
   BrowseView: BrowseView
   PlaceholderImage: PlaceholderImage
+
+"""globals:
+   COVER_WIDTH COVER_HEIGHT
+   BrowseTitle BrowseEntry PlaceholderImage BrowseView
+"""

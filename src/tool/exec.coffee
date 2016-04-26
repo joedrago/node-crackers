@@ -14,33 +14,34 @@ commandPaths =
   unzip: null
   zip: null
 
-if process.platform == 'win32'
-  commandPaths.composite = path.resolve(__dirname, "../wbin/composite.exe")
-  commandPaths.convert = path.resolve(__dirname, "../wbin/convert.exe")
-  commandPaths.identify = path.resolve(__dirname, "../wbin/identify.exe")
-  commandPaths.dwebp = path.resolve(__dirname, "../wbin/dwebp.exe")
-  commandPaths.tar = path.resolve(__dirname, "../wbin/tar.exe")
-  commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe")
-  commandPaths.unzip = path.resolve(__dirname, "../wbin/unzip.exe")
-  commandPaths.zip = path.resolve(__dirname, "../wbin/zip.exe")
-else
-  for name of commandPaths
-    try
-      commandPaths[name] = which.sync(name)
-    catch
+do ->
+  if process.platform == 'win32'
+    commandPaths.composite = path.resolve(__dirname, "../wbin/composite.exe")
+    commandPaths.convert = path.resolve(__dirname, "../wbin/convert.exe")
+    commandPaths.identify = path.resolve(__dirname, "../wbin/identify.exe")
+    commandPaths.dwebp = path.resolve(__dirname, "../wbin/dwebp.exe")
+    commandPaths.tar = path.resolve(__dirname, "../wbin/tar.exe")
+    commandPaths.unrar = path.resolve(__dirname, "../wbin/unrar.exe")
+    commandPaths.unzip = path.resolve(__dirname, "../wbin/unzip.exe")
+    commandPaths.zip = path.resolve(__dirname, "../wbin/zip.exe")
+  else
+    for name of commandPaths
+      try
+        commandPaths[name] = which.sync(name)
+      catch
 
-commandMissing = false
-for name, path of commandPaths
-  if path == null
-    log.error "crackers requires #{name} to be installed."
-    commandMissing = true
+  commandMissing = false
+  for name, path of commandPaths
+    if path == null
+      log.error "crackers requires #{name} to be installed."
+      commandMissing = true
 
-if commandMissing
-  process.exit(1)
+  if commandMissing
+    process.exit(1)
 
-log.verbose "commandPaths: #{JSON.stringify(commandPaths, null, 2)}"
+  log.verbose "commandPaths: #{JSON.stringify(commandPaths, null, 2)}"
 
-module.exports = (cmdName, args, workingDir) ->
+exec = (cmdName, args, workingDir) ->
   commandPath = commandPaths[cmdName]
   if not commandPath
     log.error "Attempting to run unknown external command '#{cmdName}'"
@@ -51,3 +52,7 @@ module.exports = (cmdName, args, workingDir) ->
     cwd: workingDir
   })
   return String(results.stdout)
+
+module.exports = exec
+
+'globals: commandPaths'

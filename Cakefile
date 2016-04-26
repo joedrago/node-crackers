@@ -65,6 +65,8 @@ buildMarkdown = (callback) ->
         }
 
     module.exports = MarkdownSpan
+
+    'globals: markdowns'
   """
 
   markdownSpan = header + "\n"
@@ -120,6 +122,27 @@ readdir = (baseDir) ->
 
   return fileList
 
+rmdir = (dir) ->
+  isWindows = !!process.platform.match(/^win/)
+  try
+    files = fs.readdirSync(dir)
+  catch err
+    return
+  for file in files
+    file = path.join(dir, file)
+    currFile = fs.lstatSync(file)
+    if currFile.isDirectory()
+      rmdir(file)
+    else if currFile.isSymbolicLink()
+      if isWindows
+        fs.chmodSync(file, 666) # Windows needs this unless joyent/node#3006 is resolved..
+      fs.unlinkSync(file)
+    else
+      if isWindows
+        fs.chmodSync(file, 666) # Windows needs this unless joyent/node#3006 is resolved..
+      fs.unlinkSync(file)
+  return fs.rmdirSync(dir)
+
 scan = (filename) ->
   foundBadIndent = false
   lines = String(fs.readFileSync("src/#{filename}")).split(/\n/)
@@ -149,8 +172,93 @@ findDoubleIndents = (callback) ->
     util.log "No double indents found."
     callback?()
 
+findUnexpectedGlobals = (callback) ->
+  rmdir 'tmp'
+  try
+    fs.mkdirSync 'tmp'
+  catch
+    # already exists
+  coffee = spawn coffeeName, ['-b', '-o', 'tmp', '-c', 'src']
+  coffee.stderr.on 'data', (data) ->
+    process.stderr.write data.toString()
+    process.exit(-1)
+  coffee.stdout.on 'data', (data) ->
+    print data.toString()
+  coffee.on 'exit', (code) ->
+    if code != 0
+      console.error "Failed to compile CoffeeScript files."
+      return
+
+    foundError = false
+    files = readdir('tmp').filter (f) -> f.match(/.js$/)
+    for filename in files
+      parsed = path.parse(filename)
+      moduleName = parsed.name
+      lines = String(fs.readFileSync("tmp/#{filename}")).replace(/\r/, '').split(/\n/).filter (line) -> not line.match(/^\s*$/)
+
+      expectedGlobals = {}
+      rawGlobals = null
+      rawVars = null
+
+      for line, index in lines
+        break if rawGlobals and rawVars
+        if matches = line.match(/^['"]globals:\s*(.+)['"];?$/)
+          rawGlobals = matches[1]
+        if matches = line.match(/^var\s+([^;]+);?/)
+          rawVars = matches[1]
+        if matches = line.match(/^(\S+) = require\(/)
+          # console.log "[#{moduleName}] found require: '#{matches[1]}'"
+          if matches[1] == 'ref'
+            console.warn "WARNING: #{moduleName} has a global named 'ref'. Please remove multiple return values from require()."
+          expectedGlobals[matches[1]] = true
+        if matches = line.match(/^module.exports = ([a-zA-Z0-9_]+);?/)
+          expectedGlobals[matches[1]] = true
+
+      if not rawVars
+        console.error "ERROR: cannot find variable declarations for #{moduleName}"
+        foundError = true
+        continue
+
+      hasOneGlobal = false
+      for k of expectedGlobals
+        hasOneGlobal = true
+      if not hasOneGlobal
+        console.error "ERROR: cannot find any expected globals for #{moduleName}"
+        foundError = true
+        continue
+
+      if rawGlobals
+        expectedGlobalsList = rawGlobals.split(/\\n|\s+/).filter (v) -> !v.match(/^\s*$/)
+        for v in expectedGlobalsList
+          if expectedGlobals[v]
+            console.warn "WARNING: #{moduleName} has a redundant expected global '#{v}'"
+          expectedGlobals[v] = true
+
+      declaredVarsList = rawVars.split(/,|\s+/).filter (v) -> !v.match(/^\s*$/)
+      declaredVars = {}
+      for v in declaredVarsList
+        declaredVars[v] = true
+
+      # console.log "module #{moduleName}, globals", expectedGlobalsList, "vars", declaredVarsList
+
+      for v of expectedGlobals
+        if not declaredVars[v]
+          console.error "ERROR: #{moduleName} expecting nonexistent global '#{v}'"
+          foundError = true
+
+      for v in declaredVarsList
+        if not expectedGlobals[v]
+          console.error "ERROR: #{moduleName} has unexpected global '#{v}'"
+          foundError = true
+
+    return if foundError
+    util.log "No unexpected globals found."
+    callback?()
+
+
 task 'build', 'build JS bundle', (options) ->
-  findDoubleIndents ->
-    buildTool ->
-      buildMarkdown ->
-        buildUI ->
+  buildMarkdown ->
+    findDoubleIndents ->
+      findUnexpectedGlobals ->
+        buildTool ->
+          buildUI ->

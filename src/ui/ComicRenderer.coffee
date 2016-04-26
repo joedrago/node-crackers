@@ -3,7 +3,8 @@ React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
 ReactCSSTransitionGroup = require 'react-addons-css-transition-group'
-{Motion, spring} = require 'react-motion'
+{Motion} = require 'react-motion'
+{spring} = require 'react-motion'
 PubSub = require 'pubsub-js'
 
 # Material UI components
@@ -14,7 +15,10 @@ ConfirmDialog = require './ConfirmDialog'
 ImageCache = require './ImageCache'
 TouchDiv = require './TouchDiv'
 Settings = require './Settings'
-{div, el, img, span} = require './tags'
+{div} = require './tags'
+{el} = require './tags'
+{img} = require './tags'
+{span} = require './tags'
 
 Auto =
   None: 0
@@ -23,9 +27,6 @@ Auto =
 
 Number.prototype.clamp = (min, max) ->
   return Math.min(Math.max(this, min), max)
-
-# How long to show the page number after a page change
-PAGE_NUMBER_DISPLAY_MS = 700
 
 class ComicRenderer extends React.Component
   @defaultProps:
@@ -196,6 +197,9 @@ class ComicRenderer extends React.Component
               imageScale: 1
               imageSwipeX: 0
             }
+
+    # How long to show the page number after a page change
+    PAGE_NUMBER_DISPLAY_MS = 700
 
     if @pageNumberTimer != null
       clearTimeout(@pageNumberTimer)
@@ -708,3 +712,5 @@ class ComicRenderer extends React.Component
     return div {}, elements
 
 module.exports = ComicRenderer
+
+'globals: Auto'

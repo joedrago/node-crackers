@@ -1,5 +1,8 @@
 React = require 'react'
-{el, div, img, span} = require '../tags'
+{el} = require '../tags'
+{div} = require '../tags'
+{img} = require '../tags'
+{span} = require '../tags'
 
 MarkdownSpan = require '../MarkdownSpan'
 Settings = require '../Settings'

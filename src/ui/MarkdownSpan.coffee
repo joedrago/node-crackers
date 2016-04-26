@@ -18,3 +18,5 @@ class MarkdownSpan extends React.Component
     }
 
 module.exports = MarkdownSpan
+
+'globals: markdowns'

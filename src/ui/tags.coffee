@@ -7,10 +7,14 @@ FontIcon = require 'material-ui/lib/font-icon'
 tags = ['a', 'div', 'hr', 'img', 'span']
 
 module.exports = {}
-for elementName in tags
-  module.exports[elementName] = React.createFactory(elementName)
 
-module.exports.el = React.createElement
+do ->
+  for elementName in tags
+    module.exports[elementName] = React.createFactory(elementName)
 
-module.exports.icon = (which) ->
-  return React.createElement(FontIcon, { className: 'material-icons' }, which)
+  module.exports.el = React.createElement
+
+  module.exports.icon = (which) ->
+    return React.createElement(FontIcon, { className: 'material-icons' }, which)
+
+'globals: tags'

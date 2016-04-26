@@ -3,28 +3,13 @@ constants = require './constants'
 moment = require 'moment'
 path = require 'path'
 
-BUCKET_WINDOW = 24 * 60 * 60
-
-formatDate = (ts) ->
-  return moment(ts * 1000).format('YYYYMMDD')
-
-formatPrettyDate = (ts) ->
-  return moment(ts * 1000).format('MMMM Do, YYYY')
-
-sortByRelativeDir = (a, b) ->
-  return -1 if a.relativeDir < b.relativeDir
-  return  1 if a.relativeDir > b.relativeDir
-  return  0
-
-sortByTimestampDescending = (a, b) ->
-  return  1 if a.timestamp < b.timestamp
-  return -1 if a.timestamp > b.timestamp
-  return  0
-
 class UpdatesGenerator
   constructor: (@rootDir) ->
     @comics = cfs.gatherComics(@rootDir)
-    @comics.sort(sortByTimestampDescending)
+    @comics.sort (a, b) ->
+      return  1 if a.timestamp < b.timestamp
+      return -1 if a.timestamp > b.timestamp
+      return  0
 
     timeBuckets = []
     bucket = null
@@ -45,11 +30,15 @@ class UpdatesGenerator
     for bucket in timeBuckets
       update =
         list: []
-        pdate: formatPrettyDate(bucket.start)
-        date: formatDate(bucket.start)
+        pdate: moment(bucket.start * 1000).format('MMMM Do, YYYY')
+        date:  moment(bucket.start * 1000).format('YYYYMMDD')
       @updates.push update
 
-      bucket.list.sort(sortByRelativeDir)
+      bucket.list.sort (a, b) ->
+        return -1 if a.relativeDir < b.relativeDir
+        return  1 if a.relativeDir > b.relativeDir
+        return  0
+
       seriesCover = null
       seriesDir = null
       startDir = null
@@ -109,6 +98,7 @@ class UpdatesGenerator
         }
 
   roundTimestamp: (ts) ->
+    BUCKET_WINDOW = 24 * 60 * 60
     return Math.round(ts / BUCKET_WINDOW) * BUCKET_WINDOW
 
   getUpdates: ->

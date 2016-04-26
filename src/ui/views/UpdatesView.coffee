@@ -3,7 +3,11 @@ DOM = require 'react-dom'
 Loader = require 'react-loader'
 Settings = require '../Settings'
 {PlaceholderImage} = require './BrowseView'
-{a, el, div, img, span} = require '../tags'
+{a} = require '../tags'
+{el} = require '../tags'
+{div} = require '../tags'
+{img} = require '../tags'
+{span} = require '../tags'
 
 class UpdateDay extends React.Component
   constructor: (props) ->
@@ -154,3 +158,5 @@ class UpdatesView extends React.Component
     return view
 
 module.exports = UpdatesView
+
+'globals: UpdateDay'

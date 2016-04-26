@@ -2,7 +2,9 @@ React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
 loadMetadata = require '../MetadataCache'
-{el, div, img} = require '../tags'
+{el} = require '../tags'
+{div} = require '../tags'
+{img} = require '../tags'
 
 ComicRenderer = require '../ComicRenderer'
 

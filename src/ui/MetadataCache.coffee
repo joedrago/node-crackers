@@ -24,7 +24,11 @@ class MetadataCache
 
 instance = null
 
-module.exports = (dir, cb) ->
+load = (dir, cb) ->
   if not instance
     instance = new MetadataCache()
   return instance.load(dir, cb)
+
+module.exports = load
+
+'globals: instance MetadataCache'

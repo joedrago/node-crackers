@@ -1,17 +1,20 @@
 # React
 React = require 'react'
 DOM = require 'react-dom'
-{div, el, img} = require './tags'
-
-# how many pixels can you drag before it is actually considered a drag
-ENGAGE_DRAG_DISTANCE = 10
-
-# How fast you must double tap for it to count as a double tap
-DOUBLE_CLICK_MS = 400
+{div} = require './tags'
+{el} = require './tags'
+{img} = require './tags'
 
 class TouchDiv extends React.Component
   constructor: (props) ->
     super props
+
+    # how many pixels can you drag before it is actually considered a drag
+    @ENGAGE_DRAG_DISTANCE = 10
+
+    # How fast you must double tap for it to count as a double tap
+    @DOUBLE_CLICK_MS = 400
+
     @MOUSE_ID = 100
     @mouseDown = false
     @trackedTouches = []
@@ -167,7 +170,7 @@ class TouchDiv extends React.Component
         # second click, if the first click was recent
         clickDelta = now - @dblclickTime
         # console.log "clickdelta #{clickDelta}"
-        if clickDelta < DOUBLE_CLICK_MS
+        if clickDelta < @DOUBLE_CLICK_MS
           @dblclickTime = null # require a full new pair of taps to emit a second one
           @onDoubleTap(@trackedTouches[0].x, @trackedTouches[0].y)
           return
@@ -192,7 +195,7 @@ class TouchDiv extends React.Component
     if @trackedTouches.length == 1
       # single touch, consider dragging
       dragDistance = @calcDistance @dragX, @dragY, @trackedTouches[0].x, @trackedTouches[0].y
-      if @dragging or (dragDistance > ENGAGE_DRAG_DISTANCE)
+      if @dragging or (dragDistance > @ENGAGE_DRAG_DISTANCE)
         @dragging = true
         if dragDistance > 0.5
           dx = @trackedTouches[0].x - @dragX

@@ -1,7 +1,9 @@
 React = require 'react'
 DOM = require 'react-dom'
 Loader = require 'react-loader'
-{el, div, img} = require '../tags'
+{el} = require '../tags'
+{div} = require '../tags'
+{img} = require '../tags'
 
 class LoadingView extends React.Component
   @defaultProps:

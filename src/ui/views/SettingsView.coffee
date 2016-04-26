@@ -7,7 +7,10 @@ MenuItem = require 'material-ui/lib/menus/menu-item'
 SelectField = require 'material-ui/lib/select-field'
 
 Settings = require '../Settings'
-{el, div, hr, img} = require '../tags'
+{el} = require '../tags'
+{div} = require '../tags'
+{hr} = require '../tags'
+{img} = require '../tags'
 
 class SettingsView extends React.Component
   constructor: (props) ->

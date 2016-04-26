@@ -59,7 +59,7 @@ ensureInstanceExists = ->
     instance = new Settings()
   return
 
-module.exports =
+settings =
   get: (key) ->
     ensureInstanceExists()
     return instance.get(key)
@@ -72,3 +72,7 @@ module.exports =
   set: (key, value) ->
     ensureInstanceExists()
     return instance.set(key, value)
+
+module.exports = settings
+
+'globals: instance ensureInstanceExists Settings'

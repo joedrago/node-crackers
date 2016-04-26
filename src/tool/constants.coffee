@@ -17,4 +17,3 @@ module.exports = constants =
   UPDATES_FILENAME: 'updates.crackers'
 
 constants.COVER_HEIGHT = constants.COVER_WIDTH * 1.5
-

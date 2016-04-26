@@ -6,8 +6,6 @@ path = require 'path'
 log = require './log'
 touch = require 'touch'
 
-isWindows = !!process.platform.match(/^win/)
-
 cfs = {}
 
 cfs.join = ->
@@ -261,6 +259,8 @@ cfs.readdirSyncRecursive = (baseDir) ->
 
 # Taken/adapted from deprecated 'wrench' module by Ryan McGrath
 cfs.rmdirSyncRecursive = (dir, failSilent) ->
+  isWindows = !!process.platform.match(/^win/)
+
   try
     files = fs.readdirSync(dir)
   catch err
