@@ -32,6 +32,7 @@ class ReadState
     // DB Info
     var $ignoredList;
     var $progressTable;
+    var $ratingsTable;
 
     // Manifest info
     var $manifest;
@@ -91,9 +92,11 @@ class ReadState
 
         $dir = null;
         $page = null;
+        $rating = null;
         $ignored = array();
         $this->ignoredList = array();
         $this->progressTable = array();
+        $this->ratingsTable = array();
 
         $stmt = $conn->prepare("select dir from ignored where user=?");
         $stmt->bind_param('s', $this->user);
@@ -113,6 +116,15 @@ class ReadState
         }
         $stmt->close();
 
+        $stmt = $conn->prepare("select dir,rating from ratings where user=?");
+        $stmt->bind_param('s', $this->user);
+        $stmt->bind_result($dir, $rating);
+        $stmt->execute();
+        while($stmt->fetch()) {
+            $this->ratingsTable[$dir] = $rating;
+        }
+        $stmt->close();
+
         $conn->close();
     }
 
@@ -120,6 +132,7 @@ class ReadState
     {
         $perc = 0;
         $page = 0;
+        $rating = 0;
         $type = $e["type"];
         $dir = $e["dir"];
         if($type == "comic") {
@@ -129,12 +142,18 @@ class ReadState
                 $page = (int)$this->progressTable[$dir];
                 $perc = min(100, (int)(100 * $page / $pages));
             }
+            if(array_key_exists($dir, $this->ratingsTable))
+            {
+                $rating = (int)$this->ratingsTable[$dir];
+            }
         } else {
             if(array_key_exists($dir, $this->issues))
             {
                 $issues = $this->issues[$dir];
                 $readPages = 0;
                 $totalPages = 0;
+                $ratingSum = 0;
+                $ratingCount = 0;
                 foreach($issues as $issue)
                 {
                     $dir = $issue["dir"];
@@ -143,6 +162,15 @@ class ReadState
                     {
                         $readPages += (int)$this->progressTable[$dir];
                     }
+                    if(array_key_exists($dir, $this->ratingsTable))
+                    {
+                        $ratingSum += (int)$this->ratingsTable[$dir];
+                        $ratingCount++;
+                    }
+                }
+                if($ratingCount > 0)
+                {
+                    $rating = $ratingSum / $ratingCount;
                 }
                 if($totalPages > 0) {
                     $perc = min(100, (int)(100 * ($readPages / $totalPages)));
@@ -157,7 +185,7 @@ class ReadState
                 }
             }
         }
-        return array($perc, $page);
+        return array($perc, $page, $rating);
     }
 
     function processActions()
@@ -201,6 +229,44 @@ class ReadState
                 $stmt->execute();
                 // $this->response['stmt'] = $stmt->error;
                 $stmt->close();
+            }
+            $conn->close();
+        } else if(array_key_exists("rating", $this->actions)) {
+            // Trying to set or unset a rating
+
+            $rating = $this->actions['rating'];
+            $dir = $this->actions["dir"];
+
+            $torate = array();
+            foreach($this->manifest["flat"] as $issue) {
+                if(strpos($issue['dir'], $dir) === 0) {
+                    array_push($torate, $issue);
+                }
+            }
+            //$this->response["torate"] = $torate;
+
+            $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
+            if($conn->connect_error) {
+                fatalError("Connection failed: " + $conn->connect_error);
+            }
+            if($rating > 0) {
+                foreach($torate as $issue) {
+                    $issueDir = $issue['dir'];
+                    $stmt = $conn->prepare("insert into ratings (user, dir, rating) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE rating=?");
+                    $stmt->bind_param('ssii', $this->user, $issueDir, $rating, $rating);
+                    $stmt->execute();
+                    // $this->response['stmt'] = $stmt->error;
+                    $stmt->close();
+                }
+            } else {
+                foreach($torate as $issue) {
+                    $issueDir = $issue['dir'];
+                    $stmt = $conn->prepare("delete from ratings where user=? and dir=?");
+                    $stmt->bind_param('ss', $this->user, $issueDir);
+                    $stmt->execute();
+                    // $this->response['stmt'] = $stmt->error;
+                    $stmt->close();
+                }
             }
             $conn->close();
         } else if(array_key_exists("mark", $this->actions) || array_key_exists("unmark", $this->actions)) {
@@ -279,7 +345,7 @@ class ReadState
             {
                 foreach($list as &$e)
                 {
-                    list ($perc, $page) = $this->readProgress($e);
+                    list ($perc, $page, $rating) = $this->readProgress($e);
                     foreach($this->ignoredList as $ignored) {
                         if(strpos($e['dir'], $ignored) === 0) {
                             $perc = -1;
@@ -288,6 +354,7 @@ class ReadState
                     }
 
                     $e["perc"] = $perc;
+                    $e["rating"] = $rating;
                     if($e["type"] === "comic") {
                         $e["page"] = $page;
                         $this->response["page"][$e['dir']] = $page;

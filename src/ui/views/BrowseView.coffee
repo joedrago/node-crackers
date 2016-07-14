@@ -62,13 +62,17 @@ class BrowseEntry extends React.Component
       src: "#{@props.info.dir}/cover.png"
     }
 
+    ratingText = ""
+    if @props.info.rating? and (@props.info.rating > 0)
+      ratingText = "\nRating: #{@props.info.rating.toFixed(2)}"
+
     switch @props.info.type
       when 'comic'
         href = "#comic/"+encodeURIComponent("#{@props.info.dir}").replace("%2F", "/")
-        subtitleText = "(#{@props.info.pages} pages)"
+        subtitleText = "#{@props.info.pages} pages#{ratingText}"
       when 'index'
         href = "#browse/" + encodeURIComponent("#{@props.info.dir}").replace("%2F", "/")
-        subtitleText = "(#{@props.info.count} comics, Newest: #{@props.info.recent})"
+        subtitleText = "#{@props.info.count} comics\nNewest: #{@props.info.recent}#{ratingText}"
 
     title = tags.span {
       key: 'title'
@@ -116,6 +120,7 @@ class BrowseEntry extends React.Component
       style:
         color: '#aaaaaa'
         fontSize: '0.7em'
+        whiteSpace: 'pre'
     }, subtitleText
 
     if @props.progressEnabled
@@ -237,6 +242,11 @@ class BrowseView extends React.Component
     ]
 
     if @props.progressEnabled
+      sorts.unshift el MenuItem, {
+        key: 'sort.rating'
+        value: 'rating'
+        primaryText: 'By Rating'
+      }
       sorts.unshift el MenuItem, {
         key: 'sort.interest'
         value: 'interest'
@@ -377,6 +387,79 @@ class BrowseView extends React.Component
               @props.dirAction(@state.contextMenuDir, 'ignore')
             , 0
         }
+
+        # I don't love this section.
+        el MenuItem, {
+          key: "contextmenu.ratingstitle"
+          primaryText: "Ratings"
+          disabled: true
+        }
+        el MenuItem, {
+          key: "contextmenu.norating"
+          primaryText: "Remove Rating"
+          rightIcon: tags.icon 'clear'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'rating', 0)
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.rate1"
+          primaryText: "Rate: 1"
+          rightIcon: tags.icon 'star_rate'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'rating', 1)
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.rate2"
+          primaryText: "Rate: 2"
+          rightIcon: tags.icon 'star_rate'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'rating', 2)
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.rate3"
+          primaryText: "Rate: 3"
+          rightIcon: tags.icon 'star_rate'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'rating', 3)
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.rate4"
+          primaryText: "Rate: 4"
+          rightIcon: tags.icon 'star_rate'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'rating', 4)
+            , 0
+        }
+        el MenuItem, {
+          key: "contextmenu.rate5"
+          primaryText: "Rate: 5"
+          rightIcon: tags.icon 'star_rate'
+          onTouchTap: (e) =>
+            e.preventDefault()
+            @setState { contextMenuOpen: false }
+            setTimeout =>
+              @props.dirAction(@state.contextMenuDir, 'rating', 5)
+            , 0
+        }
       ]
 
       entries.push el LeftNav, {
@@ -417,6 +500,15 @@ class BrowseView extends React.Component
           return -1 if b.perc == 100
           return  1 if a.perc  <  b.perc
           return -1 if a.perc  >  b.perc
+          return 0
+      when 'rating'
+        list.sort (a, b) ->
+          if a.rating == b.rating
+            return -1 if a.dir < b.dir
+            return  1 if a.dir > b.dir
+            return 0
+          return  1 if a.rating  <  b.rating
+          return -1 if a.rating  >  b.rating
           return 0
       when 'alphabetical'
         list.sort (a, b) ->

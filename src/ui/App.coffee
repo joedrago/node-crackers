@@ -230,7 +230,7 @@ class App extends React.Component
       page: page
     })
 
-  dirAction: (dir, action) ->
+  dirAction: (dir, action, value) ->
     switch action
       when 'mark'
         yesText = "Mark As Read"
@@ -244,6 +244,14 @@ class App extends React.Component
         yesText = "Toggle Ignore"
         title = "Confirmation!"
         text = "Toggle ignore on '#{dir}'?"
+      when 'rating'
+        title = "Confirmation!"
+        if value == 0
+          yesText = "Remove Rating"
+          text = "Remove rating on '#{dir}'?"
+        else
+          yesText = "Rate"
+          text = "Set rating on '#{dir}' to #{value}?"
       else
         return
 
@@ -259,6 +267,7 @@ class App extends React.Component
           when 'mark'   then { mark:   dir }
           when 'unmark' then { unmark: dir }
           when 'ignore' then { ignore: dir }
+          when 'rating' then { dir: dir, rating: value }
           else null
         if updateData
           @loadManifest(updateData)
@@ -400,8 +409,8 @@ class App extends React.Component
 
         onViewPage: (dir, page) =>
           @onViewPage(dir, page)
-        dirAction: (dir, action) =>
-          @dirAction(dir, action)
+        dirAction: (dir, action, value) =>
+          @dirAction(dir, action, value)
         redirect: (newHash) =>
           @redirect(newHash)
       }
