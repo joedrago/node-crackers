@@ -529,6 +529,7 @@ class BrowseView extends React.Component
     # Create view entries
 
     lastPerc = null
+    lastRating = null
     sawOneEntry = false
     for entry in list
       if @props.progressEnabled and (@state.sort == 'interest')
@@ -551,6 +552,23 @@ class BrowseView extends React.Component
             }
             entries.push el BrowseTitle, { key: "browsetitle.perc#{entry.perc}", perc: entry.perc }
         lastPerc = entry.perc
+
+      if @props.progressEnabled and (@state.sort == 'rating')
+        if lastRating == null
+          entries.push el BrowseTitle, { key: "browsetitle.perc#{entry.perc}", title: "Rated:" }
+        else
+          addDivider = false
+          if ((lastRating != 0) and (entry.rating == 0))
+            addDivider = true
+          if addDivider
+            entries.push tags.hr {
+              key: "hr.rating#{entry.rating}"
+              size: 1
+              style:
+                borderColor: '#777777'
+            }
+            entries.push el BrowseTitle, { key: "browsetitle.rating#{entry.rating}", title: "Unrated:" }
+        lastRating = entry.rating
 
       sawOneEntry = true
       entryElement = el BrowseEntry, {
