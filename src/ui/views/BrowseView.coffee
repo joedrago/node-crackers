@@ -504,11 +504,17 @@ class BrowseView extends React.Component
       when 'rating'
         list.sort (a, b) ->
           if a.rating == b.rating
-            return -1 if a.dir < b.dir
-            return  1 if a.dir > b.dir
+            acount = a.count ? 1
+            bcount = b.count ? 1
+            if acount == bcount
+              return -1 if a.dir < b.dir
+              return  1 if a.dir > b.dir
+              return 0
+            return  1 if acount < bcount
+            return -1 if acount > bcount
             return 0
-          return  1 if a.rating  <  b.rating
-          return -1 if a.rating  >  b.rating
+          return  1 if a.rating < b.rating
+          return -1 if a.rating > b.rating
           return 0
       when 'alphabetical'
         list.sort (a, b) ->
