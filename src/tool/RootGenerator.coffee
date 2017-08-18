@@ -7,6 +7,7 @@ template = require './template'
 
 ManifestGenerator = require './ManifestGenerator'
 UpdatesGenerator = require './UpdatesGenerator'
+StockGenerator = require './StockGenerator'
 
 class RootGenerator
   constructor: (@rootDir, @force, @download) ->
@@ -24,6 +25,11 @@ class RootGenerator
     updates = new UpdatesGenerator(@rootDir).getUpdates()
     fs.writeFileSync cfs.join(@rootDir, constants.UPDATES_FILENAME), JSON.stringify(updates, null, 2)
     log.progress "Updated updates manifest"
+
+    # Generate stock
+    stock = new StockGenerator(@rootDir).getStock()
+    fs.writeFileSync cfs.join(@rootDir, constants.STOCK_FILENAME), stock
+    log.progress "Updated stock"
 
     # See if the user enabled the progress endpoint in root.crackers
     if endpoint = cfs.getProgressEndpoint(@rootDir)

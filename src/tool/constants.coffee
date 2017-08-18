@@ -13,6 +13,7 @@ module.exports = constants =
   RECENT_COVER_FILENAME: 'recentcover.png'
   ROOT_FILENAME: "root.crackers"
   SPAM_SIZE_TOLERANCE: 0.25
+  STOCK_FILENAME: 'stock'
   TEMP_UNPACK_DIR: 'unpackTmp'
   UPDATES_FILENAME: 'updates.crackers'
 
