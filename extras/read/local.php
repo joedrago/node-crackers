@@ -19,6 +19,14 @@ function fatalError($reason)
     exit();
 }
 
+
+function endsWith($haystack, $needle)
+{
+    $length = strlen($needle);
+    return $length === 0 || 
+        (substr($haystack, -$length) === $needle);
+}
+
 // --------------------------------------------------------------------------------------
 // ReadState
 
@@ -103,6 +111,9 @@ class ReadState
         $stmt->bind_result($dir);
         $stmt->execute();
         while($stmt->fetch()) {
+            if(!endsWith($dir, "/")) {
+                $dir .= "/";
+            }
             array_push($this->ignoredList, $dir);
         }
         $stmt->close();
@@ -141,6 +152,13 @@ class ReadState
             {
                 $page = (int)$this->progressTable[$dir];
                 $perc = min(100, (int)(100 * $page / $pages));
+                if($page == 1) {
+                    // On deck
+                    $perc = 1;
+                } else if($perc == 1) {
+                    // Not on deck, lie about percentage
+                    $perc = 2;
+                }
             }
             if(array_key_exists($dir, $this->ratingsTable))
             {
@@ -181,6 +199,13 @@ class ReadState
                     if($readPages != $totalPages) {
                         // Don't allow a 100% on something you haven't completely read.
                         $perc = min(99, $perc);
+                    }
+                    if($readPages == 1) {
+                        // On deck
+                        $perc = 1;
+                    } else if($perc == 1) {
+                        // Not on deck, lie about percentage
+                        $perc = 2;
                     }
                 }
             }
@@ -347,7 +372,11 @@ class ReadState
                 {
                     list ($perc, $page, $rating) = $this->readProgress($e);
                     foreach($this->ignoredList as $ignored) {
-                        if(strpos($e['dir'], $ignored) === 0) {
+                        $d = $e['dir'];
+                        if(!endsWith($d, "/")) {
+                            $d .= "/";
+                        }
+                        if(strpos($d, $ignored) === 0) {
                             $perc = -1;
                             break;
                         }

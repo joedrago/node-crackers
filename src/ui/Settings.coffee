@@ -19,6 +19,7 @@ class Settings
     'fullscreen.overlay': 'false'
     'help.reminder': 'true'
     'show.reading': 'true'
+    'show.ondeck': 'true'
     'show.unread': 'true'
     'show.completed': 'true'
     'show.ignored': 'false'

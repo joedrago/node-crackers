@@ -172,6 +172,8 @@ class BrowseTitle extends React.Component
       title = "Completed:"
     else if @props.perc == 0
       title = "Unread:"
+    else if @props.perc == 1
+      title = "On Deck:"
     else
       title = "Reading:"
 
@@ -190,7 +192,7 @@ class BrowseView extends React.Component
       contextMenuDir: ''
       sort: 'alphabetical'
       show: {}
-    for k in ['reading', 'unread', 'completed', 'ignored']
+    for k in ['reading', 'ondeck', 'unread', 'completed', 'ignored']
       @state.show[k] = Settings.getBool("show.#{k}")
     if @props.progressEnabled
       @state.sort = 'interest'
@@ -304,6 +306,11 @@ class BrowseView extends React.Component
             key: 'menu.reading'
             primaryText: "Reading"
             value: 'reading'
+          }
+          el MenuItem, {
+            key: 'menu.ondeck'
+            primaryText: "On Deck"
+            value: 'ondeck'
           }
           el MenuItem, {
             key: 'menu.unread'
@@ -479,7 +486,9 @@ class BrowseView extends React.Component
     unfilteredListSize = list.length
     if @props.progressEnabled
       if not @state.show.reading
-        list = list.filter (e) -> (e.perc <= 0) or (e.perc >= 100)
+        list = list.filter (e) -> (e.perc <= 1) or (e.perc >= 100)
+      if not @state.show.ondeck
+        list = list.filter (e) -> e.perc != 1
       if not @state.show.unread
         list = list.filter (e) -> e.perc != 0
       if not @state.show.completed
@@ -544,6 +553,8 @@ class BrowseView extends React.Component
         else
           addDivider = false
           if ((lastPerc != -1) and (entry.perc == -1))
+            addDivider = true
+          if ((lastPerc != 1) and (entry.perc == 1))
             addDivider = true
           if ((lastPerc != 100) and (entry.perc == 100))
             addDivider = true
