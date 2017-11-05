@@ -129,7 +129,7 @@
       results = [];
       for (i = 0, len = list.length; i < len; i++) {
         file = list[i];
-        if (file.match(/\.(png|jpg|jpeg|webp)$/i)) {
+        if (file.match(/\.(png|jpg|jpeg|webp|gif)$/i)) {
           results.push(path.resolve(dir, file));
         }
       }

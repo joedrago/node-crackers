@@ -87,7 +87,7 @@ cfs.listDir = (dir) ->
 
 cfs.listImages = (dir) ->
   list = cfs.readdirSyncRecursive(dir)
-  images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg|webp)$/i))
+  images = (path.resolve(dir, file) for file in list when file.match(/\.(png|jpg|jpeg|webp|gif)$/i))
   return images.sort()
 
 cfs.gatherComics = (subDir, rootDir) ->
