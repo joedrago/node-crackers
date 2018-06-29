@@ -129,7 +129,7 @@ class BrowseEntry extends React.Component
         style:
           cursor: 'pointer'
         onClick: =>
-          @props.contextMenu(@props.info.dir)
+          @props.contextMenu(@props.info)
       }, title
     else
       menu = tags.div {
@@ -189,7 +189,7 @@ class BrowseView extends React.Component
     super props
     @state =
       contextMenuOpen: false
-      contextMenuDir: ''
+      contextMenuInfo: { type: '', dir: '' }
       sort: 'alphabetical'
       show: {}
     for k in ['reading', 'ondeck', 'unread', 'completed', 'ignored']
@@ -199,8 +199,8 @@ class BrowseView extends React.Component
 
   click: (info) ->
 
-  contextMenu: (dir) ->
-    @setState { contextMenuOpen: true, contextMenuDir: dir }
+  contextMenu: (info) ->
+    @setState { contextMenuOpen: true, contextMenuInfo: info }
 
   updateShowFilter: (enabledList) ->
     show = {}
@@ -358,7 +358,7 @@ class BrowseView extends React.Component
       contextMenuItems = [
         el MenuItem, {
           key: "contextmenu.dir"
-          primaryText: @state.contextMenuDir
+          primaryText: @state.contextMenuInfo.dir
           disabled: true
         }
         el MenuItem, {
@@ -369,7 +369,7 @@ class BrowseView extends React.Component
             e.preventDefault()
             @setState { contextMenuOpen: false }
             setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'mark')
+              @props.dirAction(@state.contextMenuInfo.dir, 'mark')
             , 0
         }
         el MenuItem, {
@@ -380,7 +380,7 @@ class BrowseView extends React.Component
             e.preventDefault()
             @setState { contextMenuOpen: false }
             setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'unmark')
+              @props.dirAction(@state.contextMenuInfo.dir, 'unmark')
             , 0
         }
         el MenuItem, {
@@ -391,83 +391,101 @@ class BrowseView extends React.Component
             e.preventDefault()
             @setState { contextMenuOpen: false }
             setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'ignore')
+              @props.dirAction(@state.contextMenuInfo.dir, 'ignore')
             , 0
         }
 
         # I don't love this section.
-        el MenuItem, {
-          key: "contextmenu.ratingstitle"
-          primaryText: "Ratings"
+       el MenuItem, {
+         key: "contextmenu.ratingstitle"
+         primaryText: "Ratings"
+         disabled: true
+       }
+       el MenuItem, {
+         key: "contextmenu.norating"
+         primaryText: "Remove Rating"
+         rightIcon: tags.icon 'clear'
+         onTouchTap: (e) =>
+           e.preventDefault()
+           @setState { contextMenuOpen: false }
+           setTimeout =>
+             @props.dirAction(@state.contextMenuInfo.dir, 'rating', 0)
+           , 0
+       }
+       el MenuItem, {
+         key: "contextmenu.rate1"
+         primaryText: "Rate: 1"
+         rightIcon: tags.icon 'star_rate'
+         onTouchTap: (e) =>
+           e.preventDefault()
+           @setState { contextMenuOpen: false }
+           setTimeout =>
+             @props.dirAction(@state.contextMenuInfo.dir, 'rating', 1)
+           , 0
+       }
+       el MenuItem, {
+         key: "contextmenu.rate2"
+         primaryText: "Rate: 2"
+         rightIcon: tags.icon 'star_rate'
+         onTouchTap: (e) =>
+           e.preventDefault()
+           @setState { contextMenuOpen: false }
+           setTimeout =>
+             @props.dirAction(@state.contextMenuInfo.dir, 'rating', 2)
+           , 0
+       }
+       el MenuItem, {
+         key: "contextmenu.rate3"
+         primaryText: "Rate: 3"
+         rightIcon: tags.icon 'star_rate'
+         onTouchTap: (e) =>
+           e.preventDefault()
+           @setState { contextMenuOpen: false }
+           setTimeout =>
+             @props.dirAction(@state.contextMenuInfo.dir, 'rating', 3)
+           , 0
+       }
+       el MenuItem, {
+         key: "contextmenu.rate4"
+         primaryText: "Rate: 4"
+         rightIcon: tags.icon 'star_rate'
+         onTouchTap: (e) =>
+           e.preventDefault()
+           @setState { contextMenuOpen: false }
+           setTimeout =>
+             @props.dirAction(@state.contextMenuInfo.dir, 'rating', 4)
+           , 0
+       }
+       el MenuItem, {
+         key: "contextmenu.rate5"
+         primaryText: "Rate: 5"
+         rightIcon: tags.icon 'star_rate'
+         onTouchTap: (e) =>
+           e.preventDefault()
+           @setState { contextMenuOpen: false }
+           setTimeout =>
+             @props.dirAction(@state.contextMenuInfo.dir, 'rating', 5)
+           , 0
+       }
+      ]
+
+      if @state.contextMenuInfo.type == 'comic'
+        contextMenuItems.push el MenuItem, {
+          key: "contextmenu.skimseparator"
+          primaryText: "---"
           disabled: true
         }
-        el MenuItem, {
-          key: "contextmenu.norating"
-          primaryText: "Remove Rating"
-          rightIcon: tags.icon 'clear'
+        contextMenuItems.push el MenuItem, {
+          key: "contextmenu.skim"
+          primaryText: "Skim"
+          rightIcon: tags.icon 'book'
           onTouchTap: (e) =>
             e.preventDefault()
             @setState { contextMenuOpen: false }
             setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'rating', 0)
+              window.location = "#skim/"+encodeURIComponent("#{@state.contextMenuInfo.dir}").replace("%2F", "/")
             , 0
         }
-        el MenuItem, {
-          key: "contextmenu.rate1"
-          primaryText: "Rate: 1"
-          rightIcon: tags.icon 'star_rate'
-          onTouchTap: (e) =>
-            e.preventDefault()
-            @setState { contextMenuOpen: false }
-            setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'rating', 1)
-            , 0
-        }
-        el MenuItem, {
-          key: "contextmenu.rate2"
-          primaryText: "Rate: 2"
-          rightIcon: tags.icon 'star_rate'
-          onTouchTap: (e) =>
-            e.preventDefault()
-            @setState { contextMenuOpen: false }
-            setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'rating', 2)
-            , 0
-        }
-        el MenuItem, {
-          key: "contextmenu.rate3"
-          primaryText: "Rate: 3"
-          rightIcon: tags.icon 'star_rate'
-          onTouchTap: (e) =>
-            e.preventDefault()
-            @setState { contextMenuOpen: false }
-            setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'rating', 3)
-            , 0
-        }
-        el MenuItem, {
-          key: "contextmenu.rate4"
-          primaryText: "Rate: 4"
-          rightIcon: tags.icon 'star_rate'
-          onTouchTap: (e) =>
-            e.preventDefault()
-            @setState { contextMenuOpen: false }
-            setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'rating', 4)
-            , 0
-        }
-        el MenuItem, {
-          key: "contextmenu.rate5"
-          primaryText: "Rate: 5"
-          rightIcon: tags.icon 'star_rate'
-          onTouchTap: (e) =>
-            e.preventDefault()
-            @setState { contextMenuOpen: false }
-            setTimeout =>
-              @props.dirAction(@state.contextMenuDir, 'rating', 5)
-            , 0
-        }
-      ]
 
       entries.push el LeftNav, {
         key: 'contextmenu'

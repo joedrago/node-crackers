@@ -87,6 +87,7 @@ class App extends React.Component
       comic: ComicView
       help: HelpView
       settings: SettingsView
+      skim: ComicView
       updates: UpdatesView
 
     @loadManifest()
@@ -401,6 +402,7 @@ class App extends React.Component
       # console.log "chose view #{@state.view}"
       view = el @views[@state.view], {
         key: "view.#{@state.view}"
+        name: @state.view
         progressEnabled: @props.progressEnabled
         width: @props.containerWidth
         height: @props.containerHeight

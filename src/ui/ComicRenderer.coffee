@@ -48,10 +48,11 @@ class ComicRenderer extends React.Component
     @auto = Auto.None
     @autoScale = 1.5
     @pageNumberTimer = null
+    @skimming = (@props.name == 'skim')
 
     # console.log "ComicRenderer", @props
     index = 0
-    if @props.page != null
+    if (@props.page != null) and not @skimming
       index = @props.page - 1
     @setIndex(index, { initial: true })
 
@@ -124,6 +125,9 @@ class ComicRenderer extends React.Component
       when 70 # F
         @autoNext()
 
+      when 73 # I
+        @openImage()
+
       when 32 # Space
         if Settings.getBool("comic.spaceAutoRead")
           @autoNext()
@@ -132,11 +136,11 @@ class ComicRenderer extends React.Component
 
       when 78 # N
         if @props.metadata.next
-          hash = "#comic/"+encodeURIComponent("#{@props.metadata.next}").replace("%2F", "/")
+          hash = "##{@props.name}/"+encodeURIComponent("#{@props.metadata.next}").replace("%2F", "/")
           @props.redirect hash
       when 80 # P
         if @props.metadata.prev
-          hash = "#comic/"+encodeURIComponent("#{@props.metadata.prev}").replace("%2F", "/")
+          hash = "##{@props.name}/"+encodeURIComponent("#{@props.metadata.prev}").replace("%2F", "/")
           @props.redirect hash
     return
 
@@ -169,7 +173,8 @@ class ComicRenderer extends React.Component
           showPageNumber: true
           imageSwipeX: 0
         }
-        @props.onViewPage(@props.dir, index + 1)
+        if not @skimming
+          @props.onViewPage(@props.dir, index + 1)
       @auto = Auto.None
 
       imagesToPreload = @props.metadata.images.slice(@state.index+1, @state.index+1 + @preloadImageCount)
@@ -222,7 +227,7 @@ class ComicRenderer extends React.Component
             offerAdjective = 'previous'
 
       if offerIssue and (offerIssue.length > 0)
-        offerHash = "#comic/"+encodeURIComponent("#{offerIssue}").replace("%2F", "/")
+        offerHash = "##{@props.name}/"+encodeURIComponent("#{offerIssue}").replace("%2F", "/")
         if Settings.getBool("comic.confirmBinge")
           @setState {
             confirmTitle: offerTitle
@@ -290,6 +295,9 @@ class ComicRenderer extends React.Component
       when Auto.BottomRight
         @setIndex @state.index+1, { offer: true }
     return
+
+  openImage: ->
+    window.open(@props.metadata.images[@state.index], '_blank')
 
   zoomToCorner: (zoomX, zoomY, useFirstZoomLevel=false) ->
     imageScale = @state.imageScale
@@ -656,6 +664,10 @@ class ComicRenderer extends React.Component
       }, 'check_box_outline_blank'
 
     if @state.loaded
+      backgroundColor = '#111111'
+      if @skimming
+        backgroundColor = '#331111'
+
       # TODO: Reduce copypasta here
       if Settings.getBool("comic.animation")
         elements.push el Motion, {
@@ -677,7 +689,7 @@ class ComicRenderer extends React.Component
               top: 0
               width: @props.width
               height: @props.height
-              backgroundColor: '#111111'
+              backgroundColor: backgroundColor
               backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
               backgroundRepeat: 'no-repeat'
               backgroundPosition: "#{values.imageX}px #{values.imageY}px"
@@ -696,7 +708,7 @@ class ComicRenderer extends React.Component
             top: 0
             width: @props.width
             height: @props.height
-            backgroundColor: '#111111'
+            backgroundColor: backgroundColor
             backgroundImage: "url(\"#{@props.metadata.images[@state.index]}\")"
             backgroundRepeat: 'no-repeat'
             backgroundPosition: "#{@state.imageX}px #{@state.imageY}px"

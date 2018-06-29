@@ -71,6 +71,7 @@ class ComicView extends React.Component
     if @props.manifest.hasOwnProperty('page')
       page = @props.manifest.page[@state.dir]
     return el ComicRenderer, {
+      name: @props.name
       metadata: @state.metadata
       width: @props.width
       height: @props.height
