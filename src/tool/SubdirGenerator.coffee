@@ -27,11 +27,18 @@ class SubdirGenerator
     totalCount = 0
     timestamp = 0
     recent = ""
+
     for metadata in mdList
       if timestamp < metadata.timestamp
         timestamp = metadata.timestamp
         recent = metadata.path
       totalCount += metadata.count
+
+    if mdList[0].type == 'comic'
+      absoluteFirstDir = path.resolve(@dir, mdList[0].path)
+      firstDir = path.relative(@rootDir, absoluteFirstDir).replace(/\\/g, "/")
+    else
+      firstDir = mdList[0].first
 
     # Write out metadata
     cfs.writeMetadata @dir, {
@@ -40,6 +47,7 @@ class SubdirGenerator
       count: totalCount
       timestamp: timestamp
       recent: recent
+      first: firstDir
     }
     log.progress "Updated subdir: #{@title}"
 

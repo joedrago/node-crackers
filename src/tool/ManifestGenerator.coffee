@@ -48,6 +48,7 @@ class ManifestGenerator
             recent: indexMetadata.recent
             count: indexMetadata.count
             timestamp: indexMetadata.timestamp
+            first: indexMetadata.first
           }
         atLeaf = false
 

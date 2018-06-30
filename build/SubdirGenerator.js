@@ -25,7 +25,7 @@
     }
 
     SubdirGenerator.prototype.generate = function() {
-      var coverGenerator, i, images, len, md, mdList, metadata, recent, timestamp, totalCount;
+      var absoluteFirstDir, coverGenerator, firstDir, i, images, len, md, mdList, metadata, recent, timestamp, totalCount;
       mdList = cfs.gatherMetadata(this.dir);
       if (mdList.length === 0) {
         log.error("Nothing in '" + this.dir + "', removing metadata");
@@ -54,12 +54,19 @@
         }
         totalCount += metadata.count;
       }
+      if (mdList[0].type === 'comic') {
+        absoluteFirstDir = path.resolve(this.dir, mdList[0].path);
+        firstDir = path.relative(this.rootDir, absoluteFirstDir).replace(/\\/g, "/");
+      } else {
+        firstDir = mdList[0].first;
+      }
       cfs.writeMetadata(this.dir, {
         type: 'index',
         title: this.title,
         count: totalCount,
         timestamp: timestamp,
-        recent: recent
+        recent: recent,
+        first: firstDir
       });
       return log.progress("Updated subdir: " + this.title);
     };

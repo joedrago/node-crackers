@@ -470,22 +470,26 @@ class BrowseView extends React.Component
       ]
 
       if @state.contextMenuInfo.type == 'comic'
-        contextMenuItems.push el MenuItem, {
-          key: "contextmenu.skimseparator"
-          primaryText: "---"
-          disabled: true
-        }
-        contextMenuItems.push el MenuItem, {
-          key: "contextmenu.skim"
-          primaryText: "Skim"
-          rightIcon: tags.icon 'book'
-          onTouchTap: (e) =>
-            e.preventDefault()
-            @setState { contextMenuOpen: false }
-            setTimeout =>
-              window.location = "#skim/"+encodeURIComponent("#{@state.contextMenuInfo.dir}").replace("%2F", "/")
-            , 0
-        }
+        skimDir = @state.contextMenuInfo.dir
+      else
+        skimDir = @state.contextMenuInfo.first
+
+      contextMenuItems.push el MenuItem, {
+        key: "contextmenu.skimseparator"
+        primaryText: "---"
+        disabled: true
+      }
+      contextMenuItems.push el MenuItem, {
+        key: "contextmenu.skim"
+        primaryText: "Skim"
+        rightIcon: tags.icon 'book'
+        onTouchTap: (e) =>
+          e.preventDefault()
+          @setState { contextMenuOpen: false }
+          setTimeout =>
+            window.location = "#skim/"+encodeURIComponent("#{skimDir}").replace("%2F", "/")
+          , 0
+      }
 
       entries.push el LeftNav, {
         key: 'contextmenu'
