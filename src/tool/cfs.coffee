@@ -327,9 +327,9 @@ cfs.chmodSyncRecursive = (sourceDir, filemode) ->
       cfs.chmodSyncRecursive(path.join(sourceDir, file), filemode)
     else
       # At this point, we've hit a file actually worth copying... so copy it on over.
-      fs.chmod(path.join(sourceDir, file), filemode)
+      fs.chmodSync(path.join(sourceDir, file), filemode)
 
   # Finally, chmod the parent directory
-  return fs.chmod(sourceDir, filemode)
+  return fs.chmodSync(sourceDir, filemode)
 
 module.exports = cfs

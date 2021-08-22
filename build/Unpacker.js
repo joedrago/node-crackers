@@ -42,7 +42,7 @@
     Unpacker.prototype.readHeader = function() {
       var buffer, bytesRead, fd;
       fd = fs.openSync(this.archive, 'r');
-      buffer = new Buffer(2);
+      buffer = Buffer.alloc(2);
       bytesRead = fs.readSync(fd, buffer, 0, 2, 0);
       fs.closeSync(fd);
       if (bytesRead === 2) {

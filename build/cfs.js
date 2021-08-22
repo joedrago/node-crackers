@@ -423,10 +423,10 @@
       if (currFile.isDirectory()) {
         cfs.chmodSyncRecursive(path.join(sourceDir, file), filemode);
       } else {
-        fs.chmod(path.join(sourceDir, file), filemode);
+        fs.chmodSync(path.join(sourceDir, file), filemode);
       }
     }
-    return fs.chmod(sourceDir, filemode);
+    return fs.chmodSync(sourceDir, filemode);
   };
 
   module.exports = cfs;
