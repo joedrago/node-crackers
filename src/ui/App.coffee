@@ -159,6 +159,7 @@ class App extends React.Component
     ajaxData = {
       url: @props.endpoint
       dataType: 'json'
+      contentType: 'application/json'
       data: null
       success: (manifest, status) =>
         # console.log manifest

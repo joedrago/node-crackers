@@ -43,7 +43,7 @@
     "uglifyify": "^3.0.1"
   },
   "dependencies": {
-    "minimist": "1.2.0",
+    "minimist": "^1.2.5",
     "moment": "2.19.3",
     "touch": "1.0.0",
     "which": "1.1.1"
