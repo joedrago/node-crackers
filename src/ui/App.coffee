@@ -135,11 +135,11 @@ class App extends React.Component
     if @props.auth.length > 0
       @navMenuItems.push el MenuItem, {
         key: "menu.auth"
-        primaryText: "Auth"
+        primaryText: "Authentication"
         leftIcon: tags.icon 'login'
         onTouchTap: (e) =>
           e.preventDefault()
-          @redirect(@props.auth)
+          window.location = @props.auth
       }
 
     if fullscreen.available()
