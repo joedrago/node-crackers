@@ -32,8 +32,10 @@ class RootGenerator
     log.progress "Updated stock"
 
     # See if the user enabled the progress endpoint in root.crackers
+    auth = ""
     if endpoint = cfs.getProgressEndpoint(@rootDir)
       progressEnabled = "true"
+      auth = cfs.getAuthEndpoint(@rootDir)
     else
       progressEnabled = "false"
       endpoint = constants.MANIFEST_CLIENT_FILENAME
@@ -43,6 +45,7 @@ class RootGenerator
       title: @title
       endpoint: endpoint
       progress: progressEnabled
+      auth: auth
     })
     fs.writeFileSync @indexFilename, outputText
     log.verbose "Wrote #{@indexFilename}"

@@ -148,6 +148,7 @@ cfs.touchRoot = (dir) ->
   rootinfo = {
     title: constants.DEFAULT_TITLE
     progress: ""
+    auth: ""
   }
   json = JSON.stringify(rootinfo, null, 2)
   fs.writeFileSync rootFilename, json
@@ -172,6 +173,18 @@ cfs.getProgressEndpoint = (dir) ->
       data = JSON.parse(rawJSON)
       if data.progress
         return data.progress
+    catch
+
+  return ""
+
+cfs.getAuthEndpoint = (dir) ->
+  rootFilename = cfs.join(dir, constants.ROOT_FILENAME)
+  if cfs.fileHasBytes(rootFilename)
+    try
+      rawJSON = fs.readFileSync(rootFilename)
+      data = JSON.parse(rawJSON)
+      if data.auth
+        return data.auth
     catch
 
   return ""

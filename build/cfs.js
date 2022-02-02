@@ -224,7 +224,8 @@
     }
     rootinfo = {
       title: constants.DEFAULT_TITLE,
-      progress: ""
+      progress: "",
+      auth: ""
     };
     json = JSON.stringify(rootinfo, null, 2);
     return fs.writeFileSync(rootFilename, json);
@@ -256,6 +257,23 @@
         data = JSON.parse(rawJSON);
         if (data.progress) {
           return data.progress;
+        }
+      } catch (_error) {
+
+      }
+    }
+    return "";
+  };
+
+  cfs.getAuthEndpoint = function(dir) {
+    var data, rawJSON, rootFilename;
+    rootFilename = cfs.join(dir, constants.ROOT_FILENAME);
+    if (cfs.fileHasBytes(rootFilename)) {
+      try {
+        rawJSON = fs.readFileSync(rootFilename);
+        data = JSON.parse(rawJSON);
+        if (data.auth) {
+          return data.auth;
         }
       } catch (_error) {
 

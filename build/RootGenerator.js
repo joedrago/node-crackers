@@ -31,7 +31,7 @@
     }
 
     RootGenerator.prototype.generate = function() {
-      var endpoint, manifestGenerator, outputText, progressEnabled, stock, updates;
+      var auth, endpoint, manifestGenerator, outputText, progressEnabled, stock, updates;
       manifestGenerator = new ManifestGenerator(this.rootDir);
       manifestGenerator.generate();
       log.progress("Updated client and server manifests");
@@ -41,8 +41,10 @@
       stock = new StockGenerator(this.rootDir).getStock();
       fs.writeFileSync(cfs.join(this.rootDir, constants.STOCK_FILENAME), stock);
       log.progress("Updated stock");
+      auth = "";
       if (endpoint = cfs.getProgressEndpoint(this.rootDir)) {
         progressEnabled = "true";
+        auth = cfs.getAuthEndpoint(this.rootDir);
       } else {
         progressEnabled = "false";
         endpoint = constants.MANIFEST_CLIENT_FILENAME;
@@ -50,7 +52,8 @@
       outputText = template('index_html', {
         title: this.title,
         endpoint: endpoint,
-        progress: progressEnabled
+        progress: progressEnabled,
+        auth: auth
       });
       fs.writeFileSync(this.indexFilename, outputText);
       log.verbose("Wrote " + this.indexFilename);
